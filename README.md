@@ -12,7 +12,7 @@
 
 - [x] (Enable/disable backglight of numpad with activation)
 - [x] (Two-finger tap support)
-- [] (Support for all levels of backlight depends on type, enable/disable works only atm)
+- [ ] (Support for all levels of backlight depends on type, enable/disable works only atm)
 
 <br/>
 
