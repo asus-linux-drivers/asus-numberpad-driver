@@ -1,0 +1,4 @@
+# IDEs and editors
+.history
+__pycache__
+*~
