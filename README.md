@@ -11,7 +11,7 @@
 ## TODO:
 
 - [x] (Enable/disable backglight of numpad with activation)
-- [x] (Two-finger tap support)
+- [x] (Multi tap support up to quint tap)
 - [ ] (Support for all levels of backlight depends on type, enable/disable works only atm)
 
 <br/>

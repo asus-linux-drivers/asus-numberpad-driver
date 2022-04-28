@@ -172,14 +172,13 @@ numlock: bool = False
 button_pressed: libevdev.const = None
 abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
-abs_mt_slot = np.array([0, 1], int)
-abs_mt_slot_numpad_key = np.array([None, None], dtype=libevdev.const.EventCode)
-abs_mt_slot_x_values = np.array([0, 1], int)
-abs_mt_slot_y_values = np.array([0, 1], int)
+abs_mt_slot = np.array([0, 1, 2, 3, 4], int)
+abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
+abs_mt_slot_x_values = np.array([0, 1, 2, 3, 4], int)
+abs_mt_slot_y_values = np.array([0, 1, 2, 3, 4], int)
 # equal to multi finger maximum
-support_for_maximum_abs_mt_slots: int = 2
+support_for_maximum_abs_mt_slots: int = 5
 unsupported_abs_mt_slot: bool = False
-double_tap: bool = False
 
 def set_tracking_id(value):
     try:
@@ -200,16 +199,6 @@ while True:
 
     for e in d_t.events():
 
-        log.info(e)
-
-        if e.matches(EV_KEY.BTN_TOOL_DOUBLETAP):
-            if e.value == 1:
-                log.info("Double tab started")
-                double_tap = True
-            else:
-                log.info("Double tab ended")
-                double_tap = False
-
         if e.matches(EV_ABS.ABS_MT_SLOT):
             if(e.value < support_for_maximum_abs_mt_slots):
                 abs_mt_slot_value = e.value
@@ -229,7 +218,11 @@ while True:
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
             set_tracking_id(e.value)
 
-        if e.matches(EV_KEY.BTN_TOOL_FINGER) or e.matches(EV_KEY.BTN_TOOL_DOUBLETAP):
+        if e.matches(EV_KEY.BTN_TOOL_FINGER) or \
+           e.matches(EV_KEY.BTN_TOOL_DOUBLETAP) or \
+           e.matches(EV_KEY.BTN_TOOL_TRIPLETAP) or \
+           e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
+           e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
             if (
                 abs_mt_slot_x_values[abs_mt_slot_value] > 0.95 * maxx) and \
@@ -288,7 +281,6 @@ while True:
                         InputEvent(EV_SYN.SYN_REPORT, 0)
                     ]
             else:
-
                 log.info("Unpress numpad key")
                 log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
