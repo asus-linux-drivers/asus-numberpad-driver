@@ -43,6 +43,8 @@ device_id: Optional[str] = None
 
 tries = model_layout.try_times
 
+brightness_value: int = 0
+
 # Look into the devices file #
 while tries > 0:
 
@@ -108,7 +110,6 @@ log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
 # KEY_APOSTROPHE:40
 # [...]
 percentage_key = EV_KEY.KEY_5
-calculator_key = EV_KEY.KEY_CALC
 
 if len(sys.argv) > 2:
     percentage_key = EV_KEY.codes[int(sys.argv[2])]
@@ -117,7 +118,6 @@ dev = Device()
 dev.name = "Asus Touchpad/Numpad"
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_NUMLOCK)
-dev.enable(calculator_key)
 if percentage_key != EV_KEY.KEY_5:
     dev.enable(percentage_key)
 
@@ -130,9 +130,26 @@ if percentage_key != EV_KEY.KEY_5:
 
 udev = dev.create_uinput_device()
 
+def increase_brightness(brightness):
+    if len(model_layout.backlight_levels) > 2:
+
+        if (brightness + 1) >= len(model_layout.backlight_levels):
+            brightness = 1
+        else:
+            brightness += 1
+
+        log.info("Increased brightness of backlight to")
+        log.info(brightness)
+
+        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[brightness] + " 0xad"
+        subprocess.call(numpad_cmd, shell=True)
+
+        return brightness
+
+
 def activate_numlock():
     try:
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad"
+        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[1] + " 0xad"
         events = [
             InputEvent(EV_KEY.KEY_NUMLOCK, 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
@@ -140,12 +157,13 @@ def activate_numlock():
         udev.send_events(events)
         d_t.grab()
         subprocess.call(numpad_cmd, shell=True)
+        return 1
     except (OSError, libevdev.device.DeviceGrabError) as e:
         pass
 
 def deactivate_numlock():
     try:
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
+        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[0] + " 0xad"
         events = [
             InputEvent(EV_KEY.KEY_NUMLOCK, 0),
             InputEvent(EV_SYN.SYN_REPORT, 0)
@@ -153,19 +171,8 @@ def deactivate_numlock():
         udev.send_events(events)
         d_t.ungrab()
         subprocess.call(numpad_cmd, shell=True)
+        return 0
     except (OSError, libevdev.device.DeviceGrabError) as e:
-        pass
-
-def launch_calculator():
-    try:
-        events = [
-            InputEvent(calculator_key, 1),
-            InputEvent(EV_SYN.SYN_REPORT, 0),
-            InputEvent(calculator_key, 0),
-            InputEvent(EV_SYN.SYN_REPORT, 0)
-        ]
-        udev.send_events(events)
-    except OSError as e:
         pass
 
 numlock: bool = False
@@ -224,8 +231,9 @@ while True:
            e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
            e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
-            if (
-                abs_mt_slot_x_values[abs_mt_slot_value] > 0.95 * maxx) and \
+            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (abs_mt_slot_y_values[abs_mt_slot_value]))
+
+            if (abs_mt_slot_x_values[abs_mt_slot_value] > 0.95 * maxx) and \
                 (abs_mt_slot_y_values[abs_mt_slot_value] < 0.09 * maxy):
 
                 if e.value == 0:
@@ -234,10 +242,17 @@ while True:
                 numlock = not numlock
                 if numlock:
                     log.info("Numpad enabled")
-                    activate_numlock()
+                    brightness = activate_numlock()
                 else:
                     log.info("Numpad disabled")
-                    deactivate_numlock()
+                    brightness = deactivate_numlock()
+                continue
+
+            elif (abs_mt_slot_x_values[abs_mt_slot_value] < 0.06 * maxx) and \
+                (abs_mt_slot_y_values[abs_mt_slot_value] < 0.07 * maxy):
+
+                if numlock and e.value == 1:
+                    brightness = increase_brightness(brightness)
                 continue
 
             # Numpad is not activated

@@ -12,7 +12,7 @@
 
 - [x] (Enable/disable backglight of numpad with activation)
 - [x] (Multi tap support up to quint tap)
-- [ ] (Support for all levels of backlight depends on type, enable/disable works only atm)
+- [x] (Configurable support of all levels of backlight)
 
 <br/>
 
@@ -72,3 +72,7 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 Thank you very much [github.com/mohamed-badaoui](github.com/mohamed-badaoui) and all the contributors of [asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
 
 Thank you who-t for great post about multitouch [Understanding evdev](http://who-t.blogspot.com/2016/09/understanding-evdev.html).
+
+## Developing
+
+**During debugging rebember to disable service / uninstall already installed version of driver**
