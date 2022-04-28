@@ -15,6 +15,8 @@ elif [[ $(sudo dnf install 2>/dev/null) ]]; then
     echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git
 fi
 
+pip3 install numpy
+
 modprobe i2c-dev
 
 # Checking if the i2c-dev module is successfuly loaded
