@@ -14,6 +14,7 @@
 - [x] (Multi tap support up to quint tap)
 - [x] (Configurable support of all levels of backlight)
 - [ ] (Pinch in/out as zooming in/out, [libinput-gestures](https://github.com/bulletmark/libinput-gestures) supports configurable reaction when is gesture done, no fluent zooming like on touchscreen possible)
+- [ ] (Special keys with Alt key)
 
 <br/>
 
