@@ -83,6 +83,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 - [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
 - [python service] https://github.com/danahynes/Asus_L410M_Numpad inspired by [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
 - [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver inspired by [python service] https://gitlab.com/Thraen/gx735_touchpad_numpad
+- [c++ and meson] https://github.com/xytovl/asus-numpad inspired by/rewritten version of [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
 
 - [python service] This project with continuing work based on [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
 
