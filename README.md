@@ -78,7 +78,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 **During debugging rebember to disable service / uninstall already installed version of driver**
 
-## Existing similarly projects
+## Existing similar projects
 
 - [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
 - [python service] https://github.com/danahynes/Asus_L410M_Numpad inspired by [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
