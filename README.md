@@ -77,3 +77,13 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 ## Developing
 
 **During debugging rebember to disable service / uninstall already installed version of driver**
+
+## Existing similarly projects
+
+- [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
+- [python service] https://github.com/danahynes/Asus_L410M_Numpad inspired by [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
+- [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver inspired by [python service] https://gitlab.com/Thraen/gx735_touchpad_numpad
+
+- [python service] This project with continuing work based on [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
+
+Why was this project created? As repository where i can implement ```Configurable support of all levels of backlight``` and ```Multi tap support up to quint tap```.
