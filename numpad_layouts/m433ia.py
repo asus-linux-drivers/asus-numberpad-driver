@@ -8,6 +8,12 @@ cols = 5
 rows = 4
 top_offset = 0.3
 
+touchpad_left_button_keys = [
+    EV_KEY.KEY_LEFTSHIFT,
+    EV_KEY.KEY_LEFTMETA,
+    EV_KEY.KEY_K
+]
+
 # Including off (first value of array) and full brightness (last value of array)
 backlight_levels = [
     "0x00",
