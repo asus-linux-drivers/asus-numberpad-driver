@@ -15,7 +15,7 @@
 - [x] (Configurable support of all levels of backlight)
 - [ ] (Pinch in/out as zooming in/out, [libinput-gestures](https://github.com/bulletmark/libinput-gestures) supports configurable reaction when is gesture done, no fluent zooming like on touchscreen possible)
 - [ ] (Special keys with Alt key)
-- [x] (Configurable support of touchpad left button - useful when has device no levels of backlight)
+- [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activation when device has no levels of backlight)
 
 <br/>
 
