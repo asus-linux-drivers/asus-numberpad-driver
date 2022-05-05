@@ -13,7 +13,7 @@
 - [x] (Enable/disable backglight of numpad with activation)
 - [x] (Multi tap support up to quint tap)
 - [x] (Configurable support of all levels of backlight)
-- [ ] (Pinch in/out as zooming in/out, [libinput-gestures](https://github.com/bulletmark/libinput-gestures) supports configurable reaction when is gesture done, no fluent zooming like on touchscreen possible)
+- [ ] (Pinch in/out as zooming in/out, [libinput-gestures](https://github.com/bulletmark/libinput-gestures) supports configurable reaction when is gesture done, no fluent zooming like on touchscreen possible, https://askubuntu.com/questions/1357995/lenovo-trackpad-libinput-pinch-event-being-swallowed)
 - [ ] (Special keys with Alt key)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activation when device has no levels of backlight)
 
