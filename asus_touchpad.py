@@ -14,6 +14,7 @@ import numpy as np
 
 import libevdev.const
 from libevdev import EV_ABS, EV_KEY, EV_SYN, EV_MSC, Device, InputEvent
+from pyrsistent import v
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
@@ -43,7 +44,7 @@ device_id: Optional[str] = None
 
 tries = model_layout.try_times
 
-brightness_value: int = 0
+brightness: int = 0
 
 # Look into the devices file #
 while tries > 0:
@@ -118,6 +119,10 @@ dev = Device()
 dev.name = "Asus Touchpad/Numpad"
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_NUMLOCK)
+if hasattr(model_layout, "touchpad_left_button_keys"):
+    for key_to_enable in model_layout.touchpad_left_button_keys:
+        dev.enable(key_to_enable)
+
 if percentage_key != EV_KEY.KEY_5:
     dev.enable(percentage_key)
 
@@ -130,21 +135,46 @@ if percentage_key != EV_KEY.KEY_5:
 
 udev = dev.create_uinput_device()
 
-def increase_brightness(brightness):
-    if len(model_layout.backlight_levels) > 2:
+def use_bindings_for_touchpad_left_key(e):
 
-        if (brightness + 1) >= len(model_layout.backlight_levels):
-            brightness = 1
+    key_events = []
+    for touchpad_left_button_key in model_layout.touchpad_left_button_keys:
+        key_events.append(InputEvent(touchpad_left_button_key, e.value))
+
+    sync_event = [
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    try:
+        udev.send_events(key_events)
+        udev.send_events(sync_event)
+        if e.value:
+            log.info("Pressed touchpad left key and used bound keys")
         else:
-            brightness += 1
+            log.info("Unpressed touchpad left key and used bound keys")
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
 
-        log.info("Increased brightness of backlight to")
-        log.info(brightness)
+def pressed_touchpad_left_key(e):
+    if numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+        if e.value == 1:
+            brightness = increase_brightness(brightness)
+    elif hasattr(model_layout, "touchpad_left_button_keys") and len(model_layout.touchpad_left_button_keys):
+        use_bindings_for_touchpad_left_key(e)
 
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[brightness] + " 0xad"
-        subprocess.call(numpad_cmd, shell=True)
+def increase_brightness(brightness):
+    if (brightness + 1) >= len(model_layout.backlight_levels):
+        brightness = 1
+    else:
+        brightness += 1
 
-        return brightness
+    log.info("Increased brightness of backlight to")
+    log.info(brightness)
+
+    numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[brightness] + " 0xad"
+    subprocess.call(numpad_cmd, shell=True)
+
+    return brightness
 
 
 def activate_numlock():
@@ -250,10 +280,7 @@ while True:
 
             elif (abs_mt_slot_x_values[abs_mt_slot_value] < 0.06 * maxx) and \
                 (abs_mt_slot_y_values[abs_mt_slot_value] < 0.07 * maxy):
-
-                if numlock and e.value == 1:
-                    brightness = increase_brightness(brightness)
-                continue
+                pressed_touchpad_left_key(e)
 
             # Numpad is not activated
             if not numlock:
