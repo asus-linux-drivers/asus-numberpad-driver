@@ -13,10 +13,10 @@ top_left_icon_height = 200
 top_right_icon_width = 200
 top_right_icon_height = 200
 
-top_offset = 0 # 200
-right_offset = 0 # 200
-left_offset = 0 # 200
-bottom_offset = 0 # 80
+top_offset = 200
+right_offset = 200
+left_offset = 200
+bottom_offset = 80
 
 touchpad_left_button_keys = [
     EV_KEY.KEY_LEFTSHIFT,
