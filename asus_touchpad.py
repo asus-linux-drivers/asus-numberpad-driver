@@ -252,6 +252,76 @@ def set_tracking_id(value):
     except IndexError as e:
         log.error(e)
 
+def pressed_numpad_key():
+    log.info("Pressed numpad key")
+    log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
+
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
+        events = [
+            InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
+            InputEvent(EV_SYN.SYN_REPORT, 0),
+            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
+            InputEvent(EV_SYN.SYN_REPORT, 0)
+        ]
+    else:
+        events = [
+            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
+            InputEvent(EV_SYN.SYN_REPORT, 0)
+        ]
+
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.warning("Cannot send press event, %s", e)
+
+def unpressed_numpad_key():
+    log.info("Unpress numpad key")
+    log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
+
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
+        events = [
+            InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
+            InputEvent(EV_SYN.SYN_REPORT, 0),
+            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
+            InputEvent(EV_SYN.SYN_REPORT, 0)
+        ]
+    else:
+        events = [
+            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
+            InputEvent(EV_SYN.SYN_REPORT, 0)
+        ]
+
+    abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.warning("Cannot send press event, %s", e)
+
+def get_touched_key():
+    col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+    row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+
+    if row < 0 or col < 0:
+        return None
+
+    try:
+        return model_layout.keys[row][col]
+    except IndexError as e:
+        return None
+
+
+def is_not_finger_moved_to_another_key():
+
+    touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
+    touched_key_now = get_touched_key()
+    if touched_key_when_pressed != None and touched_key_now != touched_key_when_pressed: 
+        unpressed_numpad_key()
+
+        if touched_key_now != None:
+            abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
+            pressed_numpad_key()
+
 while True:
 
     for e in d_t.events():
@@ -269,8 +339,12 @@ while True:
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
 
+            is_not_finger_moved_to_another_key()
+
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+
+            is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
             set_tracking_id(e.value)
@@ -321,11 +395,6 @@ while True:
             col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
             row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
-            if col + 1 > model_layout.cols:
-                col = model_layout.cols - 1
-            if row + 1 > model_layout.rows:
-                row = model_layout.rows - 1
-
             if row < 0 or col < 0:
                continue
 
@@ -343,40 +412,6 @@ while True:
             abs_mt_slot_numpad_key[abs_mt_slot_value] = button_pressed
 
             if e.value == 1:
-
-                log.info("Pressed numpad key")
-                log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
-
-                if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
-                    events = [
-                        InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0),
-                        InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)
-                    ]
-                else:
-                    events = [
-                        InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)
-                    ]
+                pressed_numpad_key()
             else:
-                log.info("Unpress numpad key")
-                log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
-
-                if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
-                    events = [
-                        InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0),
-                        InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)
-                    ]
-                else:
-                    events = [
-                        InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], e.value),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)
-                    ]
-
-            try:
-                udev.send_events(events)
-            except OSError as e:
-                log.warning("Cannot send press event, %s", e)
+                unpressed_numpad_key()

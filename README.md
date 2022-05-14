@@ -11,7 +11,7 @@
 ## TODO:
 
 - [x] (Enable/disable backglight of numpad with activation)
-- [x] (Multi tap support up to quint tap)
+- [x] (Multi touch support up to quint tap, especially when is finger moving thought keys & when another keys are pressed but first finger persists on the key)
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activation when device has no levels of backlight)
 - [x] (Configurable all paddings of numpad)
