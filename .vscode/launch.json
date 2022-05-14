@@ -11,9 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "debugOptions": [
-                "Sudo"
-            ]
+            "sudo": true
         }
     ]
 }
