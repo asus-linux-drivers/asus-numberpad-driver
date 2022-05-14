@@ -14,7 +14,7 @@
 - [x] (Multi tap support up to quint tap)
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activation when device has no levels of backlight)
-
+- [x] (Configurable all paddings of numpad)
 <br/>
 
 Install required packages
@@ -77,6 +77,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 ## Developing
 
 **During debugging rebember to disable service / uninstall already installed version of driver**
+**Start point [x:0,y:0] of Y/X axis is left top**
 
 ## Existing similar projects
 

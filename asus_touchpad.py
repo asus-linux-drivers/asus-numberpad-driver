@@ -99,10 +99,17 @@ d_t = Device(fd_t)
 
 ai = d_t.absinfo[EV_ABS.ABS_X]
 (minx, maxx) = (ai.minimum, ai.maximum)
+minx_numpad = minx + model_layout.left_offset
+maxx_numpad = maxx - model_layout.right_offset
 ai = d_t.absinfo[EV_ABS.ABS_Y]
 (miny, maxy) = (ai.minimum, ai.maximum)
+miny_numpad = miny + model_layout.top_offset
+maxy_numpad = maxy - model_layout.bottom_offset
 log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad, maxx_numpad, miny_numpad, maxy_numpad)
 
+col_width = (maxx_numpad - minx_numpad) / model_layout.cols
+row_height = (maxy_numpad - miny_numpad) / model_layout.rows
 
 # Start monitoring the keyboard (numlock)
 
@@ -155,7 +162,19 @@ def use_bindings_for_touchpad_left_key(e):
     except OSError as e:
         log.error("Cannot send event, %s", e)
 
-def pressed_touchpad_left_key(e):
+def is_pressed_touchpad_top_right_icon(x, y):
+    if x >= maxx - model_layout.top_right_icon_width and y < model_layout.top_right_icon_height:
+        return True
+    else:
+        return False
+
+def is_pressed_touchpad_top_left_icon(x, y):
+    if x <= model_layout.top_left_icon_width and y < model_layout.top_left_icon_height:
+        return True
+    else:
+        return False
+
+def pressed_touchpad_top_left_icon(e):
     if numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
@@ -226,7 +245,8 @@ def set_tracking_id(value):
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
         else:
             log.info("Ended existing slot")
-            log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
+            # can be misunderstanding when is touched padding (is printed previous key)
+            # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
         abs_mt_slot[abs_mt_slot_value] = value
     except IndexError as e:
@@ -263,9 +283,10 @@ while True:
 
             log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (abs_mt_slot_y_values[abs_mt_slot_value]))
 
-            if (abs_mt_slot_x_values[abs_mt_slot_value] > 0.95 * maxx) and \
-                (abs_mt_slot_y_values[abs_mt_slot_value] < 0.09 * maxy):
-
+            if is_pressed_touchpad_top_right_icon(
+                abs_mt_slot_x_values[abs_mt_slot_value],
+                abs_mt_slot_y_values[abs_mt_slot_value]
+                ):
                 if e.value == 0:
                     continue
 
@@ -278,19 +299,35 @@ while True:
                     brightness = deactivate_numlock()
                 continue
 
-            elif (abs_mt_slot_x_values[abs_mt_slot_value] < 0.06 * maxx) and \
-                (abs_mt_slot_y_values[abs_mt_slot_value] < 0.07 * maxy):
-                pressed_touchpad_left_key(e)
+            elif is_pressed_touchpad_top_left_icon(
+                abs_mt_slot_x_values[abs_mt_slot_value],
+                abs_mt_slot_y_values[abs_mt_slot_value]
+                ):
+                pressed_touchpad_top_left_icon(e)
 
             # Numpad is not activated
             if not numlock:
                 continue
 
-            col = math.floor(model_layout.cols * abs_mt_slot_x_values[abs_mt_slot_value] / (maxx + 1) )
-            row = math.floor((model_layout.rows * abs_mt_slot_y_values[abs_mt_slot_value] / maxy) - model_layout.top_offset)
 
-            if row < 0:
-                continue
+            if(
+                abs_mt_slot_x_values[abs_mt_slot_value] < minx_numpad or
+                abs_mt_slot_x_values[abs_mt_slot_value] > maxx_numpad or
+                abs_mt_slot_y_values[abs_mt_slot_value] < miny_numpad or
+                abs_mt_slot_y_values[abs_mt_slot_value] > maxy_numpad
+            ):
+               continue
+
+            col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+            row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+
+            if col + 1 > model_layout.cols:
+                col = model_layout.cols - 1
+            if row + 1 > model_layout.rows:
+                row = model_layout.rows - 1
+
+            if row < 0 or col < 0:
+               continue
 
             try:
                 button_pressed = model_layout.keys[row][col]
