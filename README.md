@@ -12,7 +12,7 @@
 
 - [x] (Enable/disable backglight of numpad with activation)
 - [x] (Multi touch support)
-   -  when is pressed a key with first finger and persist pressed and another key is pressed with second, third up to quint finger (is stopped action of previous key and started action of current key but previous key is unpressed when is corresponding finger untouched, like keyboard does)
+   -  when is pressed a key with first finger and press persists and another key is pressed with second finger up to quint finger (is stopped action of previous key and started action of current key but previous key is unpressed when is corresponding finger untouched, like physical keyboard does)
 - [x] (Support for one-touch key rotation)
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activation when device has no levels of backlight)
