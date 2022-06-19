@@ -90,4 +90,5 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 - [python service] This project with continuing work based on [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
 
-Why was this project created? As repository where i can implement ```Configurable support of all levels of backlight``` and ```Multi tap support up to quint tap```.
+Why have been these projects created? Because ubuntu does not support numpad integration to touchpad ([reported issue here](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1810183))\
+Why was this project created? Because compared to mentioned projects I implemented more features and fixed more found bugs
