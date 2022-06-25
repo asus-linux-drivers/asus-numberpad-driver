@@ -7,14 +7,12 @@ import os
 import re
 import subprocess
 import sys
-from fcntl import F_SETFL, fcntl
 from time import sleep
 from typing import Optional
 import numpy as np
 
 import libevdev.const
-from libevdev import EV_ABS, EV_KEY, EV_SYN, EV_MSC, Device, InputEvent
-from pyrsistent import v
+from libevdev import EV_ABS, EV_KEY, EV_SYN, Device, InputEvent
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
