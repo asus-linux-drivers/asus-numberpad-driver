@@ -128,9 +128,6 @@ if hasattr(model_layout, "touchpad_left_button_keys"):
     for key_to_enable in model_layout.touchpad_left_button_keys:
         dev.enable(key_to_enable)
 
-if percentage_key != EV_KEY.KEY_5:
-    dev.enable(percentage_key)
-
 for col in model_layout.keys:
     for key in col:
         dev.enable(key)
