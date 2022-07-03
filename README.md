@@ -1,6 +1,6 @@
 # Asus touchpad numpad driver
 
-**Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **m433ia** and **backglight without levels** (only enable/disable) and system Elementary OS 6.1 Loki.
+**Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **m433ia** and **backglight without levels** (only enable/disable) and system Elementary OS 6.1 Jólnir.
 
 | Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) |
 |:-------------------------:|:-------------------------:|:-------------------------:|
