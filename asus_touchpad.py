@@ -24,7 +24,7 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 
 # Select model from command line
 
-model = 'm433ia' # Model used in the derived script (with symbols)
+model = 'up5401ea' # Model used in the derived script (with symbols)
 if len(sys.argv) > 1:
     model = sys.argv[1]
 

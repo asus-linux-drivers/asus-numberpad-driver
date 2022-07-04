@@ -70,8 +70,8 @@ do
             model=gx701
             break
             ;;
-        "m433ia")
-            model=m433ia
+        "up5401ea")
+            model=up5401ea
             break
             ;;
         "ux433fa")
