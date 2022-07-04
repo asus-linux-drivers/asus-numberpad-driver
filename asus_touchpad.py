@@ -170,6 +170,8 @@ def is_pressed_touchpad_top_left_icon(x, y):
         return False
 
 def pressed_touchpad_top_left_icon(e):
+    global brightness
+
     if numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
