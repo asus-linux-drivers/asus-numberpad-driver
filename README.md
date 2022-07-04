@@ -17,7 +17,7 @@
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activated numpad only when device has no more levels of backlight then on/off)
 - [x] (Configurable all paddings of numpad)
-- [] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad)
+- [ ] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad)
 <br/>
 
 Install required packages
