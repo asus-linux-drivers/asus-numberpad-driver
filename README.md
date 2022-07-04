@@ -5,7 +5,7 @@
 | Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) |
 |:-------------------------:|:-------------------------:|:-------------------------:|
 | Model/Layout = ux433fa          | Model/Layout = m433ia   | Model/Layout = ux581l |
-| ![without % = symbols](https://github.com/asus-touchpad-numpad-driver/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](https://github.com/ldrahnik/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UP5401EA.png) | ![model ux581](https://github.com/asus-touchpad-numpad-driver/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX581l.jpg) |
+| ![without % = symbols](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UP5401EA.png) | ![model ux581](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX581l.jpg) |
 
 
 ## TODO:
