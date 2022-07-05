@@ -8,9 +8,9 @@ import re
 import subprocess
 import sys
 from time import sleep
+from time import time
 from typing import Optional
 import numpy as np
-
 import libevdev.const
 from libevdev import EV_ABS, EV_KEY, EV_SYN, Device, InputEvent
 
@@ -243,6 +243,7 @@ abs_mt_slot_y_values = np.array([0, 1, 2, 3, 4], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 5
 unsupported_abs_mt_slot: bool = False
+top_right_icon_activation_time = 0
 
 def set_tracking_id(value):
     try:
@@ -330,6 +331,41 @@ def is_not_finger_moved_to_another_key():
             abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
             pressed_numpad_key()
 
+# current state is detected from/saved to global variable numlock
+def change_numpad_activation_state():
+    global brightness, numlock
+
+    numlock = not numlock
+    if numlock:
+        log.info("Numpad enabled")
+        brightness = activate_numlock()
+    else:
+        log.info("Numpad disabled")
+        brightness = deactivate_numlock()
+
+def pressed_touchpad_top_right_icon(e):
+    global top_right_icon_activation_time
+
+    if model_layout.top_right_icon_activation_time is not None:
+        if e.value == 1:
+            top_right_icon_activation_time = time()
+            log.info("Touched numlock in time:")
+            log.info(time())
+        elif e.value == 0:
+            log.info("Untouched numlock in time:")
+            log.info(time())
+            log.info("Delay untouch - touch:")
+            log.info(time() - top_right_icon_activation_time)
+            log.info("Activation time from config is:")
+            log.info(model_layout.top_right_icon_activation_time)
+
+            if time() - top_right_icon_activation_time > model_layout.top_right_icon_activation_time:
+                change_numpad_activation_state()
+        elif e.value == 1:
+            change_numpad_activation_state()
+            log.info("Pressed numlock with first touch time:")
+            log.info(time())
+
 while True:
 
     for e in d_t.events():
@@ -369,16 +405,7 @@ while True:
                 abs_mt_slot_x_values[abs_mt_slot_value],
                 abs_mt_slot_y_values[abs_mt_slot_value]
                 ):
-                if e.value == 0:
-                    continue
-
-                numlock = not numlock
-                if numlock:
-                    log.info("Numpad enabled")
-                    brightness = activate_numlock()
-                else:
-                    log.info("Numpad disabled")
-                    brightness = deactivate_numlock()
+                pressed_touchpad_top_right_icon(e)
                 continue
 
             elif is_pressed_touchpad_top_left_icon(
