@@ -28,7 +28,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Debian / Ubuntu / Linux Mint / Pop!\_OS / Zorin OS:
 
 ```bash
-sudo apt install libevdev2 python3-libevdev i2c-tools git
+sudo apt install libevdev2 python3-libevdev i2c-tools git python3-pip
 ```
 
 - Arch Linux / Manjaro:
