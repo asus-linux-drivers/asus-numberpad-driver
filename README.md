@@ -15,7 +15,7 @@
 - [x] (Configurable all paddings of numpad)
 - [x] (Configurable default level of backlight when is numpad activated)
 - [x] (Configurable option to disable top left icon as changer of backlight levels and as custom keys button)
-- [ ] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
+- [x] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
 - [ ] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
 <br/>
 

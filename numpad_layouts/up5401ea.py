@@ -14,6 +14,7 @@ top_left_icon_height = 200
 
 top_right_icon_width = 200
 top_right_icon_height = 200
+top_right_icon_activation_time = 0.5 # in seconds [s] 
 
 top_offset = 200
 right_offset = 200
