@@ -88,8 +88,13 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 ## Developing
 
-**During debugging rebember to disable service / uninstall already installed version of driver**
-**Start point [x:0,y:0] of Y/X axis is left top**
+- **During debugging rebember to disable already installed service created by this driver**
+
+```bash
+sudo systemctl stop asus_touchpad_numpad.service
+```
+
+- **Start point [x:0,y:0] of touchpad is left top!**
 
 ## Existing similar projects
 
