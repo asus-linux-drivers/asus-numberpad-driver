@@ -175,7 +175,7 @@ def pressed_touchpad_top_left_icon(e):
     if model_layout.top_left_icon_is_suppressed is True:
         return
 
-    if model_layout.top_left_icon_is_supressed_brightness_function is not True and numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+    if model_layout.top_left_icon_is_suppressed_brightness_function is not True and numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
     elif hasattr(model_layout, "touchpad_left_button_keys") and len(model_layout.touchpad_left_button_keys):
