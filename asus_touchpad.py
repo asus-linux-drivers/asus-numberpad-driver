@@ -283,7 +283,7 @@ def pressed_numpad_key():
         log.warning("Cannot send press event, %s", e)
 
 def unpressed_numpad_key():
-    log.info("Unpress numpad key")
+    log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
