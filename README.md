@@ -2,11 +2,10 @@
 
 **Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **up5401ea** and system Elementary OS 6.1 Jólnir.
 
-| Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) |
-|:-------------------------:|:-------------------------:|:-------------------------:|
-| Model/Layout = ux433fa          | Model/Layout = up5401ea   | Model/Layout = ux581l |
-| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) | ![model ux581](images/Asus-ZenBook-UX581l.jpg) |
-
+| Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) | With NumLock key
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+| Model/Layout = ux433fa          | Model/Layout = up5401ea   | Model/Layout = ux581l | Model/Layout = g533 |
+| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) | ![model ux581](images/Asus-ZenBook-UX581l.jpg) | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png)
 ## TODO
 
 - [x] (Enable/disable backglight of numpad with activation)
