@@ -1,7 +1,5 @@
 # Asus touchpad numpad driver
 
-**Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **up5401ea** and system Elementary OS 6.1 Jólnir.
-
 | Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) | With NumLock key
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 | Model/Layout = ux433fa          | Model/Layout = up5401ea   | Model/Layout = ux581l | Model/Layout = g533 |
