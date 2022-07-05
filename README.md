@@ -19,7 +19,9 @@
 - [x] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
 - [ ] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
 
-Install required packages
+## Installation
+
+### Required packages
 
 - Debian / Ubuntu / Linux Mint / Pop!\_OS / Zorin OS:
 
