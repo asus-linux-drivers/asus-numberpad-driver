@@ -12,7 +12,7 @@ from time import time
 from typing import Optional
 import numpy as np
 import libevdev.const
-from libevdev import EV_ABS, EV_KEY, EV_SYN, Device, InputEvent
+from libevdev import EV_ABS, EV_KEY, EV_SYN, EV_MSC, Device, InputEvent
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
@@ -198,11 +198,6 @@ def increase_brightness(brightness):
 
 def activate_numlock():
     try:
-        events = [
-            InputEvent(EV_KEY.KEY_NUMLOCK, 1),
-            InputEvent(EV_SYN.SYN_REPORT, 0)
-        ]
-        udev.send_events(events)
         d_t.grab()
 
         if model_layout.default_backlight_level is not None:
@@ -220,13 +215,9 @@ def activate_numlock():
 
 def deactivate_numlock():
     try:
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[0] + " 0xad"
-        events = [
-            InputEvent(EV_KEY.KEY_NUMLOCK, 0),
-            InputEvent(EV_SYN.SYN_REPORT, 0)
-        ]
-        udev.send_events(events)
         d_t.ungrab()
+
+        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[0] + " 0xad"
         subprocess.call(numpad_cmd, shell=True)
         return 0
     except (OSError, libevdev.device.DeviceGrabError) as e:
@@ -343,6 +334,18 @@ def change_numpad_activation_state():
         log.info("Numpad disabled")
         brightness = deactivate_numlock()
 
+def send_numlock_key(value):
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, 70053),
+        InputEvent(EV_KEY.KEY_NUMLOCK, value),
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
+
 def pressed_touchpad_top_right_icon(e):
     global top_right_icon_activation_time
 
@@ -360,8 +363,12 @@ def pressed_touchpad_top_right_icon(e):
             log.info(model_layout.top_right_icon_activation_time)
 
             if time() - top_right_icon_activation_time > model_layout.top_right_icon_activation_time:
+                send_numlock_key(1)
+                send_numlock_key(0)
                 change_numpad_activation_state()
         elif e.value == 1:
+            send_numlock_key(1)
+            send_numlock_key(0)
             change_numpad_activation_state()
             log.info("Pressed numlock with first touch time:")
             log.info(time())
