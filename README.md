@@ -1,6 +1,6 @@
 # Asus touchpad numpad driver
 
-**Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **m433ia** and **backglight without levels** (only enable/disable) and system Elementary OS 6.1 Jólnir.
+**Tested only on laptop Asus ZenBook UP5401EA** with type of numpad layout **up5401ea** and system Elementary OS 6.1 Jólnir.
 
 | Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) |
 |:-------------------------:|:-------------------------:|:-------------------------:|
@@ -17,6 +17,7 @@
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activated numpad only when device has no more levels of backlight then on/off)
 - [x] (Configurable all paddings of numpad)
+- [x] (Configurable default level of backlight when is numpad activated)
 - [ ] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
 - [ ] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
 <br/>
