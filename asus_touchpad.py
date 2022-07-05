@@ -164,6 +164,10 @@ def is_pressed_touchpad_top_right_icon(x, y):
         return False
 
 def is_pressed_touchpad_top_left_icon(x, y):
+    if not hasattr(model_layout, "top_left_icon_width") or \
+       not hasattr(model_layout, "top_left_icon_height"):
+        return False
+
     if x <= model_layout.top_left_icon_width and y < model_layout.top_left_icon_height:
         return True
     else:
@@ -172,10 +176,8 @@ def is_pressed_touchpad_top_left_icon(x, y):
 def pressed_touchpad_top_left_icon(e):
     global brightness
 
-    if model_layout.top_left_icon_is_suppressed is True:
-        return
-
-    if model_layout.top_left_icon_is_supressed_brightness_function is not True and numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+    if getattr(model_layout, "top_left_icon_is_suppressed_brightness_function", None) is not True and \
+        numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
     elif hasattr(model_layout, "touchpad_left_button_keys") and len(model_layout.touchpad_left_button_keys):
