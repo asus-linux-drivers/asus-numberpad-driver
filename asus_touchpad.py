@@ -372,7 +372,7 @@ def pressed_touchpad_top_right_icon(e):
             send_numlock_key(1)
             send_numlock_key(0)
             change_numpad_activation_state()
-            log.info("Pressed numlock with first touch time:")
+            log.info("Touched numlock in time:")
             log.info(time())
 
 while True:
