@@ -7,6 +7,8 @@ try_sleep = 0.1
 cols = 5
 rows = 4
 
+#top_left_icon_is_suppressed_brightness_function = True
+top_left_icon_is_suppressed = True
 top_left_icon_width = 200
 top_left_icon_height = 200
 

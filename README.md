@@ -5,19 +5,18 @@
 | Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) | With NumLock key
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 | Model/Layout = ux433fa          | Model/Layout = up5401ea   | Model/Layout = ux581l | Model/Layout = g533 |
-| ![without % = symbols](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UP5401EA.png) | ![model ux581](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/images/Asus-ZenBook-UX581l.jpg) | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png)
-
-
-## TODO:
+| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) | ![model ux581](images/Asus-ZenBook-UX581l.jpg) | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png)
+## TODO
 
 - [x] (Enable/disable backglight of numpad with activation)
 - [x] (Multi touch support)
-   -  when is pressed a key with first finger and press persists and another key is pressed with second finger up to quint finger (is stopped action of previous key and started action of current key but previous key is unpressed when is corresponding finger untouched, like physical keyboard does)
+  - when is pressed a key with first finger and press persists and another key is pressed with second finger up to quint finger (is stopped action of previous key and started action of current key but previous key is unpressed when is corresponding finger untouched, like physical keyboard does)
 - [x] (Support for one-touch key rotation)
 - [x] (Configurable support of all levels of backlight)
 - [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activated numpad only when device has no more levels of backlight then on/off)
 - [x] (Configurable all paddings of numpad)
 - [x] (Configurable default level of backlight when is numpad activated)
+- [x] (Configurable option to disable top left icon as changer of backlight levels and as custom keys button)
 - [ ] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
 - [ ] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
 <br/>
@@ -25,30 +24,34 @@
 Install required packages
 
 - Debian / Ubuntu / Linux Mint / Pop!_OS / Zorin OS:
-```
+
+```bash
 sudo apt install libevdev2 python3-libevdev i2c-tools git
 ```
 
 - Arch Linux / Manjaro:
-```
+
+```bash
 sudo pacman -S libevdev python-libevdev i2c-tools git
 ```
 
 - Fedora:
-```
+
+```bash
 sudo dnf install libevdev python-libevdev i2c-tools git
 ```
 
-
 Then enable i2c
-```
+
+```bash
 sudo modprobe i2c-dev
 sudo i2cdetect -l
 ```
 
 Now you can get the latest ASUS Touchpad Numpad Driver for Linux from Git and install it using the following commands.
-```
-git clone https://github.com/asus-touchpad-numpad-driver/asus-touchpad-numpad-driver
+
+```bash
+git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
 cd asus-touchpad-numpad-driver
 sudo ./install.sh
 ```
@@ -57,19 +60,22 @@ To turn on/off numpad, tap top right corner touchpad area.
 To adjust numpad brightness, tap top left corner touchpad area.
 
 To uninstall, just run:
-```
+
+```bash
 sudo ./uninstall.sh
 ```
 
 **Troubleshooting**
 
 To activate logger, do in a console:
-```
+
+```bash
 LOG=DEBUG sudo -E ./asus_touchpad.py
 ```
 
 For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusOS), before installing, please uncomment in the asus_touchpad.service file, this following property and adjust its value:
-```
+
+```bash
 # ExecStartPre=/bin/sleep 2
 ```
 
@@ -81,17 +87,22 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 ## Developing
 
-**During debugging rebember to disable service / uninstall already installed version of driver**
-**Start point [x:0,y:0] of Y/X axis is left top**
+- **During debugging rebember to disable already installed service created by this driver**
+
+```bash
+sudo systemctl stop asus_touchpad_numpad.service
+```
+
+- **Start point [x:0,y:0] of touchpad is left top!**
 
 ## Existing similar projects
 
-- [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
-- [python service] https://github.com/danahynes/Asus_L410M_Numpad inspired by [python service, first initialization] https://gitlab.com/Thraen/gx735_touchpad_numpad
-- [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver inspired by [python service] https://gitlab.com/Thraen/gx735_touchpad_numpad
-- [c++ and meson] https://github.com/xytovl/asus-numpad inspired by/rewritten version of [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
+- [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
+- [python service] <https://github.com/danahynes/Asus_L410M_Numpad> inspired by [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
+- [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver> inspired by [python service] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
+- [c++ and meson] <https://github.com/xytovl/asus-numpad> inspired by/rewritten version of [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
 
-- [python service] This project with continuing work based on [python service, configurable, the most spread repository] https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver
+- [python service] This project with continuing work based on [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
 
 Why have been these projects created? Because ubuntu does not support numpad integration to touchpad ([reported issue here](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1810183))\
 Why was this project created? Because compared to mentioned projects I implemented more features and fixed more found bugs
