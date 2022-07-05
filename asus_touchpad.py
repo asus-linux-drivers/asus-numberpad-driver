@@ -195,15 +195,23 @@ def increase_brightness(brightness):
 
 def activate_numlock():
     try:
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[1] + " 0xad"
         events = [
             InputEvent(EV_KEY.KEY_NUMLOCK, 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
         udev.send_events(events)
         d_t.grab()
-        subprocess.call(numpad_cmd, shell=True)
-        return 1
+
+        if model_layout.default_backlight_level is not None:
+            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
+            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.default_backlight_level + " 0xad", shell=True)
+        else:
+            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[1] + " 0xad", shell=True)
+
+        if model_layout.default_backlight_level is not None:
+            return model_layout.backlight_levels.index(model_layout.default_backlight_level)
+        else:
+            return 1
     except (OSError, libevdev.device.DeviceGrabError) as e:
         pass
 

@@ -24,19 +24,18 @@ touchpad_left_button_keys = [
     EV_KEY.KEY_K
 ]
 
-# Including off (first value of array) and full brightness (last value of array)
+# Including off (first value of array)
 backlight_levels = [
     "0x00",
-    "0x01"
+    "0x41",
+    "0x42",
+    "0x43",
+    "0x44",
+    "0x45",
+    "0x46"
 ]
-# Testing array on device with no levels of backglight
-#backlight_levels = [
-#    "0x00",
-#    "0x01",
-#    "0x00",
-#    "0x01",
-#    "0x00"
-#]
+# default has to be value from array above ^^!
+default_backlight_level = "0x41"
 
 keys = [
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_BACKSPACE],
