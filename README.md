@@ -1,9 +1,10 @@
 # Asus touchpad numpad driver
 
-| Without % = symbols             |  With % = symbols       |  With % = symbols (but incompatible with the non-universal version) | With NumLock key
-|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
-| Model/Layout = ux433fa          | Model/Layout = up5401ea   | Model/Layout = ux581l | Model/Layout = g533 |
-| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)  |  ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) | ![model ux581](images/Asus-ZenBook-UX581l.jpg) | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png)
+|                   Without % = symbols                   |                   With % = symbols                    | With % = symbols (but incompatible with the non-universal version) |                    With NumLock key                     | Without % = symbols (but incompatible with the non-universal version) |
+| :-----------------------------------------------------: | :---------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------: | :-------------------------------------------------------------------: |
+|                 Model/Layout = ux433fa                  |                Model/Layout = up5401ea                |                       Model/Layout = ux581l                        |                   Model/Layout = g533                   |                         Model/Layout = gx701                          |
+| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg) | ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) |           ![model ux581](images/Asus-ZenBook-UX581l.jpg)           | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png) |        ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)         |
+
 ## TODO
 
 - [x] (Enable/disable backglight of numpad with activation)
@@ -17,11 +18,10 @@
 - [x] (Configurable option to disable top left icon as changer of backlight levels and as custom keys button)
 - [x] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
 - [ ] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
-<br/>
 
 Install required packages
 
-- Debian / Ubuntu / Linux Mint / Pop!_OS / Zorin OS:
+- Debian / Ubuntu / Linux Mint / Pop!\_OS / Zorin OS:
 
 ```bash
 sudo apt install libevdev2 python3-libevdev i2c-tools git
@@ -63,7 +63,7 @@ To uninstall, just run:
 sudo ./uninstall.sh
 ```
 
-**Troubleshooting**
+## Troubleshooting
 
 To activate logger, do in a console:
 
