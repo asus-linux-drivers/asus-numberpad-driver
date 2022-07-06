@@ -4,11 +4,11 @@ from libevdev import EV_KEY
 try_times = 5
 try_sleep = 0.1
 
-cols = 4 # As the UX581L has a "vertical numpad"
-rows = 5 # Compared to the more "horizontal" version of the UM433DA (for example)
 # Subtract 0.3 (a third key) as the UX581L has about a third key space at the top
 top_offset = 0.3
 
+# As the UX581L has a "vertical numpad"
+# Compared to the more "horizontal" version of the UM433DA (for example)
 keys = [
     [EV_KEY.KEY_KPEQUAL, EV_KEY.KEY_5, EV_KEY.KEY_BACKSPACE, EV_KEY.KEY_BACKSPACE],
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPSLASH],

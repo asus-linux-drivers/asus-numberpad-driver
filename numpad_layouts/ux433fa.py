@@ -4,8 +4,6 @@ from libevdev import EV_KEY
 try_times = 5
 try_sleep = 0.1
 
-cols = 5
-rows = 4
 top_offset = 0.10
 
 keys = [
