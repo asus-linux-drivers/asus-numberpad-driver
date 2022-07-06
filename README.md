@@ -82,22 +82,28 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 
 | Option                      | Description                                                  |
 | --------------------------- | ------------------------------------------------------------ |
-| `try_times`                 | how many times to try find a touchpad before exiting         |
+| **Device search**           | `/proc/bus/input/devices`                                    |
+| `try_times`                 | how many times to try find a touchpad device in each service start attempt  |
 | `try_sleep`                 | time between tries                                           |
-| `cols`                      | numpad columns                                               |
-| `rows`                      | numpad rows                                                  |
+| **Grid**                    |                                                              |
+| `cols`                      | count of numpad columns                                      |
+| `rows`                      | count of numpad rows                                         |
+| **Top left icon**           | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is array `top_left_icon_custom_keys` not empty<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
 | `top_left_icon_width`       | width of the top left icon                                   |
 | `top_left_icon_height`      | height of the top left icon                                  |
-| `top_right_icon_width`      | width of the top right icon (numpad/touchpad switcher)       |
+| `top_left_icon_custom_keys` | array of `EV_KEY` keys 
+| **Top right icon**          | Send `numlock` key and activate/deactivate numpad            |
+| `top_right_icon_width`      | width of the top right icon                                  |
 | `top_right_icon_height`     | height of the top right icon                                 |
+| **Paddings**                | Numpad has padding zones around where nothing happens when is touched except top icons |
 | `top_offset`                | top numpad offset                                            |
 | `right_offset`              | right numpad offset                                          |
 | `left_offset`               | left numpad offset                                           |
 | `bottom_offset`             | bottom numpad offset                                         |
-| `backlight_levels`          | array of possible backlight levels (including of (`0x00`))   |
-| `default_backlight_level`   | default backlight level (has to be the value from the array) |
+| **Backlight**               |                                                              |
+| `backlight_levels`          | array of possible backlight levels (hard coded is value for turn off (`0x00`) and turn on (`0x01`))   |
+| `default_backlight_level`   | default backlight level (has to be the value from `backlight_levels`) |
 | `keys`                      | map of key layouts                                           |
-| `touchpad_left_button_keys` |
 
 ## Credits
 
