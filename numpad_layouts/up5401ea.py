@@ -7,28 +7,19 @@ try_sleep = 0.1
 cols = 5
 rows = 4
 
-#top_left_icon_is_suppressed_brightness_function = True
 top_left_icon_width = 200
 top_left_icon_height = 200
 
 top_right_icon_width = 200
 top_right_icon_height = 200
-top_right_icon_activation_time = 0.5 # in seconds [s] 
 
 top_offset = 200
 right_offset = 200
 left_offset = 200
 bottom_offset = 80
 
-touchpad_left_button_keys = [
-    EV_KEY.KEY_LEFTSHIFT,
-    EV_KEY.KEY_LEFTMETA,
-    EV_KEY.KEY_K
-]
-
 # Including off (first value of array)
 backlight_levels = [
-    "0x00",
     "0x41",
     "0x42",
     "0x43",
