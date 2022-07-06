@@ -25,7 +25,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 
 ### Required packages
 
-- Debian / Ubuntu / Linux Mint / Pop!\_OS / Zorin OS:
+- Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
 
 ```bash
 sudo apt install libevdev2 python3-libevdev i2c-tools git python3-pip
