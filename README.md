@@ -13,6 +13,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Multi touch support
 - One-touch key rotation
 - Multiple levels of backlight
+- Customizable default level of backlight
 - Numpad padding configuration
 - Customizable numpad activation delay
 - Customizable top left icon action
