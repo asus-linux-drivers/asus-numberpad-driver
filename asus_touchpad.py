@@ -34,6 +34,8 @@ percentage_key: libevdev.const = EV_KEY.KEY_5
 
 if not hasattr(model_layout, "top_right_icon_activation_time"):
     model_layout.top_right_icon_activation_time = 0.5
+    log.debug('top_right_icon_activation_time is not set. Setting to %s',
+              model_layout.top_right_icon_activation_time)
 
 if len(sys.argv) > 2:
     percentage_key = EV_KEY.codes[int(sys.argv[2])]
