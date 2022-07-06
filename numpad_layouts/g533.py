@@ -4,9 +4,6 @@ from libevdev import EV_KEY
 try_times = 5
 try_sleep = 0.1
 
-cols = 5
-rows = 4
-
 top_left_icon_width = 0
 top_left_icon_height = 0
 

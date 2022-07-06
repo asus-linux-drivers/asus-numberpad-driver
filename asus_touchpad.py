@@ -32,6 +32,10 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+if not hasattr(model_layout, "keys") or not len(model_layout.keys) > 0 or not len(model_layout.keys[0]) > 0:
+    log.debug('keys is required to set.')
+    sys.exit(1)
+
 if not hasattr(model_layout, "top_right_icon_activation_time"):
     model_layout.top_right_icon_activation_time = 0.5
     log.debug('top_right_icon_activation_time is not set. Setting to %s',
@@ -114,8 +118,11 @@ log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
 log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
           maxx_numpad, miny_numpad, maxy_numpad)
 
-col_width = (maxx_numpad - minx_numpad) / model_layout.cols
-row_height = (maxy_numpad - miny_numpad) / model_layout.rows
+# Detect col, row count from map of keys
+col_count = len(model_layout.keys[0])
+row_count = len(model_layout.keys)
+col_width = (maxx_numpad - minx_numpad) / col_count
+row_height = (maxy_numpad - miny_numpad) / row_count
 
 # Start monitoring the keyboard (numlock)
 
@@ -289,6 +296,7 @@ def pressed_numpad_key():
         ]
     else:
         events = [
+
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]

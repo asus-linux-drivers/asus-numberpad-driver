@@ -85,9 +85,8 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | **Device search**           | `/proc/bus/input/devices`                                    |
 | `try_times`                 | how many times to try find a touchpad device in each service start attempt  |
 | `try_sleep`                 | time between tries                                           |
-| **Grid**                    |                                                              |
-| `cols`                      | count of numpad columns                                      |
-| `rows`                      | count of numpad rows                                         |
+| **Layout**                  |                                                              |
+| `keys`                      | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array |
 | **Top left icon**           | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is array `top_left_icon_custom_keys` not empty<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
 | `top_left_icon_width`       | width of the top left icon                                   |
 | `top_left_icon_height`      | height of the top left icon                                  |
@@ -103,7 +102,6 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | **Backlight**               |                                                              |
 | `backlight_levels`          | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded)   |
 | `default_backlight_level`   | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels`) |
-| `keys`                      | map of key layouts                                           |
 
 ## Credits
 
