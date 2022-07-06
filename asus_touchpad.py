@@ -119,7 +119,7 @@ log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
           maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-col_count = len(model_layout.keys[0])
+col_count = len(max(model_layout.keys, key=len))
 row_count = len(model_layout.keys)
 col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
