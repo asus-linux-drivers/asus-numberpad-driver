@@ -7,19 +7,15 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 |                 Model/Layout = ux433fa                  |                Model/Layout = up5401ea                |                       Model/Layout = ux581l                        |                   Model/Layout = g533                   |                         Model/Layout = gx701                          |
 | ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg) | ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) |           ![model ux581](images/Asus-ZenBook-UX581l.jpg)           | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png) |        ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)         |
 
-## TODO
+## Features
 
-- [x] (Enable/disable backglight of numpad with activation)
-- [x] (Multi touch support)
-  - when is pressed a key with first finger and press persists and another key is pressed with second finger up to quint finger (is stopped action of previous key and started action of current key but previous key is unpressed when is corresponding finger untouched, like physical keyboard does)
-- [x] (Support for one-touch key rotation)
-- [x] (Configurable support of all levels of backlight)
-- [x] (Configurable support of touchpad left button - usable when is numpad deactivated and during activated numpad only when device has no more levels of backlight then on/off)
-- [x] (Configurable all paddings of numpad)
-- [x] (Configurable default level of backlight when is numpad activated)
-- [x] (Configurable option to disable top left icon as changer of backlight levels and as custom keys button)
-- [x] (Feature: add configurable value to conf file in ms? for how long is necessary hold finger on right top icon for activation/inactivation of numpad. Why? Because random moves of hand (palm..) over that)
-- [x] (Bug (needs be confirmed): when is numpad activated/deactivated, numlock indicator in elementary jolnir 6.1 is deactivated with delay (1x activation pause), so: first activation(correct, shows up) -> deactivation(still display that numlock activated) -> activation (still display is numlock activated) -> second deactivation (correctly hided)
+- Multiple layouts
+- Multi touch support
+- One-touch key rotation
+- Multiple levels of backlight
+- Numpad padding configuration
+- Customizable numpad activation delay
+- Customizable top left icon action
 
 ## Installation
 
