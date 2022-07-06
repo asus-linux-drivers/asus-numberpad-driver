@@ -20,6 +20,15 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 
 ## Installation
 
+The package is available to install from AUR
+
+```bash
+paru -S  asus-touchpad-numpad-driver-${model}-${layout}-git 
+```
+
+Replace model with available models and layout with `qwerty` or `azerty`
+Example: `asus-touchpad-numpad-driver-ux433fa-qwerty-git`
+
 ### Required packages
 
 - Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
