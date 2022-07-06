@@ -1,5 +1,7 @@
 # Asus touchpad numpad driver
 
+If you find the project useful, do not forget to give project a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
+
 |                   Without % = symbols                   |                   With % = symbols                    | With % = symbols (but incompatible with the non-universal version) |                    With NumLock key                     | Without % = symbols (but incompatible with the non-universal version) |
 | :-----------------------------------------------------: | :---------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------: | :-------------------------------------------------------------------: |
 |                 Model/Layout = ux433fa                  |                Model/Layout = up5401ea                |                       Model/Layout = ux581l                        |                   Model/Layout = g533                   |                         Model/Layout = gx701                          |
@@ -23,10 +25,10 @@
 
 ### Required packages
 
-- Debian / Ubuntu / Linux Mint / Pop!\_OS / Zorin OS:
+- Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
 
 ```bash
-sudo apt install libevdev2 python3-libevdev i2c-tools git
+sudo apt install libevdev2 python3-libevdev i2c-tools git python3-pip
 ```
 
 - Arch Linux / Manjaro:
