@@ -186,18 +186,18 @@ def is_pressed_touchpad_top_left_icon(x, y):
 
 
 def pressed_touchpad_top_left_icon(e):
-    global brightness
+    global brightness, numlock
 
     if hasattr(model_layout, "top_left_icon_custom_keys") and len(model_layout.top_left_icon_custom_keys):
         use_bindings_for_touchpad_left_key(e)
-    elif numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+    elif numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 0:
         if e.value == 1:
             brightness = increase_brightness(brightness)
 
 
 def increase_brightness(brightness):
     if (brightness + 1) >= len(model_layout.backlight_levels):
-        brightness = 1
+        brightness = 0
     else:
         brightness += 1
 
@@ -237,8 +237,7 @@ def deactivate_numlock():
         d_t.ungrab()
 
         numpad_cmd = "i2ctransfer -f -y " + device_id + \
-            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
-            model_layout.backlight_levels[0] + " 0xad"
+            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         subprocess.call(numpad_cmd, shell=True)
         return 0
     except (OSError, libevdev.device.DeviceGrabError) as e:

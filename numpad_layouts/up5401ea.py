@@ -20,7 +20,6 @@ bottom_offset = 80
 
 # Including off (first value of array)
 backlight_levels = [
-    "0x00",
     "0x41",
     "0x42",
     "0x43",
