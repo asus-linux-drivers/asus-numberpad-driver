@@ -1,9 +1,5 @@
 from libevdev import EV_KEY
 
-# Number of tries to identify the interface number
-try_times = 10
-try_sleep = 0.1
-
 top_left_icon_width = 200
 top_left_icon_height = 200
 
@@ -24,8 +20,6 @@ backlight_levels = [
     "0x45",
     "0x46"
 ]
-# default has to be value from array above ^^!
-default_backlight_level = "0x41"
 
 keys = [
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_BACKSPACE],
