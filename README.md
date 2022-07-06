@@ -101,8 +101,8 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | `left_offset`               | left numpad offset                                           |
 | `bottom_offset`             | bottom numpad offset                                         |
 | **Backlight**               |                                                              |
-| `backlight_levels`          | array of possible backlight levels (hard coded is value for turn off (`0x00`) and turn on (`0x01`))   |
-| `default_backlight_level`   | default backlight level (has to be the value from `backlight_levels`) |
+| `backlight_levels`          | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded)   |
+| `default_backlight_level`   | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels`) |
 | `keys`                      | map of key layouts                                           |
 
 ## Credits
