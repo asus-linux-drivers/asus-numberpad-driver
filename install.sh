@@ -71,34 +71,13 @@ PS3='Please enter your choice '
 options=($(ls numpad_layouts) "Quit")
 select opt in "${options[@]}"
 do
-    opt=${opt::-3}
-    case $opt in
-        "gx701" )
-            model=gx701
-            break
-            ;;
-        "up5401ea")
-            model=up5401ea
-            break
-            ;;
-        "ux433fa")
-            model=ux433fa
-            break
-            ;;
-        "ux581l" )
-            model=ux581l
-            break
-            ;;
-        "g533" )
-            model=g533
-            break
-            ;;
-        "Q")
-            exit 0
-            ;;
-        *)
-            echo "invalid option $REPLY";;
-    esac
+
+    if [ "$opt" = "Quit" ]
+    then
+        exit 0
+    fi
+    model=${opt::-3}
+    break
 done
 
 echo
