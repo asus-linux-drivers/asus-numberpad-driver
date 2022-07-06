@@ -3,8 +3,8 @@
 # Checking if the script is runned as root (via sudo or other)
 if [[ $(id -u) != 0 ]]
 then
-	echo "Please run the installation script as root (using sudo for example)"
-	exit 1
+    echo "Please run the installation script as root (using sudo for example)"
+    exit 1
 fi
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
@@ -20,8 +20,8 @@ pip3 install numpy
 # Checking if the pip3 is successfuly loaded
 if [[ $? != 0 ]]
 then
-	echo "pip3 is not loaded correctly. Make sure you have installed python3-pip package"
-	exit 1
+    echo "pip3 is not loaded correctly. Make sure you have installed python3-pip package"
+    exit 1
 fi
 
 modprobe i2c-dev
@@ -29,8 +29,8 @@ modprobe i2c-dev
 # Checking if the i2c-dev module is successfuly loaded
 if [[ $? != 0 ]]
 then
-	echo "i2c-dev module cannot be loaded correctly. Make sur you have installed i2c-tools package"
-	exit 1
+    echo "i2c-dev module cannot be loaded correctly. Make sur you have installed i2c-tools package"
+    exit 1
 fi
 
 interfaces=$(for i in $(i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
@@ -138,20 +138,19 @@ systemctl enable asus_touchpad_numpad
 
 if [[ $? != 0 ]]
 then
-	echo "Something gone wrong while enabling asus_touchpad_numpad.service"
-	exit 1
+    echo "Something gone wrong while enabling asus_touchpad_numpad.service"
+    exit 1
 else
-	echo "Asus touchpad service enabled"
+    echo "Asus touchpad service enabled"
 fi
 
 systemctl restart asus_touchpad_numpad
 if [[ $? != 0 ]]
 then
-	echo "Something gone wrong while enabling asus_touchpad_numpad.service"
-	exit 1
+    echo "Something gone wrong while enabling asus_touchpad_numpad.service"
+    exit 1
 else
-	echo "Asus touchpad service started"
+    echo "Asus touchpad service started"
 fi
 
 exit 0
-
