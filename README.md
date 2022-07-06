@@ -78,6 +78,27 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 # ExecStartPre=/bin/sleep 2
 ```
 
+## Layout configuration
+
+| Option                      | Description                                                  |
+| --------------------------- | ------------------------------------------------------------ |
+| `try_times`                 | how many times to try find a touchpad before exiting         |
+| `try_sleep`                 | time between tries                                           |
+| `cols`                      | numpad columns                                               |
+| `rows`                      | numpad rows                                                  |
+| `top_left_icon_width`       | width of the top left icon                                   |
+| `top_left_icon_height`      | height of the top left icon                                  |
+| `top_right_icon_width`      | width of the top right icon (numpad/touchpad switcher)       |
+| `top_right_icon_height`     | height of the top right icon                                 |
+| `top_offset`                | top numpad offset                                            |
+| `right_offset`              | right numpad offset                                          |
+| `left_offset`               | left numpad offset                                           |
+| `bottom_offset`             | bottom numpad offset                                         |
+| `backlight_levels`          | array of possible backlight levels (including of (`0x00`))   |
+| `default_backlight_level`   | default backlight level (has to be the value from the array) |
+| `keys`                      | map of key layouts                                           |
+| `touchpad_left_button_keys` |
+
 ## Credits
 
 Thank you very much [github.com/mohamed-badaoui](github.com/mohamed-badaoui) and all the contributors of [asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
