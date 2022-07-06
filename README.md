@@ -91,7 +91,7 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | **Top left icon**           | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is array `top_left_icon_custom_keys` not empty<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
 | `top_left_icon_width`       | width of the top left icon                                   |
 | `top_left_icon_height`      | height of the top left icon                                  |
-| `top_left_icon_custom_keys` | array of `EV_KEY` keys 
+| `top_left_icon_custom_keys` | array of `EV_KEY` keys
 | **Top right icon**          | Send `numlock` key and activate/deactivate numpad            |
 | `top_right_icon_width`      | width of the top right icon                                  |
 | `top_right_icon_height`     | height of the top right icon                                 |
@@ -113,7 +113,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 ## Developing
 
-- **During debugging rebember to disable already installed service created by this driver**
+- **During debugging remember to disable already installed service created by this driver**
 
 ```bash
 sudo systemctl stop asus_touchpad_numpad.service
