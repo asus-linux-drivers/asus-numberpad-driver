@@ -10,7 +10,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 ## Features
 
 - Multiple layouts
-- Multi touch support
+- Multi-touch support
 - One-touch key rotation
 - Multiple levels of backlight
 - Customizable default level of backlight
