@@ -149,8 +149,8 @@ udev = dev.create_uinput_device()
 def use_bindings_for_touchpad_left_key(e):
 
     key_events = []
-    for touchpad_left_button_key in model_layout.touchpad_left_button_keys:
-        key_events.append(InputEvent(touchpad_left_button_key, e.value))
+    for custom_key in model_layout.top_left_icon_custom_keys:
+        key_events.append(InputEvent(custom_key, e.value))
 
     sync_event = [
         InputEvent(EV_SYN.SYN_REPORT, 0)
@@ -188,12 +188,11 @@ def is_pressed_touchpad_top_left_icon(x, y):
 def pressed_touchpad_top_left_icon(e):
     global brightness
 
-    if getattr(model_layout, "top_left_icon_is_suppressed_brightness_function", None) is not True and \
-            numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+    if hasattr(model_layout, "top_left_icon_custom_keys") and len(model_layout.top_left_icon_custom_keys):
+        use_bindings_for_touchpad_left_key(e)
+    elif numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
-    elif hasattr(model_layout, "touchpad_left_button_keys") and len(model_layout.touchpad_left_button_keys):
-        use_bindings_for_touchpad_left_key(e)
 
 
 def increase_brightness(brightness):
