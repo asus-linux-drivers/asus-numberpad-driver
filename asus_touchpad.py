@@ -7,12 +7,12 @@ import os
 import re
 import subprocess
 import sys
-from time import sleep
-from time import time
+from time import sleep, time
 from typing import Optional
-import numpy as np
+
 import libevdev.const
-from libevdev import EV_ABS, EV_KEY, EV_SYN, EV_MSC, Device, InputEvent
+import numpy as np
+from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
@@ -24,13 +24,18 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 
 # Select model from command line
 
-model = 'up5401ea' # Model used in the derived script (with symbols)
+model = 'up5401ea'  # Model used in the derived script (with symbols)
 if len(sys.argv) > 1:
     model = sys.argv[1]
 
-model_layout = importlib.import_module('numpad_layouts.'+ model)
+model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
+
+if not hasattr(model_layout, "top_right_icon_activation_time"):
+    model_layout.top_right_icon_activation_time = 0.5
+    log.debug('top_right_icon_activation_time is not set. Setting to %s',
+              model_layout.top_right_icon_activation_time)
 
 if len(sys.argv) > 2:
     percentage_key = EV_KEY.codes[int(sys.argv[2])]
@@ -60,16 +65,18 @@ while tries > 0:
             if touchpad_detected == 1:
                 if "S: " in line:
                     # search device id
-                    device_id=re.sub(r".*i2c-(\d+)/.*$", r'\1', line).replace("\n", "")
-                    log.debug('Set touchpad device id %s from %s', device_id, line.strip())
+                    device_id = re.sub(r".*i2c-(\d+)/.*$",
+                                       r'\1', line).replace("\n", "")
+                    log.debug('Set touchpad device id %s from %s',
+                              device_id, line.strip())
 
                 if "H: " in line:
                     touchpad = line.split("event")[1]
                     touchpad = touchpad.split(" ")[0]
                     touchpad_detected = 2
-                    log.debug('Set touchpad id %s from %s', touchpad, line.strip())
+                    log.debug('Set touchpad id %s from %s',
+                              touchpad, line.strip())
 
-          
             # Stop looking if touchpad has been found #
             if touchpad_detected == 2:
                 break
@@ -104,7 +111,8 @@ ai = d_t.absinfo[EV_ABS.ABS_Y]
 miny_numpad = miny + model_layout.top_offset
 maxy_numpad = maxy - model_layout.bottom_offset
 log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad, maxx_numpad, miny_numpad, maxy_numpad)
+log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+          maxx_numpad, miny_numpad, maxy_numpad)
 
 col_width = (maxx_numpad - minx_numpad) / model_layout.cols
 row_height = (maxy_numpad - miny_numpad) / model_layout.rows
@@ -137,6 +145,7 @@ if percentage_key != EV_KEY.KEY_5:
 
 udev = dev.create_uinput_device()
 
+
 def use_bindings_for_touchpad_left_key(e):
 
     key_events = []
@@ -157,11 +166,13 @@ def use_bindings_for_touchpad_left_key(e):
     except OSError as e:
         log.error("Cannot send event, %s", e)
 
+
 def is_pressed_touchpad_top_right_icon(x, y):
     if x >= maxx - model_layout.top_right_icon_width and y < model_layout.top_right_icon_height:
         return True
     else:
         return False
+
 
 def is_pressed_touchpad_top_left_icon(x, y):
     if not hasattr(model_layout, "top_left_icon_width") or \
@@ -173,15 +184,17 @@ def is_pressed_touchpad_top_left_icon(x, y):
     else:
         return False
 
+
 def pressed_touchpad_top_left_icon(e):
     global brightness
 
     if getattr(model_layout, "top_left_icon_is_suppressed_brightness_function", None) is not True and \
-        numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
+            numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 2:
         if e.value == 1:
             brightness = increase_brightness(brightness)
     elif hasattr(model_layout, "touchpad_left_button_keys") and len(model_layout.touchpad_left_button_keys):
         use_bindings_for_touchpad_left_key(e)
+
 
 def increase_brightness(brightness):
     if (brightness + 1) >= len(model_layout.backlight_levels):
@@ -192,7 +205,8 @@ def increase_brightness(brightness):
     log.info("Increased brightness of backlight to")
     log.info(brightness)
 
-    numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[brightness] + " 0xad"
+    numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
+        model_layout.backlight_levels[brightness] + " 0xad"
     subprocess.call(numpad_cmd, shell=True)
 
     return brightness
@@ -203,10 +217,13 @@ def activate_numlock():
         d_t.grab()
 
         if model_layout.default_backlight_level is not None:
-            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
-            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.default_backlight_level + " 0xad", shell=True)
+            subprocess.call("i2ctransfer -f -y " + device_id +
+                            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
+            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " +
+                            model_layout.default_backlight_level + " 0xad", shell=True)
         else:
-            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[1] + " 0xad", shell=True)
+            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " +
+                            model_layout.backlight_levels[1] + " 0xad", shell=True)
 
         if model_layout.default_backlight_level is not None:
             return model_layout.backlight_levels.index(model_layout.default_backlight_level)
@@ -215,28 +232,34 @@ def activate_numlock():
     except (OSError, libevdev.device.DeviceGrabError) as e:
         pass
 
+
 def deactivate_numlock():
     try:
         d_t.ungrab()
 
-        numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + model_layout.backlight_levels[0] + " 0xad"
+        numpad_cmd = "i2ctransfer -f -y " + device_id + \
+            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
+            model_layout.backlight_levels[0] + " 0xad"
         subprocess.call(numpad_cmd, shell=True)
         return 0
     except (OSError, libevdev.device.DeviceGrabError) as e:
         pass
+
 
 numlock: bool = False
 button_pressed: libevdev.const = None
 abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
 abs_mt_slot = np.array([0, 1, 2, 3, 4], int)
-abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
+abs_mt_slot_numpad_key = np.array(
+    [None, None, None, None, None], dtype=libevdev.const.EventCode)
 abs_mt_slot_x_values = np.array([0, 1, 2, 3, 4], int)
 abs_mt_slot_y_values = np.array([0, 1, 2, 3, 4], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 5
 unsupported_abs_mt_slot: bool = False
 top_right_icon_activation_time = 0
+
 
 def set_tracking_id(value):
     try:
@@ -253,6 +276,7 @@ def set_tracking_id(value):
         abs_mt_slot[abs_mt_slot_value] = value
     except IndexError as e:
         log.error(e)
+
 
 def pressed_numpad_key():
     log.info("Pressed numpad key")
@@ -275,6 +299,7 @@ def pressed_numpad_key():
         udev.send_events(events)
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
+
 
 def unpressed_numpad_key():
     log.info("Unpressed numpad key")
@@ -300,9 +325,12 @@ def unpressed_numpad_key():
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
 
+
 def get_touched_key():
-    col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
-    row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+    col = math.floor(
+        (abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+    row = math.floor(
+        (abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
     if row < 0 or col < 0:
         return None
@@ -317,7 +345,7 @@ def is_not_finger_moved_to_another_key():
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
     touched_key_now = get_touched_key()
-    if touched_key_when_pressed != None and touched_key_now != touched_key_when_pressed: 
+    if touched_key_when_pressed != None and touched_key_now != touched_key_when_pressed:
         unpressed_numpad_key()
 
         if touched_key_now != None:
@@ -325,6 +353,8 @@ def is_not_finger_moved_to_another_key():
             pressed_numpad_key()
 
 # current state is detected from/saved to global variable numlock
+
+
 def change_numpad_activation_state():
     global brightness, numlock
 
@@ -335,6 +365,7 @@ def change_numpad_activation_state():
     else:
         log.info("Numpad disabled")
         brightness = deactivate_numlock()
+
 
 def send_numlock_key(value):
     events = [
@@ -347,6 +378,7 @@ def send_numlock_key(value):
         udev.send_events(events)
     except OSError as e:
         log.error("Cannot send event, %s", e)
+
 
 def pressed_touchpad_top_right_icon(e):
     global top_right_icon_activation_time
@@ -374,6 +406,7 @@ def pressed_touchpad_top_right_icon(e):
             change_numpad_activation_state()
             log.info("Touched numlock in time:")
             log.info(time())
+
 
 while True:
 
@@ -408,25 +441,25 @@ while True:
            e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
            e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
-            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (abs_mt_slot_y_values[abs_mt_slot_value]))
+            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
+                abs_mt_slot_y_values[abs_mt_slot_value]))
 
             if is_pressed_touchpad_top_right_icon(
                 abs_mt_slot_x_values[abs_mt_slot_value],
                 abs_mt_slot_y_values[abs_mt_slot_value]
-                ):
+            ):
                 pressed_touchpad_top_right_icon(e)
                 continue
 
             elif is_pressed_touchpad_top_left_icon(
                 abs_mt_slot_x_values[abs_mt_slot_value],
                 abs_mt_slot_y_values[abs_mt_slot_value]
-                ):
+            ):
                 pressed_touchpad_top_left_icon(e)
 
             # Numpad is not activated
             if not numlock:
                 continue
-
 
             if(
                 abs_mt_slot_x_values[abs_mt_slot_value] < minx_numpad or
@@ -434,23 +467,25 @@ while True:
                 abs_mt_slot_y_values[abs_mt_slot_value] < miny_numpad or
                 abs_mt_slot_y_values[abs_mt_slot_value] > maxy_numpad
             ):
-               continue
+                continue
 
-            col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
-            row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+            col = math.floor(
+                (abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+            row = math.floor(
+                (abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
             if row < 0 or col < 0:
-               continue
+                continue
 
             try:
                 button_pressed = model_layout.keys[row][col]
             except IndexError:
-                log.error('Unhandled col/row %d/%d for position %d-%d', 
-                    col,
-                    row,
-                    abs_mt_slot_x_values[abs_mt_slot_value],
-                    abs_mt_slot_y_values[abs_mt_slot_value]
-                )
+                log.error('Unhandled col/row %d/%d for position %d-%d',
+                          col,
+                          row,
+                          abs_mt_slot_x_values[abs_mt_slot_value],
+                          abs_mt_slot_y_values[abs_mt_slot_value]
+                          )
                 continue
 
             abs_mt_slot_numpad_key[abs_mt_slot_value] = button_pressed
