@@ -215,7 +215,8 @@ def is_pressed_touchpad_top_left_icon(x, y):
 def pressed_touchpad_top_left_icon(e):
     global brightness, numlock
 
-    if hasattr(model_layout, "top_left_icon_custom_keys") and len(model_layout.top_left_icon_custom_keys):
+    if (not numlock and hasattr(model_layout, "top_left_icon_custom_keys") and len(model_layout.top_left_icon_custom_keys)) or\
+        numlock == True and getattr(model_layout, "top_left_icon_brightness_function_disabled", None) == True:
         use_bindings_for_touchpad_left_key(e)
     elif numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 0:
         if e.value == 1:
@@ -310,14 +311,13 @@ def pressed_numpad_key():
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
         events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
+            InputEvent(EV_KEY.KEY_LEFTSHIFT, 1),
             InputEvent(EV_SYN.SYN_REPORT, 0),
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
     else:
         events = [
-
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
@@ -334,7 +334,7 @@ def unpressed_numpad_key():
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
         events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, e.value),
+            InputEvent(EV_KEY.KEY_LEFTSHIFT, 0),
             InputEvent(EV_SYN.SYN_REPORT, 0),
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
             InputEvent(EV_SYN.SYN_REPORT, 0)
@@ -356,36 +356,26 @@ def unpressed_numpad_key():
 def get_touched_key():
     global abs_mt_slot_x_values, abs_mt_slot_y_values
 
-    # priorites:
-    #
-    # 1. is touch top_right_icon?
-    # 2. is touch from layout?
     try:
-        is_pressed_top_right_icon = is_pressed_touchpad_top_right_icon(
-           abs_mt_slot_x_values[abs_mt_slot_value],
-           abs_mt_slot_y_values[abs_mt_slot_value]
-        )
-        if is_pressed_top_right_icon:
-            return EV_KEY.KEY_NUMLOCK
-        else:
-            col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
-            row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+        col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+        row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
-            if row < 0 or col < 0:
-                return None
+        if row < 0 or col < 0:
+            return None
 
-            return model_layout.keys[row][col]
+        return model_layout.keys[row][col]
     except IndexError:
         return None
-
 
 def is_not_finger_moved_to_another_key():
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
-    touched_key_now = get_touched_key()
 
-    if touched_key_when_pressed != None and touched_key_now != touched_key_when_pressed:
-        unpressed_numpad_key()
+    touched_key_now = get_touched_key()
+    if touched_key_now != touched_key_when_pressed:
+
+        if touched_key_when_pressed != None and touched_key_when_pressed != EV_KEY.KEY_NUMLOCK:
+            unpressed_numpad_key()
 
         if touched_key_now != None:
             abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
@@ -421,13 +411,16 @@ def send_numlock_key(value):
         log.error("Cannot send event, %s", e)
 
 
-def pressed_touchpad_top_right_icon():
+def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, abs_mt_slot_numpad_key
 
-    top_right_icon_touch_start_time = time()
-    log.info("Touched numlock in time:")
-    log.info(time())
-    abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
+    if value == 1:
+        top_right_icon_touch_start_time = time()
+        log.info("Touched numlock in time:")
+        log.info(time())
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
+    else:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
 def takes_top_right_icon_touch_longer_then_set_up_activation_time():
     global top_right_icon_activation_time, top_right_icon_touch_start_time
@@ -475,12 +468,14 @@ while True:
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
 
-            is_not_finger_moved_to_another_key()
+            if numlock:
+                is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
 
-            is_not_finger_moved_to_another_key()
+            if numlock:
+                is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
             set_tracking_id(e.value)
@@ -498,7 +493,7 @@ while True:
                 abs_mt_slot_x_values[abs_mt_slot_value],
                 abs_mt_slot_y_values[abs_mt_slot_value]
             ):
-                pressed_touchpad_top_right_icon()
+                pressed_touchpad_top_right_icon(e.value)
                 continue
 
             elif is_pressed_touchpad_top_left_icon(
@@ -506,6 +501,7 @@ while True:
                 abs_mt_slot_y_values[abs_mt_slot_value]
             ):
                 pressed_touchpad_top_left_icon(e)
+                continue
 
             # Numpad is not activated
             if not numlock:
