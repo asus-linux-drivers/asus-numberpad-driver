@@ -45,7 +45,7 @@ sudo ./uninstall.sh
 
 ### Required packages
 
-**Everything is included in install script sudo ./install.sh**
+**Everything is included in install script ```sudo ./install.sh```**
 
 - Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
 
