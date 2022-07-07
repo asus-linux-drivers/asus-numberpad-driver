@@ -29,7 +29,23 @@ paru -S  asus-touchpad-numpad-driver-${model}-${layout}-git
 Replace model with available models and layout with `qwerty` or `azerty`
 Example: `asus-touchpad-numpad-driver-ux433fa-qwerty-git`
 
+or via GIT
+
+```bash
+git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
+cd asus-touchpad-numpad-driver
+sudo ./install.sh
+```
+
+and to uninstall, just run:
+
+```bash
+sudo ./uninstall.sh
+```
+
 ### Required packages
+
+**Everything is included in install script sudo ./install.sh**
 
 - Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
 
@@ -49,28 +65,17 @@ sudo pacman -S libevdev python-libevdev i2c-tools git
 sudo dnf install libevdev python-libevdev i2c-tools git
 ```
 
+NumPy python lib
+
+```bash
+pip3 install numpy
+```
+
 Then enable i2c
 
 ```bash
 sudo modprobe i2c-dev
 sudo i2cdetect -l
-```
-
-Now you can get the latest ASUS Touchpad Numpad Driver for Linux from Git and install it using the following commands.
-
-```bash
-git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
-cd asus-touchpad-numpad-driver
-sudo ./install.sh
-```
-
-To turn on/off numpad, tap top right corner touchpad area.
-To adjust numpad brightness, tap top left corner touchpad area.
-
-To uninstall, just run:
-
-```bash
-sudo ./uninstall.sh
 ```
 
 ## Troubleshooting
