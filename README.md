@@ -80,28 +80,29 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 
 ## Layout configuration
 
-| Option                      | Description                                                  |
-| --------------------------- | ------------------------------------------------------------ |
-| **Device search**           | `/proc/bus/input/devices`                                    |
-| `try_times`                 | how many times to try find a touchpad device in each service start attempt  |
-| `try_sleep`                 | time between tries                                           |
-| **Layout**                  |                                                              |
-| `keys`                      | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array |
-| **Top left icon**           | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is array `top_left_icon_custom_keys` not empty<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
-| `top_left_icon_width`       | width of the top left icon                                   |
-| `top_left_icon_height`      | height of the top left icon                                  |
-| `top_left_icon_custom_keys` | array of `EV_KEY` keys
-| **Top right icon**          | Send `numlock` key and activate/deactivate numpad            |
-| `top_right_icon_width`      | width of the top right icon                                  |
-| `top_right_icon_height`     | height of the top right icon                                 |
-| **Paddings**                | Numpad has padding zones around where nothing happens when is touched except top icons |
-| `top_offset`                | top numpad offset                                            |
-| `right_offset`              | right numpad offset                                          |
-| `left_offset`               | left numpad offset                                           |
-| `bottom_offset`             | bottom numpad offset                                         |
-| **Backlight**               |                                                              |
-| `backlight_levels`          | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded)   |
-| `default_backlight_level`   | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels`) |
+| Option                      | Required    | Default | Description                                                       |
+| --------------------------- | ------------|---------|-------------------------------------------------------------------|
+| **Device search**           |             |         | `/proc/bus/input/devices`                                                   
+| `try_times`                 |             | 5       | how many times to try find a touchpad device in each service start attempt  
+| `try_sleep`                 |             | 0.1     | time between tries                                                          
+| **Layout**                  |             |                                                                                       
+| `keys`                      | Required    |         | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array
+| **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is array `top_left_icon_custom_keys` not empty<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
+| `top_left_icon_width`       |             |         | width of the top left icon                                                  
+| `top_left_icon_height`      |             |         | height of the top left icon                                                 
+| `top_left_icon_custom_keys` |             |         | array of `EV_KEY` keys                                                      
+| **Top right icon**          |             |         | send `numlock` key and activate/deactivate numpad                           
+| `top_right_icon_width`      | Required    |         | width of the top right icon                                                 
+| `top_right_icon_height`     | Required    |         | height of the top right icon                                                
+| **Paddings**                |             |         | numpad has padding zones around where nothing happens when is touched except top icons
+| `top_offset`                |             | 0       | top numpad offset                                                           
+| `right_offset`              |             | 0       | right numpad offset                                                         
+| `left_offset`               |             | 0       | left numpad offset                                                          
+| `bottom_offset`             |             | 0       | bottom numpad offset                                                        
+| **Backlight**               |             |         |                                                           
+| `backlight_levels`          |             |         | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded)                                                                           |
+| `default_backlight_level`   |             | 0x01    | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
+
 
 ## Credits
 

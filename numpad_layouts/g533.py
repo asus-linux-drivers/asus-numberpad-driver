@@ -1,9 +1,5 @@
 from libevdev import EV_KEY
 
-# Number of tries to identify the interface number
-try_times = 5
-try_sleep = 0.1
-
 top_left_icon_width = 0
 top_left_icon_height = 0
 

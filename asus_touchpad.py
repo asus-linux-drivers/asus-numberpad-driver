@@ -32,6 +32,12 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+if not hasattr(model_layout, "top_right_icon_width") or \
+    not model_layout.top_right_icon_width > 0 or \
+    not hasattr(model_layout, "top_right_icon_height") or \
+    not model_layout.top_right_icon_height > 0:
+       sys.exit(1)
+
 if not hasattr(model_layout, "keys") or not len(model_layout.keys) > 0 or not len(model_layout.keys[0]) > 0:
     log.debug('keys is required to set.')
     sys.exit(1)
@@ -49,12 +55,18 @@ if len(sys.argv) > 2:
 touchpad: Optional[str] = None
 device_id: Optional[str] = None
 
-tries = model_layout.try_times
+try_times = 5
+if hasattr(model_layout, "try_times"):
+    tries = model_layout.try_times
+
+try_sleep = 0.1
+if hasattr(model_layout, "try_sleep"):
+    try_sleep = model_layout.try_sleep
 
 brightness: int = 0
 
 # Look into the devices file #
-while tries > 0:
+while try_times > 0:
 
     touchpad_detected = 0
 
@@ -86,8 +98,8 @@ while tries > 0:
                 break
 
     if touchpad_detected != 2:
-        tries -= 1
-        if tries == 0:
+        try_times -= 1
+        if try_times == 0:
             if touchpad_detected != 2:
                 log.error("Can't find touchpad (code: %s)", touchpad_detected)
             if touchpad_detected == 2 and not device_id.isnumeric():
@@ -96,24 +108,31 @@ while tries > 0:
     else:
         break
 
-    sleep(model_layout.try_sleep)
+    sleep(try_sleep)
 
 # Start monitoring the touchpad
 
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
 d_t = Device(fd_t)
 
+# Paddings
+left_offset = getattr(model_layout, "left_offset", 0)
+right_offset = getattr(model_layout, "right_offset", 0)
+top_offset = getattr(model_layout, "top_offset", 0)
+bottom_offset = getattr(model_layout, "bottom_offset", 0)
 
-# Retrieve touchpad dimensions #
+# Default brightness
+default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
 
+# Retrieve touchpad dimensions
 ai = d_t.absinfo[EV_ABS.ABS_X]
 (minx, maxx) = (ai.minimum, ai.maximum)
-minx_numpad = minx + model_layout.left_offset
-maxx_numpad = maxx - model_layout.right_offset
+minx_numpad = minx + left_offset
+maxx_numpad = maxx - right_offset
 ai = d_t.absinfo[EV_ABS.ABS_Y]
 (miny, maxy) = (ai.minimum, ai.maximum)
-miny_numpad = miny + model_layout.top_offset
-maxy_numpad = maxy - model_layout.bottom_offset
+miny_numpad = miny + top_offset
+maxy_numpad = maxy - bottom_offset
 log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
 log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
           maxx_numpad, miny_numpad, maxy_numpad)
@@ -222,20 +241,21 @@ def activate_numlock():
     try:
         d_t.grab()
 
-        if model_layout.default_backlight_level is not None:
-            subprocess.call("i2ctransfer -f -y " + device_id +
-                            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
+        subprocess.call("i2ctransfer -f -y " + device_id +
+            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
+        if default_backlight_level != "0x01":
             subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " +
-                            model_layout.default_backlight_level + " 0xad", shell=True)
-        else:
-            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " +
-                            model_layout.backlight_levels[1] + " 0xad", shell=True)
+                default_backlight_level + " 0xad", shell=True)
 
-        if model_layout.default_backlight_level is not None:
-            return model_layout.backlight_levels.index(model_layout.default_backlight_level)
-        else:
-            return 1
-    except (OSError, libevdev.device.DeviceGrabError) as e:
+        try:
+            return model_layout.backlight_levels.index(default_backlight_level)
+        except ValueError:
+            # so after start and then click on icon for increasing brightness
+            # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
+            # (if exists)
+            # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
+            return -1
+    except (OSError, libevdev.device.DeviceGrabError):
         pass
 
 
@@ -247,7 +267,7 @@ def deactivate_numlock():
             " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         subprocess.call(numpad_cmd, shell=True)
         return 0
-    except (OSError, libevdev.device.DeviceGrabError) as e:
+    except (OSError, libevdev.device.DeviceGrabError):
         pass
 
 
