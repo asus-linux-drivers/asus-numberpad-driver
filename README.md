@@ -15,7 +15,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Multiple levels of backlight
 - Customizable default level of backlight
 - Numpad padding configuration
-- Protected activation/deactivation (touch has to start on numlock location and takes longer then customizable activation time)
+- Protected activation/deactivation (touch has to start on numlock location and activation is done after customizable amount of time (default is 0.5s))
 - Customizable top left icon action
 
 ## Installation
@@ -110,6 +110,7 @@ keys
 | **Top right icon**          |             |         | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height`
 | `top_right_icon_width`      | Required    |         | width of the top right icon
 | `top_right_icon_height`     | Required    |         | height of the top right icon
+| `top_right_icon_activation_time` |        | 0.5     | amount of time you have to touch `top_right_icon` for the numpad activation/deactivation
 | **Paddings**                |             |         | numpad has padding zones around where nothing happens when is touched except top icons
 | `top_offset`                |             | 0       | top numpad offset   
 | `right_offset`              |             | 0       | right numpad offset
