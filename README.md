@@ -15,7 +15,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Multiple levels of backlight
 - Customizable default level of backlight
 - Numpad padding configuration
-- Customizable numpad activation delay
+- Protected activation/deactivation (touch has to start on numlock location and takes longer then customizable activation time)
 - Customizable top left icon action
 
 ## Installation
