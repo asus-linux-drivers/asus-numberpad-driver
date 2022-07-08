@@ -69,15 +69,26 @@ echo
 echo "Select models keypad layout:"
 PS3='Please enter your choice '
 options=($(ls numpad_layouts) "Quit")
-select opt in "${options[@]}"
+select selected_opt in "${options[@]}"
 do
-
-    if [ "$opt" = "Quit" ]
+    if [ "$selected_opt" = "Quit" ]
     then
         exit 0
     fi
-    model=${opt::-3}
-    break
+
+    for option in $(ls numpad_layouts);
+    do
+        if [ "$option" = "$selected_opt" ] ; then
+            model=${selected_opt::-3}
+            break
+        fi
+    done
+
+    if [ -z "$model" ] ; then
+        echo "invalid option $REPLY"
+    else
+        break
+    fi
 done
 
 echo
