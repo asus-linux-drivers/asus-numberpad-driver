@@ -16,7 +16,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Customizable default level of backlight
 - Numpad padding configuration
 - Protected activation/deactivation (touch has to start on numlock location and activation is done after customizable amount of time (default is 0.5s))
-- Customizable top left icon action
+- Customizable top left icon action, amount of time for activation and whether activate numpad (default is key for calculator, 2s and activating numpad)
 
 ## Installation
 
@@ -104,7 +104,9 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is numpad deactivated and array `top_left_icon_custom_keys` not empty or numpad is activated and `top_left_icon_brightness_function_disabled` is True<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
 | `top_left_icon_width`       |             |         | width of the top left icon
 | `top_left_icon_height`      |             |         | height of the top left icon
-| `top_left_icon_custom_keys` |             |         | array of `EV_KEY` 
+| `top_left_icon_custom_keys` |             | `EV_KEY.KEY_CALC` | array of `InputEvent`
+| `top_left_icon_custom_function_activation_time` | | 2 | amount of time you have to touch `top_left_icon` for custom function
+| `top_left_icon_custom_function_activate_numpad` | | `True` | valid value is `True` or `False`
 | `top_left_icon_brightness_function_disabled` | |    | valid value is only `True`
 keys
 | **Top right icon**          |             |         | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height`
