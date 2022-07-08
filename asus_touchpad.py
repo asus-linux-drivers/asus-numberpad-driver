@@ -23,7 +23,6 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 
 
 # Select model from command line
-
 model = 'up5401ea'  # Model used in the derived script (with symbols)
 if len(sys.argv) > 1:
     model = sys.argv[1]
@@ -32,56 +31,48 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
-if not hasattr(model_layout, "top_right_icon_width") or \
-    not model_layout.top_right_icon_width > 0 or \
-    not hasattr(model_layout, "top_right_icon_height") or \
-    not model_layout.top_right_icon_height > 0:
-       sys.exit(1)
+top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
+top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
 
-if not hasattr(model_layout, "keys") or not len(model_layout.keys) > 0 or not len(model_layout.keys[0]) > 0:
-    log.debug('keys is required to set.')
+if not top_right_icon_width > 0 or not top_right_icon_height > 0:
+    log.debug('top_right_icon width and height is required to set > 0.')
     sys.exit(1)
 
-top_right_icon_activation_time = 0.5
-if not hasattr(model_layout, "top_right_icon_activation_time"):
-    log.debug('top_right_icon_activation_time is not set. Setting to %s', top_right_icon_activation_time)
-else:
-    top_right_icon_activation_time = model_layout.top_right_icon_activation_time
+keys = getattr(model_layout, "keys", [])
+if not len(keys) > 0 or not len(keys[0]) > 0:
+    log.debug('keys is required to set, dimension has to be atleast array of len 1 inside array')
+    sys.exit(1)
 
-top_left_icon_custom_keys = [
+top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 0.5)
+
+backlight_levels = getattr(model_layout, "backlight_levels", [])
+default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
+
+top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
+top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
+top_left_icon_custom_function_activation_time = getattr(model_layout, "top_left_icon_custom_function_activation_time", 2)
+top_left_icon_custom_function_activate_numpad = getattr(model_layout, "top_left_icon_custom_function_activate_numpad", True)
+top_left_icon_custom_keys = getattr(model_layout, "top_left_icon_custom_keys", [
     InputEvent(EV_KEY.KEY_CALC, 1),
     InputEvent(EV_SYN.SYN_REPORT, 0),
     InputEvent(EV_KEY.KEY_CALC, 0),
     InputEvent(EV_SYN.SYN_REPORT, 0)
-]
-if hasattr(model_layout, "top_left_icon_custom_keys"):
-    top_left_icon_custom_keys = model_layout.top_left_icon_custom_keys
+])
 
-top_left_icon_custom_function_activation_time = 2
-if hasattr(model_layout, "top_left_icon_custom_function_activation_time"):
-    top_left_icon_custom_function_activation_time = model_layout.top_left_icon_custom_function_activation_time
+try_times = getattr(model_layout, "try_times", 5)
+try_sleep = getattr(model_layout, "try_sleep", 0.1)
 
-top_left_icon_custom_function_activate_numpad = True
-if hasattr(model_layout, "top_left_icon_custom_function_activate_numpad"):
-    top_left_icon_custom_function_activate_numpad = model_layout.top_left_icon_custom_function_activate_numpad
+left_offset = getattr(model_layout, "left_offset", 0)
+right_offset = getattr(model_layout, "right_offset", 0)
+top_offset = getattr(model_layout, "top_offset", 0)
+bottom_offset = getattr(model_layout, "bottom_offset", 0)
 
 if len(sys.argv) > 2:
     percentage_key = EV_KEY.codes[int(sys.argv[2])]
 
 # Figure out devices from devices file
-
 touchpad: Optional[str] = None
 device_id: Optional[str] = None
-
-try_times = 5
-if hasattr(model_layout, "try_times"):
-    tries = model_layout.try_times
-
-try_sleep = 0.1
-if hasattr(model_layout, "try_sleep"):
-    try_sleep = model_layout.try_sleep
-
-brightness: int = 0
 
 # Look into the devices file #
 while try_times > 0:
@@ -129,18 +120,8 @@ while try_times > 0:
     sleep(try_sleep)
 
 # Start monitoring the touchpad
-
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
 d_t = Device(fd_t)
-
-# Paddings
-left_offset = getattr(model_layout, "left_offset", 0)
-right_offset = getattr(model_layout, "right_offset", 0)
-top_offset = getattr(model_layout, "top_offset", 0)
-bottom_offset = getattr(model_layout, "bottom_offset", 0)
-
-# Default brightness
-default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
 
 # Retrieve touchpad dimensions
 ai = d_t.absinfo[EV_ABS.ABS_X]
@@ -156,8 +137,8 @@ log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
           maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-col_count = len(max(model_layout.keys, key=len))
-row_count = len(model_layout.keys)
+col_count = len(max(keys, key=len))
+row_count = len(keys)
 col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
@@ -179,7 +160,7 @@ dev.enable(EV_KEY.KEY_NUMLOCK)
 for key_to_enable in top_left_icon_custom_keys:
     dev.enable(key_to_enable)
 
-for col in model_layout.keys:
+for col in keys:
     for key in col:
         dev.enable(key)
 
@@ -209,25 +190,29 @@ def use_bindings_for_touchpad_left_key(e):
 
 
 def is_pressed_touchpad_top_right_icon(x, y):
-    if x >= maxx - model_layout.top_right_icon_width and y < model_layout.top_right_icon_height:
+    global top_right_icon_width, top_right_icon_height
+
+    if x >= maxx - top_right_icon_width and y < top_right_icon_height:
         return True
     else:
         return False
 
 
 def is_pressed_touchpad_top_left_icon(x, y):
-    if not hasattr(model_layout, "top_left_icon_width") or \
-       not hasattr(model_layout, "top_left_icon_height"):
+    global top_left_icon_width, top_left_icon_height
+
+    if not top_left_icon_width > 0 or \
+       not top_left_icon_height > 0:
         return False
 
-    if x <= model_layout.top_left_icon_width and y < model_layout.top_left_icon_height:
+    if x <= top_left_icon_width and y < top_left_icon_height:
         return True
     else:
         return False
 
 
 def pressed_touchpad_top_left_icon(e):
-    global brightness, numlock, top_left_icon_touch_start_time
+    global brightness, numlock, top_left_icon_touch_start_time, backlight_levels
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
@@ -237,13 +222,15 @@ def pressed_touchpad_top_left_icon(e):
     else:
         abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
-    if numlock and hasattr(model_layout, "backlight_levels") and len(model_layout.backlight_levels) > 0 and\
+    if numlock and len(backlight_levels) > 0 and\
         e.value == 1 and getattr(model_layout, "top_left_icon_brightness_function_disabled", None) is not True:
         brightness = increase_brightness(brightness)
 
 
 def increase_brightness(brightness):
-    if (brightness + 1) >= len(model_layout.backlight_levels):
+    global backlight_levels
+
+    if (brightness + 1) >= len(backlight_levels):
         brightness = 0
     else:
         brightness += 1
@@ -252,7 +239,7 @@ def increase_brightness(brightness):
     log.info(brightness)
 
     numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
-        model_layout.backlight_levels[brightness] + " 0xad"
+        backlight_levels[brightness] + " 0xad"
     subprocess.call(numpad_cmd, shell=True)
 
     return brightness
@@ -269,7 +256,7 @@ def activate_numpad():
                 default_backlight_level + " 0xad", shell=True)
 
         try:
-            return model_layout.backlight_levels.index(default_backlight_level)
+            return backlight_levels.index(default_backlight_level)
         except ValueError:
             # so after start and then click on icon for increasing brightness
             # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
@@ -306,7 +293,7 @@ support_for_maximum_abs_mt_slots: int = 5
 unsupported_abs_mt_slot: bool = False
 top_right_icon_touch_start_time = 0
 top_left_icon_touch_start_time = 0
-
+brightness: int = 0
 
 def set_tracking_id(value):
     try:
@@ -383,7 +370,7 @@ def get_touched_key():
         if row < 0 or col < 0:
             return None
 
-        return model_layout.keys[row][col]
+        return keys[row][col]
     except IndexError:
         return None
 
@@ -573,7 +560,7 @@ while True:
                 continue
 
             try:
-                button_pressed = model_layout.keys[row][col]
+                button_pressed = keys[row][col]
             except IndexError:
                 log.error('Unhandled col/row %d/%d for position %d-%d',
                           col,
