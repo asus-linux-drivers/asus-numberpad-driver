@@ -12,11 +12,11 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Multiple layouts
 - Multi-touch support
 - One-touch key rotation
-- Multiple levels of backlight
+- Customizable numpad padding
+- Customizable activation time (default 1s)
 - Customizable default level of backlight
-- Numpad padding configuration
-- Protected activation/deactivation (touch has to start on numlock location and activation is done after customizable amount of time (default is 0.5s))
-- Customizable top left icon action
+- Smooth change of backlight levels (endless loop with customizable interval, default 1s)
+- Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 
 ## Installation
 
@@ -101,16 +101,20 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | `try_sleep`                 |             | 0.1     | time between tries
 | **Layout**                  |             |
 | `keys`                      | Required    |         | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array
-| **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and when is icon not targetable (`0` dimension value)<br><br>custom function is used when is numpad deactivated and array `top_left_icon_custom_keys` not empty or numpad is activated and `top_left_icon_brightness_function_disabled` is True<br><br>when is array `top_left_icon_custom_keys` empty and array `backlight_levels` is not empty is function of icon increase brightness used in endless loop starting with next level after `default_backlight_level`
-| `top_left_icon_width`       |             |         | width of the top left icon
-| `top_left_icon_height`      |             |         | height of the top left icon
-| `top_left_icon_custom_keys` |             |         | array of `EV_KEY` 
-| `top_left_icon_brightness_function_disabled` | |    | valid value is only `True`
+| **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions)<br><br>custom function is used when is numpad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is numpad activated, `top_left_icon_brightness_function_disabled` is not True, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
+| `top_left_icon_width`                          |             |         | width of the top left icon
+| `top_left_icon_height`                         |             |         | height of the top left icon
+| `top_left_icon_activation_time`                |             | 1       | amount of time for touch `top_left_icon`
+| `top_left_icon_slide_func_keys`                |             | `EV_KEY.KEY_CALC` | array of `InputEvent`
+| `top_left_icon_slide_func_activation_x_ratio  `|             | 0.3     | ratio of touchpad width of slide
+| `top_left_icon_slide_func_activation_y_ratio`  |             | 0.3     | ratio of touchpad height of slide
+| `top_left_icon_slide_func_activate_numpad`     |             | `True`  | valid value is `True` or `False`
+| `top_left_icon_brightness_func_disabled`       |             |         | valid value is only `True`
 keys
 | **Top right icon**          |             |         | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height`
 | `top_right_icon_width`      | Required    |         | width of the top right icon
 | `top_right_icon_height`     | Required    |         | height of the top right icon
-| `top_right_icon_activation_time` |        | 0.5     | amount of time you have to touch `top_right_icon` for the numpad activation/deactivation
+| `top_right_icon_activation_time` |        | 1       | amount of time you have to touch `top_right_icon` for the numpad activation/deactivation
 | **Paddings**                |             |         | numpad has padding zones around where nothing happens when is touched except top icons
 | `top_offset`                |             | 0       | top numpad offset   
 | `right_offset`              |             | 0       | right numpad offset
