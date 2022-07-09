@@ -21,7 +21,6 @@ logging.basicConfig()
 log = logging.getLogger('Pad')
 log.setLevel(os.environ.get('LOG', 'INFO'))
 
-
 # Select model from command line
 model = 'up5401ea'  # Model used in the derived script (with symbols)
 if len(sys.argv) > 1:
@@ -43,16 +42,19 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
     log.debug('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
 
-top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 0.5)
+top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
 
 top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
 top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
-top_left_icon_custom_function_activation_time = getattr(model_layout, "top_left_icon_custom_function_activation_time", 2)
-top_left_icon_custom_function_activate_numpad = getattr(model_layout, "top_left_icon_custom_function_activate_numpad", True)
-top_left_icon_custom_keys = getattr(model_layout, "top_left_icon_custom_keys", [
+top_left_icon_activation_time = getattr(model_layout, "top_left_icon_activation_time", 1)
+top_left_icon_brightness_func_disabled = getattr(model_layout, "top_left_icon_brightness_func_disabled", None)
+top_left_icon_slide_func_activate_numpad = getattr(model_layout, "top_left_icon_slide_func_activate_numpad", True)
+top_left_icon_slide_func_activation_x_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_x_ratio", 0.3)
+top_left_icon_slide_func_activation_y_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_y_ratio", 0.3)
+top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
     InputEvent(EV_KEY.KEY_CALC, 1),
     InputEvent(EV_SYN.SYN_REPORT, 0),
     InputEvent(EV_KEY.KEY_CALC, 0),
@@ -157,7 +159,7 @@ dev = Device()
 dev.name = "Asus Touchpad/Numpad"
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_NUMLOCK)
-for key_to_enable in top_left_icon_custom_keys:
+for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
 
 for col in keys:
@@ -170,49 +172,47 @@ if percentage_key != EV_KEY.KEY_5:
 udev = dev.create_uinput_device()
 
 
-def use_bindings_for_touchpad_left_key(e):
+def use_bindings_for_touchpad_left_key():
 
     key_events = []
-    for custom_key in top_left_icon_custom_keys:
+    for custom_key in top_left_icon_slide_func_keys:
         key_events.append(custom_key)
 
     try:
         udev.send_events(key_events)
-        if e.value:
-            log.info("Pressed touchpad left key and used bound keys")
-        else:
-            log.info("Unpressed touchpad left key and used bound keys")
 
-        if top_left_icon_custom_function_activate_numpad is True:
-            change_numpad_activation_state()
+        if top_left_icon_slide_func_activate_numpad is True:
+            change_numpad_to_active_state()
+
     except OSError as e:
         log.error("Cannot send event, %s", e)
 
 
-def is_pressed_touchpad_top_right_icon(x, y):
-    global top_right_icon_width, top_right_icon_height
+def is_pressed_touchpad_top_right_icon():
+    global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
 
-    if x >= maxx - top_right_icon_width and y < top_right_icon_height:
-        return True
+    if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
+        abs_mt_slot_y_values[abs_mt_slot_value] < top_right_icon_height:
+            return True
     else:
         return False
 
 
-def is_pressed_touchpad_top_left_icon(x, y):
-    global top_left_icon_width, top_left_icon_height
+def is_pressed_touchpad_top_left_icon():
+    global top_left_icon_width, top_left_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
 
     if not top_left_icon_width > 0 or \
        not top_left_icon_height > 0:
         return False
 
-    if x <= top_left_icon_width and y < top_left_icon_height:
+    if abs_mt_slot_x_values[abs_mt_slot_value] <= top_left_icon_width and abs_mt_slot_y_values[abs_mt_slot_value] < top_left_icon_height:
         return True
     else:
         return False
 
 
 def pressed_touchpad_top_left_icon(e):
-    global brightness, numlock, top_left_icon_touch_start_time, backlight_levels
+    global top_left_icon_touch_start_time
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
@@ -221,10 +221,6 @@ def pressed_touchpad_top_left_icon(e):
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
     else:
         abs_mt_slot_numpad_key[abs_mt_slot_value] = None
-
-    if numlock and len(backlight_levels) > 0 and\
-        e.value == 1 and getattr(model_layout, "top_left_icon_brightness_function_disabled", None) is not True:
-        brightness = increase_brightness(brightness)
 
 
 def increase_brightness(brightness):
@@ -374,21 +370,48 @@ def get_touched_key():
     except IndexError:
         return None
 
+
 def is_not_finger_moved_to_another_key():
+    global abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values,\
+        top_left_icon_touch_start_time, top_right_icon_touch_start_time
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
 
-    touched_key_now = get_touched_key()
-    if touched_key_now != touched_key_when_pressed:
+    if touched_key_when_pressed == EV_KEY.KEY_CALC:
+        pass
+        #if top_left_icon_touch_start_time != 0:
+        #    log.info("Unpressed calc key")
+        #    top_left_icon_touch_start_time = 0
+    elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
+        if top_right_icon_touch_start_time != 0 and\
+            not is_pressed_touchpad_top_right_icon():
+                log.info("Finger moved away from defined area for numlock / right_icon")
+                log.info("Unpressed numlock key")
+                top_right_icon_touch_start_time = 0
 
-        if touched_key_when_pressed != None and\
-            touched_key_when_pressed != EV_KEY.KEY_NUMLOCK and\
-            touched_key_when_pressed != EV_KEY.KEY_CALC:
-            unpressed_numpad_key()
+    elif numlock:
+        touched_key_now = get_touched_key()
+        if touched_key_now != touched_key_when_pressed:
 
-        if touched_key_now != None:
-            abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
-            pressed_numpad_key()
+            if touched_key_when_pressed != None:
+                unpressed_numpad_key()
+
+            if touched_key_now != None:
+                abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
+                pressed_numpad_key()
+
+
+def change_numpad_to_active_state():
+    global brightness, numlock
+
+    if not numlock:
+        numlock = True
+
+        send_numlock_key(1)
+        send_numlock_key(0)
+
+    log.info("Numpad activated")
+    brightness = activate_numpad()
 
 
 # current state is detected from/saved to global variable numlock
@@ -399,6 +422,7 @@ def change_numpad_activation_state():
     send_numlock_key(0)
 
     numlock = not numlock
+
     if numlock:
         log.info("Numpad activated")
         brightness = activate_numpad()
@@ -419,7 +443,6 @@ def send_numlock_key(value):
     except OSError as e:
         log.error("Cannot send event, %s", e)
 
-
 def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, abs_mt_slot_numpad_key
 
@@ -431,8 +454,39 @@ def pressed_touchpad_top_right_icon(value):
     else:
         abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
-def takes_top_left_icon_touch_longer_then_set_up_custom_function_activation_time():
-    global top_left_icon_custom_function_activation_time,\
+
+def is_slided_from_top_left_icon(e):
+    global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
+
+    if e.value != 0:
+        return
+
+    if top_left_icon_touch_start_time == 0:
+        return
+
+    activation_min_x = top_left_icon_slide_func_activation_x_ratio * maxx
+    activation_min_y = top_left_icon_slide_func_activation_x_ratio * maxy
+
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
+        abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxx and\
+        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxy:
+
+        log.info("Slided from top_left_icon taken longer then is required. X, y:")
+        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
+        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
+        log.info("Required is min x, y:")
+        log.info(activation_min_x)
+        log.info(activation_min_y)
+
+        top_left_icon_touch_start_time = 0
+
+        return True
+    else:
+        return False
+
+
+def takes_top_left_icon_touch_longer_then_set_up_activation_time():
+    global top_left_icon_activation_time,\
         top_left_icon_touch_start_time
 
     if top_left_icon_touch_start_time == 0:
@@ -441,14 +495,15 @@ def takes_top_left_icon_touch_longer_then_set_up_custom_function_activation_time
     press_duration = time() - top_left_icon_touch_start_time
 
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
-        press_duration > top_left_icon_custom_function_activation_time):
+        press_duration > top_left_icon_activation_time):
 
         log.info("Press top_left_icon taken longer then is required activation time:")
         log.info(time() - top_left_icon_touch_start_time)
         log.info("Activation time is:")
-        log.info(top_left_icon_custom_function_activation_time)
+        log.info(top_left_icon_activation_time)
 
-        top_left_icon_touch_start_time = 0
+        # start cycle again (smooth change of brightness)
+        top_left_icon_touch_start_time = time()
 
         return True
     else:
@@ -494,24 +549,28 @@ while True:
 
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
-            # numpad activation
-            if takes_top_right_icon_touch_longer_then_set_up_activation_time():
+            # top right icon (numlock) activation
+            if is_pressed_touchpad_top_right_icon() and takes_top_right_icon_touch_longer_then_set_up_activation_time():
                 change_numpad_activation_state()
 
-            if takes_top_left_icon_touch_longer_then_set_up_custom_function_activation_time():
-                use_bindings_for_touchpad_left_key(e)
+            # top left icon (brightness change) activation
+            if numlock and is_pressed_touchpad_top_left_icon() and\
+                takes_top_left_icon_touch_longer_then_set_up_activation_time() and\
+                len(backlight_levels) > 0 and top_left_icon_brightness_func_disabled is not True:
+
+                    brightness = increase_brightness(brightness)
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
 
-            if numlock:
-                is_not_finger_moved_to_another_key()
+            #if numlock:
+            is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
 
-            if numlock:
-                is_not_finger_moved_to_another_key()
+            #if numlock:
+            is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
             set_tracking_id(e.value)
@@ -525,18 +584,14 @@ while True:
             log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
                 abs_mt_slot_y_values[abs_mt_slot_value]))
 
-            if is_pressed_touchpad_top_right_icon(
-                abs_mt_slot_x_values[abs_mt_slot_value],
-                abs_mt_slot_y_values[abs_mt_slot_value]
-            ):
+            if is_pressed_touchpad_top_right_icon():
                 pressed_touchpad_top_right_icon(e.value)
                 continue
-
-            elif is_pressed_touchpad_top_left_icon(
-                abs_mt_slot_x_values[abs_mt_slot_value],
-                abs_mt_slot_y_values[abs_mt_slot_value]
-            ):
+            elif is_pressed_touchpad_top_left_icon():
                 pressed_touchpad_top_left_icon(e)
+                continue
+            elif is_slided_from_top_left_icon(e):
+                use_bindings_for_touchpad_left_key()
                 continue
 
             # Numpad is not activated
