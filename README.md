@@ -12,7 +12,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Multiple layouts
 - Multi-touch support
 - One-touch key rotation
-- Pressing repeated keys like on a physical keyboard
+- Hold key for repeated pressing keys like on a physical keyboard
 - Customizable numpad padding
 - Customizable activation time (default 1s)
 - Customizable default level of backlight
