@@ -379,9 +379,6 @@ def is_not_finger_moved_to_another_key():
 
     if touched_key_when_pressed == EV_KEY.KEY_CALC:
         pass
-        #if top_left_icon_touch_start_time != 0:
-        #    log.info("Unpressed calc key")
-        #    top_left_icon_touch_start_time = 0
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
         if top_right_icon_touch_start_time != 0 and\
             not is_pressed_touchpad_top_right_icon():
@@ -562,14 +559,10 @@ while True:
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
-
-            #if numlock:
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
-
-            #if numlock:
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
