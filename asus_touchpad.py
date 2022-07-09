@@ -211,8 +211,16 @@ def is_pressed_touchpad_top_left_icon():
         return False
 
 
+def set_none_to_current_mt_slot():
+    global abs_mt_slot_numpad_key,\
+        abs_mt_slot_x_values, abs_mt_slot_y_values
+
+    abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+    abs_mt_slot_x_values[abs_mt_slot_value] = 0
+    abs_mt_slot_y_values[abs_mt_slot_value] = 0
+
 def pressed_touchpad_top_left_icon(e):
-    global top_left_icon_touch_start_time
+    global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_value
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
@@ -220,7 +228,7 @@ def pressed_touchpad_top_left_icon(e):
         log.info(time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
     else:
-        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+        set_none_to_current_mt_slot()
 
 
 def increase_brightness(brightness):
@@ -276,14 +284,12 @@ def deactivate_numpad():
 
 
 numlock: bool = False
-button_pressed: libevdev.const = None
 abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
-abs_mt_slot = np.array([0, 1, 2, 3, 4], int)
-abs_mt_slot_numpad_key = np.array(
-    [None, None, None, None, None], dtype=libevdev.const.EventCode)
-abs_mt_slot_x_values = np.array([0, 1, 2, 3, 4], int)
-abs_mt_slot_y_values = np.array([0, 1, 2, 3, 4], int)
+abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
+abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 5
 unsupported_abs_mt_slot: bool = False
@@ -348,8 +354,8 @@ def unpressed_numpad_key():
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
 
-    abs_mt_slot_numpad_key[abs_mt_slot_value] = None
-
+    set_none_to_current_mt_slot()
+    
     try:
         udev.send_events(events)
     except OSError as e:
@@ -449,7 +455,7 @@ def pressed_touchpad_top_right_icon(value):
         log.info(time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     else:
-        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+        set_none_to_current_mt_slot()
 
 
 def is_slided_from_top_left_icon(e):
@@ -608,7 +614,7 @@ while True:
                 continue
 
             try:
-                button_pressed = keys[row][col]
+                abs_mt_slot_numpad_key[abs_mt_slot_value] = keys[row][col]
             except IndexError:
                 log.error('Unhandled col/row %d/%d for position %d-%d',
                           col,
@@ -617,8 +623,6 @@ while True:
                           abs_mt_slot_y_values[abs_mt_slot_value]
                           )
                 continue
-
-            abs_mt_slot_numpad_key[abs_mt_slot_value] = button_pressed
 
             if e.value == 1:
                 pressed_numpad_key()
