@@ -15,7 +15,7 @@ elif [[ $(sudo dnf install 2>/dev/null) ]]; then
     echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git
 fi
 
-pip3 install numpy
+pip3 install numpy evdev
 
 # Checking if the pip3 is successfuly loaded
 if [[ $? != 0 ]]
