@@ -58,13 +58,13 @@ sudo apt install libevdev2 python3-libevdev i2c-tools git python3-pip
 - Arch Linux / Manjaro:
 
 ```bash
-sudo pacman -S libevdev python-libevdev i2c-tools git
+sudo pacman -S libevdev python-libevdev i2c-tools git python-pip
 ```
 
 - Fedora:
 
 ```bash
-sudo dnf install libevdev python-libevdev i2c-tools git
+sudo dnf install libevdev python-libevdev i2c-tools git python-pip
 ```
 
 Python lib NumPy, evdev
