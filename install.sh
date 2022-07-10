@@ -10,7 +10,7 @@ fi
 if [[ $(sudo apt install 2>/dev/null) ]]; then
     echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm -S libevdev python-libevdev i2c-tools git
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
     echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git
 fi
