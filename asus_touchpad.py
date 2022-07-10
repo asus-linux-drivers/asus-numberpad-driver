@@ -227,7 +227,7 @@ def is_pressed_touchpad_top_right_icon():
     global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
 
     if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
-        abs_mt_slot_y_values[abs_mt_slot_value] < top_right_icon_height:
+        abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
             return True
     else:
         return False
