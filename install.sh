@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Checking if the script is runned as root (via sudo or other)
 if [[ $(id -u) != 0 ]]
 then
