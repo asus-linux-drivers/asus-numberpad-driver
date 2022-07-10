@@ -10,7 +10,6 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 ## Features
 
 - Multiple layouts
-- One-touch key rotation
 - Hold key for repeated pressing keys like on a physical keyboard
 - Customizable numpad padding
 - Customizable activation time (default 1s)
@@ -104,6 +103,7 @@ For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusO
 | `keys`                      | Required    |         | map of keys as array of arrays, dimension has to 
 be atleast array of len 1 inside array
 | `multitouch`                |             | False   | up to quint tap when enabled
+| `one_touch_key_rotation`    |             | False   | possibility of altering multiple keys during one-touch
 | **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions)<br><br>custom function is used when is numpad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is numpad activated, `top_left_icon_brightness_function_disabled` is not True, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
 | `top_left_icon_width`                          |             |         | width of the top left icon
 | `top_left_icon_height`                         |             |         | height of the top left icon
