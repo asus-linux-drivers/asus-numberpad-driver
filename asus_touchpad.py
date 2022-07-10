@@ -7,9 +7,11 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from time import sleep, time
 from typing import Optional
 
+from evdev import InputDevice
 import libevdev.const
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
@@ -32,6 +34,7 @@ percentage_key: libevdev.const = EV_KEY.KEY_5
 
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
+top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
 
 if not top_right_icon_width > 0 or not top_right_icon_height > 0:
     log.debug('top_right_icon width and height is required to set > 0.')
@@ -41,8 +44,6 @@ keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
     log.debug('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
-
-top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
@@ -74,12 +75,16 @@ if len(sys.argv) > 2:
 
 # Figure out devices from devices file
 touchpad: Optional[str] = None
+keyboard: Optional[str] = None
+dev_k = None
+numlock: bool = False
 device_id: Optional[str] = None
 
 # Look into the devices file #
 while try_times > 0:
 
     touchpad_detected = 0
+    keyboard_detected = 0
 
     with open('/proc/bus/input/devices', 'r') as f:
         lines = f.readlines()
@@ -104,18 +109,42 @@ while try_times > 0:
                     log.debug('Set touchpad id %s from %s',
                               touchpad, line.strip())
 
-            # Stop looking if touchpad has been found #
-            if touchpad_detected == 2:
+            # Look for the keyboard
+            if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or ("Name=\"ASUE" in line and "Keyboard" in line)):
+                keyboard_detected = 1
+                log.debug('Detect keyboard from %s', line.strip())
+
+            # We look for keyboard with numlock, scrollock, capslock inputs
+            if keyboard_detected == 1 and "H: " in line:
+                keyboard = line.split("event")[1]
+                keyboard = keyboard.split(" ")[0]
+
+                dev_k = InputDevice('/dev/input/event' + str(keyboard))
+                k_capabilities = dev_k.capabilities(verbose=True)
+
+                if "LED_NUML" in k_capabilities.values().__str__():
+                    keyboard_detected = 2
+                    log.debug('Set keyboard %s from %s', keyboard, line.strip())
+                else:
+                    keyboard_detected = 0
+                    dev_k = None
+
+            # Stop looking if touchpad and keyboard have been found
+            if touchpad_detected == 2 and keyboard_detected == 2:
                 break
 
-    if touchpad_detected != 2:
+    if touchpad_detected != 2 or keyboard_detected != 2:
         try_times -= 1
         if try_times == 0:
+            if keyboard_detected != 2:
+                log.error("Can't find keyboard (code: %s)", keyboard_detected)
+                # keyboard is optional, no sys.exit(1)!
             if touchpad_detected != 2:
                 log.error("Can't find touchpad (code: %s)", touchpad_detected)
+                sys.exit(1)
             if touchpad_detected == 2 and not device_id.isnumeric():
                 log.error("Can't find device id")
-            sys.exit(1)
+                sys.exit(1)
     else:
         break
 
@@ -124,6 +153,10 @@ while try_times > 0:
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
 d_t = Device(fd_t)
+
+# start monitoring the keyboard
+if dev_k is None and keyboard is not None:
+    dev_k = InputDevice('/dev/input/event' + str(keyboard))
 
 # Retrieve touchpad dimensions
 ai = d_t.absinfo[EV_ABS.ABS_X]
@@ -143,8 +176,6 @@ col_count = len(max(keys, key=len))
 row_count = len(keys)
 col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
-
-# Start monitoring the keyboard (numlock)
 
 # Create a new keyboard device to send numpad events
 # KEY_5:6
@@ -173,6 +204,7 @@ udev = dev.create_uinput_device()
 
 
 def use_bindings_for_touchpad_left_key():
+    global numlock
 
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
@@ -181,8 +213,10 @@ def use_bindings_for_touchpad_left_key():
     try:
         udev.send_events(key_events)
 
-        if top_left_icon_slide_func_activate_numpad is True:
-            change_numpad_to_active_state()
+        if top_left_icon_slide_func_activate_numpad is True and not numlock:
+            local_numlock_pressed()
+
+        log.info("Used bindings for touchpad left_icon slide function")
 
     except OSError as e:
         log.error("Cannot send event, %s", e)
@@ -231,8 +265,8 @@ def pressed_touchpad_top_left_icon(e):
         set_none_to_current_mt_slot()
 
 
-def increase_brightness(brightness):
-    global backlight_levels
+def increase_brightness():
+    global brightness, backlight_levels
 
     if (brightness + 1) >= len(backlight_levels):
         brightness = 0
@@ -246,10 +280,10 @@ def increase_brightness(brightness):
         backlight_levels[brightness] + " 0xad"
     subprocess.call(numpad_cmd, shell=True)
 
-    return brightness
-
 
 def activate_numpad():
+    global brightness
+
     try:
         d_t.grab()
 
@@ -260,30 +294,32 @@ def activate_numpad():
                 default_backlight_level + " 0xad", shell=True)
 
         try:
-            return backlight_levels.index(default_backlight_level)
+            brightness = backlight_levels.index(default_backlight_level)
         except ValueError:
             # so after start and then click on icon for increasing brightness
             # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
             # (if exists)
             # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
-            return -1
+            brightness = -1
     except (OSError, libevdev.device.DeviceGrabError):
         pass
 
 
 def deactivate_numpad():
+    global brightness
+
     try:
         d_t.ungrab()
 
         numpad_cmd = "i2ctransfer -f -y " + device_id + \
             " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         subprocess.call(numpad_cmd, shell=True)
-        return 0
+
+        brightness = 0
     except (OSError, libevdev.device.DeviceGrabError):
         pass
 
 
-numlock: bool = False
 abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
 abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
@@ -404,34 +440,41 @@ def is_not_finger_moved_to_another_key():
                 pressed_numpad_key()
 
 
-def change_numpad_to_active_state():
+def check_system_numlock_vs_local():
     global brightness, numlock
 
-    if not numlock:
-        numlock = True
+    sys_numlock = get_system_numlock()
 
-        send_numlock_key(1)
-        send_numlock_key(0)
-
-    log.info("Numpad activated")
-    brightness = activate_numpad()
+    if not sys_numlock and numlock:
+        numlock = False
+        deactivate_numpad()
+        log.info("Numpad deactivated")
 
 
-# current state is detected from/saved to global variable numlock
-def change_numpad_activation_state():
+def local_numlock_pressed():
     global brightness, numlock
-
-    send_numlock_key(1)
-    send_numlock_key(0)
 
     numlock = not numlock
+    sys_numlock = get_system_numlock()
 
+    # Activating
     if numlock:
+        if not sys_numlock:
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock activated")
+
         log.info("Numpad activated")
-        brightness = activate_numpad()
+        activate_numpad()
+    # Inactivating
     else:
+        if sys_numlock:
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock deactivated")
+
         log.info("Numpad deactivated")
-        brightness = deactivate_numpad()
+        deactivate_numpad()
 
 
 def send_numlock_key(value):
@@ -536,7 +579,26 @@ def takes_top_right_icon_touch_longer_then_set_up_activation_time():
         return False
 
 
-while True:
+def get_system_numlock():
+    global dev_k
+
+    if not dev_k:
+        return None
+
+    leds_k = dev_k.leds(verbose=True)
+
+    led_numl_list = list(filter(lambda x: 'LED_NUML' in x, leds_k))
+
+    if len(led_numl_list):
+        return True
+    else:
+        return False
+
+
+def listen_touchpad_events():
+    global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
+        abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
+        unsupported_abs_mt_slot, top_right_icon_touch_start_time
 
     for e in d_t.events():
 
@@ -554,14 +616,14 @@ while True:
 
             # top right icon (numlock) activation
             if is_pressed_touchpad_top_right_icon() and takes_top_right_icon_touch_longer_then_set_up_activation_time():
-                change_numpad_activation_state()
+                local_numlock_pressed()
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
                 takes_top_left_icon_touch_longer_then_set_up_activation_time() and\
                 len(backlight_levels) > 0 and top_left_icon_brightness_func_disabled is not True:
 
-                    brightness = increase_brightness(brightness)
+                    increase_brightness()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
@@ -628,3 +690,21 @@ while True:
                 pressed_numpad_key()
             else:
                 unpressed_numpad_key()
+
+
+def check_system_numlock_status():
+    global numlock
+
+    while True:
+        check_system_numlock_vs_local()
+        sleep(0.5)
+
+# if keyboard with numlock indicator was found
+# thread for listening change of system numlock
+if dev_k:
+    threads = []
+    t = threading.Thread(target=check_system_numlock_status)
+    threads.append(t)
+    t.start()
+
+listen_touchpad_events()
