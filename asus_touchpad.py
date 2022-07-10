@@ -33,6 +33,7 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
 multitouch = getattr(model_layout, "multitouch", False)
+one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
 top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
@@ -376,8 +377,12 @@ def pressed_numpad_key():
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
 
+def replaced_numpad_key(touched_key_now):
+    unpressed_numpad_key(touched_key_now)
+    pressed_numpad_key()
 
-def unpressed_numpad_key():
+def unpressed_numpad_key(replaced_by_key=None):
+
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
@@ -393,11 +398,15 @@ def unpressed_numpad_key():
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
+   
+    if replaced_by_key:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
+    else:
+        set_none_to_current_mt_slot()
 
-    set_none_to_current_mt_slot()
-    
     try:
         udev.send_events(events)
+
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
 
@@ -423,6 +432,9 @@ def is_not_finger_moved_to_another_key():
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
 
+    if touched_key_when_pressed is None:
+        return
+
     if touched_key_when_pressed == EV_KEY.KEY_CALC:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
@@ -436,10 +448,13 @@ def is_not_finger_moved_to_another_key():
         touched_key_now = get_touched_key()
         if touched_key_now != touched_key_when_pressed:
 
-            if touched_key_when_pressed != None:
+            if one_touch_key_rotation and touched_key_when_pressed != None and touched_key_now != None:
+                replaced_numpad_key(touched_key_now)
+
+            elif touched_key_when_pressed != None:
                 unpressed_numpad_key()
 
-            if touched_key_now != None:
+            elif one_touch_key_rotation and touched_key_now != None:
                 abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
                 pressed_numpad_key()
 
@@ -677,6 +692,9 @@ def listen_touchpad_events():
                 (abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
             if row < 0 or col < 0:
+                continue
+
+            if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
                 continue
 
             try:
