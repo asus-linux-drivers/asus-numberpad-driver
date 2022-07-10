@@ -14,7 +14,7 @@ if [[ $(sudo apt install 2>/dev/null) ]]; then
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
     echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git
+    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-pip
 fi
 
 pip3 install numpy
