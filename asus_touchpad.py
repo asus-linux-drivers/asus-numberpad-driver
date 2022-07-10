@@ -32,6 +32,7 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+multitouch = getattr(model_layout, "multitouch", False)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
 top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
@@ -327,7 +328,9 @@ abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
-support_for_maximum_abs_mt_slots: int = 5
+support_for_maximum_abs_mt_slots: int = 1
+if multitouch:
+    support_for_maximum_abs_mt_slots = 5
 unsupported_abs_mt_slot: bool = False
 top_right_icon_touch_start_time = 0
 top_left_icon_touch_start_time = 0
