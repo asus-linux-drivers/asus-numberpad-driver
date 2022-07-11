@@ -86,12 +86,6 @@ To activate logger, do in a console:
 LOG=DEBUG sudo -E ./asus_touchpad.py
 ```
 
-For some operating systems with boot failure (Pop!OS, Mint, ElementaryOS, SolusOS), before installing, please uncomment in the asus_touchpad.service file, this following property and adjust its value:
-
-```bash
-# ExecStartPre=/bin/sleep 2
-```
-
 ## Layout configuration
 
 | Option                      | Required    | Default | Description                                                       |
