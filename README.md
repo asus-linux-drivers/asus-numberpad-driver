@@ -20,7 +20,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 
 ## Installation
 
-The package is available to install from AUR
+The package is [available](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) to install from AUR
 
 ```bash
 paru -S  asus-touchpad-numpad-driver-${model}-${layout}-git 
