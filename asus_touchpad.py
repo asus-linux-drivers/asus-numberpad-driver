@@ -32,6 +32,7 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+key_repetitions = getattr(model_layout, "key_repetitions", False)
 multitouch = getattr(model_layout, "multitouch", False)
 one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
@@ -709,7 +710,11 @@ def listen_touchpad_events():
                 continue
 
             if e.value == 1:
-                pressed_numpad_key()
+                if key_repetitions:
+                    pressed_numpad_key()
+                else:
+                    pressed_numpad_key()
+                    unpressed_numpad_key()
             else:
                 unpressed_numpad_key()
 
