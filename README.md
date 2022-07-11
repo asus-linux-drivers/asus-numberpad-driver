@@ -95,7 +95,7 @@ LOG=DEBUG sudo -E ./asus_touchpad.py
 | **Device search**           |             |         | `/proc/bus/input/devices`
 | `try_times`                 |             | 5       | how many times to try find a touchpad device in each service start attempt  
 | `try_sleep`                 |             | 0.1     | time between tries
-| **Layout**                  |             |
+| **Key layout**                  |             |
 | `keys`                      | Required    |         | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array
 | `multitouch`                |             | False   | up to quint tap when enabled
 | `one_touch_key_rotation`    |             | False   | possibility of altering multiple keys during one-touch
