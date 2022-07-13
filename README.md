@@ -12,13 +12,13 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 ## Features
 
 - Multiple layouts
-- Hold key for repeated pressing keys like on a physical keyboard
 - Customizable numpad padding
 - Customizable activation time (default 1s)
 - Customizable default level of backlight
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell)
+- Can be enabled repeat pressing keys while touch persists like a physical keyboards do
 
 ## Installation
 
