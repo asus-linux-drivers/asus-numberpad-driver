@@ -131,6 +131,7 @@ while try_times > 0:
                 else:
                     keyboard_detected = 0
                     dev_k = None
+                    keyboard = None
 
             # Stop looking if touchpad and keyboard have been found
             if touchpad_detected == 2 and keyboard_detected == 2:
@@ -156,10 +157,6 @@ while try_times > 0:
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
 d_t = Device(fd_t)
-
-# start monitoring the keyboard
-if dev_k is None and keyboard is not None:
-    dev_k = InputDevice('/dev/input/event' + str(keyboard))
 
 # Retrieve touchpad dimensions
 ai = d_t.absinfo[EV_ABS.ABS_X]
