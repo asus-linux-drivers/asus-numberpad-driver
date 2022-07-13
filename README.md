@@ -18,7 +18,7 @@ If you find the project useful, do not forget to give project a [![GitHub stars]
 - Customizable default level of backlight
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
-- Numlock state correspond to the system numlock state (disabling sys numlock from e.g. external keyboard disable numpad aswell)
+- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell)
 
 ## Installation
 
