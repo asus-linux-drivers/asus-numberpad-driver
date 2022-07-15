@@ -619,6 +619,15 @@ def listen_touchpad_events():
 
     for e in d_t.events():
 
+        # ignore POINTER_BUTTON when is numpad on
+        if numlock:
+            if e.matches(EV_KEY.BTN_LEFT):
+                continue
+            elif e.matches(EV_KEY.BTN_RIGHT):
+                continue
+            elif e.matches(EV_KEY.BTN_MIDDLE):
+                continue
+
         if e.matches(EV_ABS.ABS_MT_SLOT):
             if(e.value < support_for_maximum_abs_mt_slots):
                 abs_mt_slot_value = e.value
