@@ -90,6 +90,23 @@ LOG=DEBUG sudo -E ./asus_touchpad.py
 
 ## Layout configuration
 
+During the install process `sudo ./install.sh`, is required to select key layout:
+
+```
+Select models keypad layout:
+1) g533.py
+2) gx701.py
+3) up5401ea.py
+4) ux433fa.py
+5) ux581l.py
+6) Quit
+Please enter your choice
+```
+
+Each this key layout (`g533.py`, `gx701.py`, ..) chosen during install process corresponds to the specific file and what you need is locally edit this concrete file and add selected option variable (from table below) with the value.
+
+Example: I want edit activation time to 2 seconds. During install process is chosen `up5401ea.py`. So i locally add in file `asus-touchpad-numpad-driver/numpad_layouts/up5401ea.py` row `top_right_icon_activation_time = 2` 
+
 | Option                      | Required    | Default | Description                                                       |
 | --------------------------- | ------------|---------|-------------------------------------------------------------------|
 | **Device search**           |             |         | `/proc/bus/input/devices`
