@@ -88,6 +88,9 @@ To activate logger, do in a console:
 LOG=DEBUG sudo -E ./asus_touchpad.py
 ```
 
+In some cases can help change this line `Type=simple` to `Type=idle` in service file `asus_touchpad.service`. (mentioned as solution of [issue #27](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/27))
+
+
 ## Layout configuration
 
 During the install process `sudo ./install.sh`, is required to select key layout:
