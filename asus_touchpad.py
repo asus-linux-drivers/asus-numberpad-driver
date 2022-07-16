@@ -496,6 +496,8 @@ def local_numlock_pressed():
         log.info("Numpad deactivated")
         deactivate_numpad()
 
+    set_none_to_current_mt_slot()
+
 
 def send_numlock_key(value):
     events = [
