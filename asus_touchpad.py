@@ -264,6 +264,8 @@ def pressed_touchpad_top_left_icon(e):
         log.info("Touched top_left_icon in time:")
         log.info(time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
+    else:
+        set_none_to_current_mt_slot()
 
 
 def increase_brightness():
@@ -375,9 +377,11 @@ def pressed_numpad_key():
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
 
+
 def replaced_numpad_key(touched_key_now):
     unpressed_numpad_key(touched_key_now)
     pressed_numpad_key()
+
 
 def unpressed_numpad_key(replaced_by_key=None):
 
@@ -471,6 +475,7 @@ def check_system_numlock_vs_local():
         activate_numpad()
         log.info("Numpad activated")
 
+
 def local_numlock_pressed():
     global brightness, numlock
 
@@ -510,6 +515,7 @@ def send_numlock_key(value):
         udev.send_events(events)
     except OSError as e:
         log.error("Cannot send event, %s", e)
+
 
 def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, abs_mt_slot_numpad_key
