@@ -29,14 +29,14 @@ modprobe i2c-dev
 # Checking if the i2c-dev module is successfuly loaded
 if [[ $? != 0 ]]
 then
-    echo "i2c-dev module cannot be loaded correctly. Make sur you have installed i2c-tools package"
+    echo "i2c-dev module cannot be loaded correctly. Make sure you have installed i2c-tools package"
     exit 1
 fi
 
 interfaces=$(for i in $(i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
 if [ -z "$interfaces" ]
 then
-    echo "No interface i2c found. Make sure you have installed libevdev packages"
+    echo "No i2c interface can be found. Make sure you have installed libevdev packages"
     exit 1
 fi
 
@@ -66,7 +66,7 @@ if [[ -d numpad_layouts/__pycache__ ]] ; then
 fi
 
 echo
-echo "Select models keypad layout:"
+echo "Select your model keypad layout:"
 PS3='Please enter your choice '
 options=($(ls numpad_layouts) "Quit")
 select selected_opt in "${options[@]}"
@@ -114,7 +114,7 @@ do
 done
 
 
-echo "Add asus touchpad service in /etc/systemd/system/"
+echo "Installing asus touchpad service to /etc/systemd/system/"
 cat asus_touchpad.service | LAYOUT=$model PERCENTAGE_KEY=$percentage_key envsubst '$LAYOUT $PERCENTAGE_KEY' > /etc/systemd/system/asus_touchpad_numpad.service
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
@@ -128,7 +128,7 @@ systemctl enable asus_touchpad_numpad
 
 if [[ $? != 0 ]]
 then
-    echo "Something gone wrong while enabling asus_touchpad_numpad.service"
+    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
     exit 1
 else
     echo "Asus touchpad service enabled"
@@ -137,7 +137,7 @@ fi
 systemctl restart asus_touchpad_numpad
 if [[ $? != 0 ]]
 then
-    echo "Something gone wrong while enabling asus_touchpad_numpad.service"
+    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
     exit 1
 else
     echo "Asus touchpad service started"
