@@ -20,6 +20,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell)
 - Are ignored touchpad physical buttons left, right and middle when is numpad on
 - Can be enabled repeat pressing keys while touch persists like a physical keyboards do
+- Can be enabled multitouch for maximum 5 fingers at the same moment (Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well; Example 2: brightness can be changed during using numpad for calculating)
 
 ## Installation
 
