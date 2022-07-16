@@ -255,6 +255,7 @@ def set_none_to_current_mt_slot():
     abs_mt_slot_x_values[abs_mt_slot_value] = 0
     abs_mt_slot_y_values[abs_mt_slot_value] = 0
 
+
 def pressed_touchpad_top_left_icon(e):
     global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_value
 
@@ -263,8 +264,6 @@ def pressed_touchpad_top_left_icon(e):
         log.info("Touched top_left_icon in time:")
         log.info(time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
-    else:
-        set_none_to_current_mt_slot()
 
 
 def increase_brightness():
@@ -518,8 +517,6 @@ def pressed_touchpad_top_right_icon(value):
         log.info("Touched numlock in time:")
         log.info(time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
-    else:
-        set_none_to_current_mt_slot()
 
 
 def is_slided_from_top_left_icon(e):
