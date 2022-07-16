@@ -1,6 +1,6 @@
 # Asus touchpad numpad driver
 
-Driver is written in python and runs as systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations you can find [here](#layout-configuration).
+The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations you can find [here](#configuration).
 
 If you find a project useful, do not forget to give project a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
 
@@ -18,9 +18,9 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell)
-- Are ignored touchpad physical buttons left, right and middle when is numpad on
-- Can be enabled repeat pressing keys while touch persists like a physical keyboards do
-- Can be enabled multitouch for maximum 5 fingers at the same moment (Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well; Example 2: brightness can be changed during using numpad for calculating)
+- Touchpad physical buttons (left, right and middle) are ignored when is numpad on
+- Repeat key pressing when a key is held (optional)
+- Multitouch for maximum 5 fingers at the same moment (Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well; Example 2: brightness can be changed during using numpad for calculating) (optional)
 
 ## Installation
 
@@ -84,18 +84,17 @@ sudo i2cdetect -l
 
 ## Troubleshooting
 
-To activate logger, do in a console:
+To show debug logs run:
 
 ```bash
 LOG=DEBUG sudo -E ./asus_touchpad.py
 ```
 
-In some cases can help change this line `Type=simple` to `Type=idle` in service file `asus_touchpad.service`. (mentioned as solution of [issue #27](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/27))
+In some cases changing service type from `Type=simple` to `Type=idle` in service file `asus_touchpad.service` may help if you have issues with key registration. (mentioned as solution of [issue #27](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/27))
 
+## Configuration
 
-## Layout configuration
-
-During the install process `sudo ./install.sh`, is required to select key layout:
+During the install process `sudo ./install.sh`, you're required to select your keyboard layout:
 
 ```
 Select models keypad layout:
@@ -108,9 +107,9 @@ Select models keypad layout:
 Please enter your choice
 ```
 
-Each this key layout (`g533.py`, `gx701.py`, ..) chosen during install process corresponds to the specific file and what you need is locally edit this concrete file and add selected option variable (from table below) with the value.
+Each key layout (`g533.py`, `gx701.py`, ..) chosen during the install process corresponds to the specific file. To change any settings you need to locally edit the selected layout file and change the value of the corresponding variable from the table below.
 
-Example: I want edit activation time to 2 seconds. During install process is chosen `up5401ea.py`. So i locally add in file `asus-touchpad-numpad-driver/numpad_layouts/up5401ea.py` row `top_right_icon_activation_time = 2` 
+Example: If you want to set the activation time to 2 seconds and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variable to 2 seconds (`top_right_icon_activation_time = 2`) in the layout file (`asus-touchpad-numpad-driver/numpad_layouts/up5401ea.py`) and install the layout again.
 
 | Option                      | Required    | Default | Description                                                       |
 | --------------------------- | ------------|---------|-------------------------------------------------------------------|
@@ -129,7 +128,7 @@ Example: I want edit activation time to 2 seconds. During install process is cho
 | `top_left_icon_height`                         |             |         | height of the top left icon
 | `top_left_icon_activation_time`                |             | 1 [s]   | amount of time for touch `top_left_icon`
 | `top_left_icon_slide_func_keys`                |             | `EV_KEY.KEY_CALC` | array of `InputEvent`
-| `top_left_icon_slide_func_activation_x_ratio  `|             | 0.3     | ratio of touchpad width of slide
+| `top_left_icon_slide_func_activation_x_ratio`  |             | 0.3     | ratio of touchpad width of slide
 | `top_left_icon_slide_func_activation_y_ratio`  |             | 0.3     | ratio of touchpad height of slide
 | `top_left_icon_slide_func_activate_numpad`     |             | `True`  | valid value is `True` or `False`
 | `top_left_icon_brightness_func_disabled`       |             |         | valid value is only `True`
@@ -139,14 +138,13 @@ keys
 | `top_right_icon_height`     | Required    |         | height of the top right icon
 | `top_right_icon_activation_time` |        | 1 [s]   | amount of time you have to touch `top_right_icon` for the numpad activation/deactivation
 | **Paddings**                |             |         | numpad has padding zones around where nothing happens when is touched except top icons
-| `top_offset`                |             | 0       | top numpad offset   
+| `top_offset`                |             | 0       | top numpad offset
 | `right_offset`              |             | 0       | right numpad offset
 | `left_offset`               |             | 0       | left numpad offset
 | `bottom_offset`             |             | 0       | bottom numpad offset
 | **Backlight**               |             |         |
 | `backlight_levels`          |             |         | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded) |
 | `default_backlight_level`   |             | 0x01    | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
-
 
 ## Credits
 
@@ -156,7 +154,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 ## Developing
 
-- **During debugging remember to disable already installed service created by this driver**
+- **Before debugging make sure you have disabled the asus_touchpad_numpad.service service**
 
 ```bash
 sudo systemctl stop asus_touchpad_numpad.service
