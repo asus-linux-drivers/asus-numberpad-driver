@@ -38,6 +38,7 @@ one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
 top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
+sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
 
 if not top_right_icon_width > 0 or not top_right_icon_height > 0:
     log.debug('top_right_icon width and height is required to set > 0.')
@@ -466,7 +467,10 @@ def check_system_numlock_vs_local():
         numlock = False
         deactivate_numpad()
         log.info("Numpad deactivated")
-
+    elif sys_numlock and sys_numlock_enables_numpad and not numlock:
+        numlock = True
+        activate_numpad()
+        log.info("Numpad activated")
 
 def local_numlock_pressed():
     global brightness, numlock
