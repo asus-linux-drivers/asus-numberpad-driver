@@ -17,7 +17,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Customizable default level of backlight
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
-- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell)
+- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is numpad on
 - Repeat key pressing when a key is held (optional)
 - Multitouch for maximum 5 fingers at the same moment (Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well; Example 2: brightness can be changed during using numpad for calculating) (optional)
