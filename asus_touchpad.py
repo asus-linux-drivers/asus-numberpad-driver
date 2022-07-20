@@ -735,8 +735,6 @@ def listen_touchpad_events():
 
 
 def check_system_numlock_status():
-    global numlock
-
     while True:
         check_system_numlock_vs_local()
         sleep(0.5)
