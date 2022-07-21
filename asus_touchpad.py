@@ -489,7 +489,8 @@ def local_numlock_pressed():
     if numlock:
 
         is_touchpad_enabled = is_device_enabled(touchpad_name)
-        if is_touchpad_enabled:
+        if touchpad_disables_numpad and is_touchpad_enabled or\
+            not touchpad_disables_numpad:
 
             if not sys_numlock:
                 send_numlock_key(1)
