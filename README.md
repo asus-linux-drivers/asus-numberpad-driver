@@ -17,6 +17,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Customizable default level of backlight
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
+- Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is numpad on
 - Repeat key pressing when a key is held (optional)
@@ -113,8 +114,9 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 
 | Option                      | Required    | Default | Description                                                       |
 | --------------------------- | ------------|---------|-------------------------------------------------------------------|
-| **System numlock**          |             |           | obtained via active `LED_NUML` of keyboard device
-| `sys_numlock_enables_numpad`|             | `False`   | enable with `True`, by default numpad reflects only disabling system numlock (then is disabled)
+| **System**          |             |           | 
+| `touchpad_disables_numpad`|             | `True`   | when is touchpad disabled (e.g. via Fn+special key) is disabled numpad aswell, valid value is `True` of `False`
+| `sys_numlock_enables_numpad`|             | `False`   | obtained via active `LED_NUML` of keyboard device<br><br>enable with `True`, by default numpad reflects only disabling system numlock (then is disabled)
 | **Device search**           |             |           | `/proc/bus/input/devices`
 | `try_times`                 |             | 5         | how many times to try find a touchpad device in each service start attempt  
 | `try_sleep`                 |             | 0.1 [s]   | time between tries
