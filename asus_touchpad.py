@@ -32,6 +32,7 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
 key_repetitions = getattr(model_layout, "key_repetitions", False)
 multitouch = getattr(model_layout, "multitouch", False)
 one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
@@ -79,6 +80,7 @@ if len(sys.argv) > 2:
 
 # Figure out devices from devices file
 touchpad: Optional[str] = None
+touchpad_name: Optional[str] = None
 keyboard: Optional[str] = None
 dev_k = None
 numlock: bool = False
@@ -97,6 +99,7 @@ while try_times > 0:
             if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
                 touchpad_detected = 1
                 log.debug('Detect touchpad from %s', line.strip())
+                touchpad_name = line.split("\"")[1]
 
             if touchpad_detected == 1:
                 if "S: " in line:
@@ -484,13 +487,19 @@ def local_numlock_pressed():
 
     # Activating
     if numlock:
-        if not sys_numlock:
-            send_numlock_key(1)
-            send_numlock_key(0)
-            log.info("System numlock activated")
 
-        log.info("Numpad activated")
-        activate_numpad()
+        is_touchpad_enabled = is_device_enabled(touchpad_name)
+        if touchpad_disables_numpad and is_touchpad_enabled or\
+            not touchpad_disables_numpad:
+
+            if not sys_numlock:
+                send_numlock_key(1)
+                send_numlock_key(0)
+                log.info("System numlock activated")
+
+            log.info("Numpad activated")
+            activate_numpad()
+
     # Inactivating
     else:
         if sys_numlock:
@@ -734,16 +743,56 @@ def listen_touchpad_events():
                 unpressed_numpad_key()
 
 
+# Gets the enable device property for the device Id  
+def is_device_enabled(device_name):
+    propData = subprocess.check_output(['xinput', '--list-props', device_name])
+    propData = propData.decode()
+
+    for line in propData.splitlines():
+        if 'Device Enabled' in line:
+            line = line.strip()
+            if line[-1] == '1':
+                return True
+            else:
+                return False
+
+    return False
+
+
+def check_touchpad_status():
+    global touchpad_name, numlock, touchpad_disables_numpad
+
+    is_touchpad_enabled = is_device_enabled(touchpad_name)
+
+    if not is_touchpad_enabled and touchpad_disables_numpad and numlock:
+        numlock = False
+        deactivate_numpad()
+        log.info("Numpad deactivated")
+
+
 def check_system_numlock_status():
     while True:
         check_system_numlock_vs_local()
         sleep(0.5)
 
+
+def check_touchpad_status_endless_cycle():
+    while True:
+        check_touchpad_status()
+        sleep(0.5)
+
+
+threads = []
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
 if dev_k:
-    threads = []
     t = threading.Thread(target=check_system_numlock_status)
+    threads.append(t)
+    t.start()
+
+# if disabling touchpad disables numpad aswell
+if d_t and touchpad_name and touchpad_disables_numpad:
+    t = threading.Thread(target=check_touchpad_status_endless_cycle)
     threads.append(t)
     t.start()
 
