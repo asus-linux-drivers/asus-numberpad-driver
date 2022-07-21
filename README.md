@@ -115,7 +115,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | Option                      | Required    | Default | Description                                                       |
 | --------------------------- | ------------|---------|-------------------------------------------------------------------|
 | **System**          |             |           | 
-| `touchpad_disables_numpad`|             | `True`   | when is touchpad disabled (e.g. via Fn+special key) is disabled numpad aswell, valid value is `True` of `False`
+| `touchpad_disables_numpad`|             | `True`   | when is touchpad disabled (e.g. via Fn+special key) is disabled numpad aswell, valid value is `True` or `False`
 | `sys_numlock_enables_numpad`|             | `False`   | obtained via active `LED_NUML` of keyboard device<br><br>enable with `True`, by default numpad reflects only disabling system numlock (then is disabled)
 | **Device search**           |             |           | `/proc/bus/input/devices`
 | `try_times`                 |             | 5         | how many times to try find a touchpad device in each service start attempt  
