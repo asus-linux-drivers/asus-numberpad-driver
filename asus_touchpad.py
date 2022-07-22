@@ -288,7 +288,7 @@ def increase_brightness():
 
 
 def activate_numpad():
-    global brightness
+    global brightness, default_backlight_level
 
     try:
         d_t.grab()
