@@ -766,6 +766,7 @@ def is_device_enabled(device_name):
 
         return False
     except:
+        log.info('Getting Device Enabled via xinput failed')
         return True
 
 
