@@ -21,7 +21,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is numpad on
 - Repeat key pressing when a key is held (optional)
-- Multitouch for maximum 5 fingers at the same moment (Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well; Example 2: brightness can be changed during using numpad for calculating) (optional)
+- Multitouch for maximum 5 fingers at the same moment (optional)
 
 ## Installation
 
@@ -122,7 +122,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | `try_sleep`                 |             | 0.1 [s]   | time between tries
 | **Key layout**              |             |
 | `keys`                      | Required    |           | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array
-| `multitouch`                |             | `False`   | up to quint tap when enabled
+| `multitouch`                |             | `False`   | up to quint tap when enabled<br><br>Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using numpad for calculating)
 | `one_touch_key_rotation`    |             | `False`   | possibility of altering multiple keys during one-touch
 | `key_repetitions`           |             | `False`   | possible to enable with value `True` hold key for repeated pressing key like on a physical keyboard
 | **Top left icon**           |             |         | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions)<br><br>custom function is used when is numpad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is numpad activated, `top_left_icon_brightness_function_disabled` is not True, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
