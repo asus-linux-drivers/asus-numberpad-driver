@@ -218,7 +218,8 @@ def use_bindings_for_touchpad_left_key():
         udev.send_events(key_events)
 
         if top_left_icon_slide_func_activate_numpad is True and not numlock:
-            local_numlock_pressed()
+            sys_numlock = get_system_numlock()
+            local_numlock_pressed(sys_numlock)
 
         log.info("Used bindings for touchpad left_icon slide function")
 
@@ -479,29 +480,27 @@ def check_system_numlock_vs_local():
         log.info("Numpad activated")
 
 
-def local_numlock_pressed():
+def local_numlock_pressed(sys_numlock):
     global brightness, numlock
 
-    numlock = not numlock
-    sys_numlock = get_system_numlock()
-
     # Activating
-    if numlock:
+    if not numlock:
 
-        is_touchpad_enabled = is_device_enabled(touchpad_name)
-        if touchpad_disables_numpad and is_touchpad_enabled or\
-            not touchpad_disables_numpad:
+        # has to close as possible to send_numlock (because threads checking diff between these)
+        numlock = True
+        if not sys_numlock:
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock activated")
 
-            if not sys_numlock:
-                send_numlock_key(1)
-                send_numlock_key(0)
-                log.info("System numlock activated")
-
-            log.info("Numpad activated")
-            activate_numpad()
+        log.info("Numpad activated")
+        activate_numpad()
 
     # Inactivating
     else:
+
+        # has to close as possible to send_numlock (because threads checking diff between these
+        numlock = False
         if sys_numlock:
             send_numlock_key(1)
             send_numlock_key(0)
@@ -511,7 +510,6 @@ def local_numlock_pressed():
         deactivate_numpad()
 
     set_none_to_current_mt_slot()
-
 
 def send_numlock_key(value):
     events = [
@@ -633,7 +631,7 @@ def get_system_numlock():
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
-        unsupported_abs_mt_slot, top_right_icon_touch_start_time
+        unsupported_abs_mt_slot, top_right_icon_touch_start_time, touchpad_name
 
     for e in d_t.events():
 
@@ -659,8 +657,15 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            if is_pressed_touchpad_top_right_icon() and takes_top_right_icon_touch_longer_then_set_up_activation_time():
-                local_numlock_pressed()
+            sys_numlock = get_system_numlock()
+            is_touchpad_enabled = is_device_enabled(touchpad_name)
+            if is_pressed_touchpad_top_right_icon() and\
+                takes_top_right_icon_touch_longer_then_set_up_activation_time() and\
+                    (
+                        (is_touchpad_enabled and touchpad_disables_numpad) or\
+                        not touchpad_disables_numpad
+                    ):
+                local_numlock_pressed(sys_numlock)
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
