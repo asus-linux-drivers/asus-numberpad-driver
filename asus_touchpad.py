@@ -284,12 +284,16 @@ def increase_brightness():
     log.info(brightness)
 
     numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
-        backlight_levels[brightness] + " 0xad"
-    subprocess.call(numpad_cmd, shell=True)
+            backlight_levels[brightness] + " 0xad"
+
+    try:
+        subprocess.call(numpad_cmd, shell=True)
+    except:
+        pass
 
 
 def activate_numpad():
-    global brightness, default_backlight_level
+    global brightness, device_id, default_backlight_level
 
     try:
         d_t.grab()
@@ -313,15 +317,14 @@ def activate_numpad():
 
 
 def deactivate_numpad():
-    global brightness
+    global brightness, device_id
+
+    numpad_cmd = "i2ctransfer -f -y " + device_id + \
+            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"    
 
     try:
         d_t.ungrab()
-
-        numpad_cmd = "i2ctransfer -f -y " + device_id + \
-            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         subprocess.call(numpad_cmd, shell=True)
-
         brightness = 0
     except (OSError, libevdev.device.DeviceGrabError):
         pass
@@ -748,20 +751,22 @@ def listen_touchpad_events():
                 unpressed_numpad_key()
 
 
-# Gets the enable device property for the device Id  
 def is_device_enabled(device_name):
-    propData = subprocess.check_output(['xinput', '--list-props', device_name])
-    propData = propData.decode()
+    try:
+        propData = subprocess.check_output(['xinput', '--list-props', device_name])
+        propData = propData.decode()
 
-    for line in propData.splitlines():
-        if 'Device Enabled' in line:
-            line = line.strip()
-            if line[-1] == '1':
-                return True
-            else:
-                return False
+        for line in propData.splitlines():
+            if 'Device Enabled' in line:
+                line = line.strip()
+                if line[-1] == '1':
+                    return True
+                else:
+                    return False
 
-    return False
+        return False
+    except:
+        return True
 
 
 def check_touchpad_status():
