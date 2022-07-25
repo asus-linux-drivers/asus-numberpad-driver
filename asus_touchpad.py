@@ -195,7 +195,7 @@ dev.name = "Asus Touchpad/Numpad"
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 for key_to_enable in top_left_icon_slide_func_keys:
-    dev.enable(key_to_enable)
+    dev.enable(key_to_enable.code)
 
 for col in keys:
     for key in col:
