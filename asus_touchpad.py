@@ -660,15 +660,17 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            sys_numlock = get_system_numlock()
-            is_touchpad_enabled = is_device_enabled(touchpad_name)
             if is_pressed_touchpad_top_right_icon() and\
-                takes_top_right_icon_touch_longer_then_set_up_activation_time() and\
-                    (
-                        (is_touchpad_enabled and touchpad_disables_numpad) or\
-                        not touchpad_disables_numpad
-                    ):
-                local_numlock_pressed(sys_numlock)
+                takes_top_right_icon_touch_longer_then_set_up_activation_time():
+
+                # get system numlock state & touchpad device state once 
+                # only when is reached activation time
+                sys_numlock = get_system_numlock()
+                is_touchpad_enabled = is_device_enabled(touchpad_name)                
+                if (is_touchpad_enabled and touchpad_disables_numpad) or\
+                    not touchpad_disables_numpad:
+
+                    local_numlock_pressed(sys_numlock)
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
