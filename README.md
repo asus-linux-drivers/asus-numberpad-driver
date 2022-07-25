@@ -15,6 +15,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Customizable numpad padding
 - Customizable activation time (default 1s)
 - Customizable default level of backlight
+- Remember last used level of backlight even between reboots
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 - Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
@@ -146,7 +147,7 @@ keys
 | `bottom_offset`             |             | 0       | bottom numpad offset
 | **Backlight**               |             |         |
 | `backlight_levels`          |             |         | array of backlight levels in hexa format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hardcoded) |
-| `default_backlight_level`   |             | 0x01    | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
+| `default_backlight_level`   |             | `0x01`    | default backlight level in hexa format `0x00` (has to be the value from `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
 
 ## Credits
 
