@@ -45,6 +45,7 @@ model_layout = importlib.import_module('numpad_layouts.' + model)
 
 percentage_key: libevdev.const = EV_KEY.KEY_5
 
+disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
 touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
 key_repetitions = getattr(model_layout, "key_repetitions", False)
 multitouch = getattr(model_layout, "multitouch", False)
@@ -367,6 +368,7 @@ if multitouch:
 unsupported_abs_mt_slot: bool = False
 top_right_icon_touch_start_time = 0
 top_left_icon_touch_start_time = 0
+last_event_time = 0
 brightness: int = 0
 
 def set_tracking_id(value):
@@ -669,9 +671,11 @@ def get_system_numlock():
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
-        unsupported_abs_mt_slot, top_right_icon_touch_start_time, touchpad_name
+        unsupported_abs_mt_slot, top_right_icon_touch_start_time, touchpad_name, last_event_time
 
     for e in d_t.events():
+
+        last_event_time = time()
 
         # ignore POINTER_BUTTON when is numpad on
         if numlock:
@@ -814,7 +818,7 @@ def check_touchpad_status():
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
     if not is_touchpad_enabled and touchpad_disables_numpad and numlock:
-        numlock = False
+        numlock = False        
         deactivate_numpad()
         log.info("Numpad deactivated")
 
@@ -833,6 +837,29 @@ def check_touchpad_status_endless_cycle():
         sleep(0.5)
 
 
+def check_numpad_automatical_disable_due_inactivity():
+    global disable_due_inactivity_time, last_event_time, numlock
+
+    while True:
+        if\
+            numlock and\
+            last_event_time != 0 and\
+            time() > disable_due_inactivity_time + last_event_time:
+
+            numlock_lock.acquire()
+
+            sys_numlock = get_system_numlock()
+            if sys_numlock:
+                send_numlock_key(1)
+                send_numlock_key(0)
+                log.info("System numlock deactivated")
+
+            numlock = False
+            deactivate_numpad()
+            log.info("Numpad deactivated")
+            numlock_lock.release()
+        sleep(1)
+
 threads = []
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
@@ -844,6 +871,11 @@ if dev_k:
 # if disabling touchpad disables numpad aswell
 if d_t and touchpad_name and touchpad_disables_numpad:
     t = threading.Thread(target=check_touchpad_status_endless_cycle)
+    threads.append(t)
+    t.start()
+
+if disable_due_inactivity_time > 0:
+    t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
     threads.append(t)
     t.start()
 
