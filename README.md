@@ -15,7 +15,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Customizable numpad padding
 - Customizable activation time (default 1s)
 - Customizable default level of backlight
-- Remember last used level of backlight even between reboots
+- By default remember the last used level of backlight (even between reboots)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 - Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
