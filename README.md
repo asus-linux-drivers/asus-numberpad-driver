@@ -18,7 +18,7 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - By default remember the last used level of backlight (even between reboots)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
-- Numpad is automatically disabled after inactivity (default 1 min)
+- Numpad is automatically disabled due inactivity (default 1 min)
 - Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is numpad on
@@ -117,7 +117,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | Option                      | Required    | Default | Description                                                       |
 | --------------------------- | ------------|---------|-------------------------------------------------------------------|
 | **System**          |             |           |
-| `disable_due_inactivity_time`|               | 60 [s]   | time after that is numpad automatically disabled when driver not received any event
+| `disable_due_inactivity_time`|               | 60 [s]   | numpad is automatically disabled when have not received any event for this interval
 | `touchpad_disables_numpad`|             | `True`   | when is touchpad disabled is disabled numpad aswell, valid value is `True` or `False` (e.g. via Fn+special key)<br><br>status is taken from result of `xinput` - to toggle touchpad can be used [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh)
 | `sys_numlock_enables_numpad`|             | `False`   | obtained via active `LED_NUML` of keyboard device<br><br>enable with `True`, by default numpad reflects only disabling system numlock (then is disabled)
 | **Device search**           |             |           | `/proc/bus/input/devices`
