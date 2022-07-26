@@ -16,7 +16,7 @@ import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 import configparser
 
-CONFIG_FILE_NAME = "config"
+CONFIG_FILE_NAME = "asus_touchpad_dev"
 CONFIG_SECTION = "main"
 CONFIG_BRIGHTNESS = "brightness"
 
