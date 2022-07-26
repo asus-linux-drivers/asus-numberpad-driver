@@ -10,11 +10,24 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-
 from evdev import InputDevice
 import libevdev.const
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
+import configparser
+
+CONFIG_FILE_NAME = "asus_touchpad_dev"
+CONFIG_SECTION = "main"
+CONFIG_BRIGHTNESS = "brightness"
+
+config = configparser.ConfigParser()
+config.read(CONFIG_FILE_NAME)
+
+# when we open first time
+try:
+    config.add_section(CONFIG_SECTION)
+except:
+    pass
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
@@ -51,7 +64,13 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
     sys.exit(1)
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
+
 default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
+if default_backlight_level == "0x01":
+    try:
+        default_backlight_level = config.get(CONFIG_SECTION, CONFIG_BRIGHTNESS)
+    except:
+        pass
 
 top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
 top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
@@ -274,7 +293,7 @@ def pressed_touchpad_top_left_icon(e):
 
 
 def increase_brightness():
-    global brightness, backlight_levels
+    global brightness, backlight_levels, config
 
     if (brightness + 1) >= len(backlight_levels):
         brightness = 0
@@ -283,6 +302,10 @@ def increase_brightness():
 
     log.info("Increased brightness of backlight to")
     log.info(brightness)
+
+    config.set(CONFIG_SECTION, CONFIG_BRIGHTNESS, backlight_levels[brightness])
+    with open(CONFIG_FILE_NAME, 'w') as configfile:
+        config.write(configfile)
 
     numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
             backlight_levels[brightness] + " 0xad"
