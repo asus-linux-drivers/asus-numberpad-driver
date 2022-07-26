@@ -84,6 +84,8 @@ touchpad_name: Optional[str] = None
 keyboard: Optional[str] = None
 dev_k = None
 numlock: bool = False
+numlock_lock = threading.Lock()
+
 device_id: Optional[str] = None
 
 # Look into the devices file #
@@ -218,8 +220,7 @@ def use_bindings_for_touchpad_left_key():
         udev.send_events(key_events)
 
         if top_left_icon_slide_func_activate_numpad is True and not numlock:
-            sys_numlock = get_system_numlock()
-            local_numlock_pressed(sys_numlock)
+            local_numlock_pressed()
 
         log.info("Used bindings for touchpad left_icon slide function")
 
@@ -471,6 +472,8 @@ def is_not_finger_moved_to_another_key():
 def check_system_numlock_vs_local():
     global brightness, numlock
 
+    numlock_lock.acquire()
+
     sys_numlock = get_system_numlock()
 
     if not sys_numlock and numlock:
@@ -482,9 +485,15 @@ def check_system_numlock_vs_local():
         activate_numpad()
         log.info("Numpad activated")
 
+    numlock_lock.release()
 
-def local_numlock_pressed(sys_numlock):
+
+def local_numlock_pressed():
     global brightness, numlock
+
+    numlock_lock.acquire()
+    
+    sys_numlock = get_system_numlock()
 
     # Activating
     if not numlock:
@@ -495,7 +504,7 @@ def local_numlock_pressed(sys_numlock):
             send_numlock_key(1)
             send_numlock_key(0)
             log.info("System numlock activated")
-
+    
         log.info("Numpad activated")
         activate_numpad()
 
@@ -513,6 +522,9 @@ def local_numlock_pressed(sys_numlock):
         deactivate_numpad()
 
     set_none_to_current_mt_slot()
+
+    numlock_lock.release()
+
 
 def send_numlock_key(value):
     events = [
@@ -663,14 +675,13 @@ def listen_touchpad_events():
             if is_pressed_touchpad_top_right_icon() and\
                 takes_top_right_icon_touch_longer_then_set_up_activation_time():
 
-                # get system numlock state & touchpad device state once 
+                # get touchpad device state once 
                 # only when is reached activation time
-                sys_numlock = get_system_numlock()
                 is_touchpad_enabled = is_device_enabled(touchpad_name)                
                 if (is_touchpad_enabled and touchpad_disables_numpad) or\
                     not touchpad_disables_numpad:
 
-                    local_numlock_pressed(sys_numlock)
+                    local_numlock_pressed()
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
@@ -775,12 +786,16 @@ def is_device_enabled(device_name):
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
 
+    numlock_lock.acquire()
+
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
     if not is_touchpad_enabled and touchpad_disables_numpad and numlock:
         numlock = False
         deactivate_numpad()
         log.info("Numpad deactivated")
+
+    numlock_lock.release()
 
 
 def check_system_numlock_status():
