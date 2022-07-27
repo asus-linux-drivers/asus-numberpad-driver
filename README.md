@@ -14,10 +14,9 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 - Multiple layouts
 - Customizable numpad padding
 - Customizable activation time (default 1s)
-- Customizable default level of backlight
-- By default remember the last used level of backlight (even between reboots)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
+- Customizable default level of backlight (default is last used level - works even between reboots)
 - Numpad is automatically disabled due inactivity (default 1 min)
 - Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
