@@ -92,8 +92,6 @@ To show debug logs run:
 LOG=DEBUG sudo -E ./asus_touchpad.py
 ```
 
-In some cases changing service type from `Type=simple` to `Type=idle` in service file `asus_touchpad.service` may help if you have issues with key registration. (mentioned as solution of [issue #27](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/27))
-
 ## Configuration
 
 During the install process `sudo ./install.sh`, you're required to select your keyboard layout:
