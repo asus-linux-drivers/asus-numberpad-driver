@@ -1,4 +1,4 @@
-# Asus touchpad number pad driver
+# Asus touchpad NumberPad driver
 
 The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations you can find [here](#configuration).
 
