@@ -119,7 +119,8 @@ case $DETECTED_LAYOUT in
 esac
 
 echo "Installing asus touchpad service to /etc/systemd/system/"
-cat asus_touchpad.service | LAYOUT=$model PERCENTAGE_KEY=$percentage_key envsubst '$LAYOUT $PERCENTAGE_KEY' >/etc/systemd/system/asus_touchpad_numpad.service
+xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
+cat asus_touchpad.service | LAYOUT=$model PERCENTAGE_KEY=$percentage_key XAUTHORITY=$xauthority envsubst '$LAYOUT $PERCENTAGE_KEY $XAUTHORITY' >/etc/systemd/system/asus_touchpad_numpad.service
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver

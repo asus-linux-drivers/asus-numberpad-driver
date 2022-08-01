@@ -11,6 +11,8 @@ TimeoutSec=5
 Restart=on-failure
 # For some operating systems with boot failure, adding this following property might resolve the issue  
 ExecStartPre=/bin/sleep 2
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=$XAUTHORITY"
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical.target
