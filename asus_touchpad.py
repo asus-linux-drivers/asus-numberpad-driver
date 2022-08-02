@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import configparser
 import importlib
 import logging
 import math
@@ -10,11 +11,11 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-from evdev import InputDevice
+
 import libevdev.const
 import numpy as np
+from evdev import InputDevice
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
-import configparser
 
 EV_KEY_KEY_PERCENTS = "EV_KEY.KEY_PERCENTS"
 
@@ -38,10 +39,29 @@ logging.basicConfig()
 log = logging.getLogger('Pad')
 log.setLevel(os.environ.get('LOG', 'INFO'))
 
+# Get layout data
+layout_data = importlib.import_module('layout_data')
+
 # Select model from command line
 model = 'up5401ea'  # Model used in the derived script (with symbols)
 if len(sys.argv) > 1:
     model = sys.argv[1]
+else:
+    laptop_name = subprocess.check_output(["dmidecode -s system-product-name"], shell=True)
+    laptop_model = laptop_name.decode().strip().split('_')[1]
+    if len(laptop_model) != 0:
+        model_layout = layout_data.layouts[laptop_model]
+        if len(laptop_model) != 0:
+            model = model_layout
+            log.info('Numpad layout was detected automatically (%s)', model_layout)
+
+        else:
+            log.error('Numpad layout for your model does not exist! If you\'re sure that yor device supports numpad on touchpad create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)')
+            sys.exit(1)
+    else:
+        log.error('Laptop model could not be detected! Make sure you\'re running program with elevated privileges or try setting your layout manually.')
+        sys.exit(1)
+
 
 model_layout = importlib.import_module('numpad_layouts.' + model)
 
