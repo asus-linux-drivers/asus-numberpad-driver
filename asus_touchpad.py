@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import configparser
 import importlib
 import logging
 import math
@@ -11,11 +10,11 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-
+from evdev import InputDevice
 import libevdev.const
 import numpy as np
-from evdev import InputDevice
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
+import configparser
 
 EV_KEY_KEY_PERCENTS = "EV_KEY.KEY_PERCENTS"
 
@@ -39,31 +38,15 @@ logging.basicConfig()
 log = logging.getLogger('Pad')
 log.setLevel(os.environ.get('LOG', 'INFO'))
 
-# Get layout data
-layout_data = importlib.import_module('layout_data')
-
-# Select model from command line
-model = 'up5401ea'  # Model used in the derived script (with symbols)
+# Numpad layout model
+model = None
 if len(sys.argv) > 1:
     model = sys.argv[1]
-else:
-    laptop_name = subprocess.check_output(["dmidecode -s system-product-name"], shell=True)
-    laptop_model = laptop_name.decode().strip().split('_')[1]
-    if len(laptop_model) != 0:
-        model_layout = layout_data.layouts[laptop_model]
-        if len(laptop_model) != 0:
-            model = model_layout
-            log.info('Numpad layout was detected automatically (%s)', model_layout)
-
-        else:
-            log.error('Numpad layout for your model does not exist! If you\'re sure that yor device supports numpad on touchpad create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)')
-            sys.exit(1)
-    else:
-        log.error('Laptop model could not be detected! Make sure you\'re running program with elevated privileges or try setting your layout manually.')
-        sys.exit(1)
-
-
-model_layout = importlib.import_module('numpad_layouts.' + model)
+try:
+    model_layout = importlib.import_module('numpad_layouts.' + model)
+except:
+    log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
+    sys.exit(1)
 
 percentage_key: None
 
@@ -78,12 +61,12 @@ top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activatio
 sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
 
 if not top_right_icon_width > 0 or not top_right_icon_height > 0:
-    log.debug('top_right_icon width and height is required to set > 0.')
+    log.error('top_right_icon width and height is required to set > 0.')
     sys.exit(1)
 
 keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
-    log.debug('keys is required to set, dimension has to be atleast array of len 1 inside array')
+    log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
