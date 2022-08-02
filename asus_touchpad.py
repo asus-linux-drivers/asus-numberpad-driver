@@ -16,9 +16,11 @@ import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 import configparser
 
+EV_KEY_KEY_PERCENTS = "EV_KEY.KEY_PERCENTS"
+
 CONFIG_FILE_NAME = "asus_touchpad_dev"
 CONFIG_SECTION = "main"
-CONFIG_BRIGHTNESS = "brightness"
+CONFIG_LAST_BRIGHTNESS = "last_brightness"
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_NAME)
@@ -43,7 +45,7 @@ if len(sys.argv) > 1:
 
 model_layout = importlib.import_module('numpad_layouts.' + model)
 
-percentage_key: libevdev.const = EV_KEY.KEY_5
+percentage_key: None
 
 disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
 touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
@@ -69,7 +71,7 @@ backlight_levels = getattr(model_layout, "backlight_levels", [])
 default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
 if default_backlight_level == "0x01":
     try:
-        default_backlight_level = config.get(CONFIG_SECTION, CONFIG_BRIGHTNESS)
+        default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
     except:
         pass
 
@@ -94,9 +96,6 @@ left_offset = getattr(model_layout, "left_offset", 0)
 right_offset = getattr(model_layout, "right_offset", 0)
 top_offset = getattr(model_layout, "top_offset", 0)
 bottom_offset = getattr(model_layout, "bottom_offset", 0)
-
-if len(sys.argv) > 2:
-    percentage_key = EV_KEY.codes[int(sys.argv[2])]
 
 # Figure out devices from devices file
 touchpad: Optional[str] = None
@@ -204,14 +203,6 @@ col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
 # Create a new keyboard device to send numpad events
-# KEY_5:6
-# KEY_APOSTROPHE:40
-# [...]
-percentage_key = EV_KEY.KEY_5
-
-if len(sys.argv) > 2:
-    percentage_key = EV_KEY.codes[int(sys.argv[2])]
-
 dev = Device()
 dev.name = "Asus Touchpad/Numpad"
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
@@ -221,10 +212,59 @@ for key_to_enable in top_left_icon_slide_func_keys:
 
 for col in keys:
     for key in col:
-        dev.enable(key)
+        if key != EV_KEY_KEY_PERCENTS:
+            dev.enable(key)
 
-if percentage_key != EV_KEY.KEY_5:
+# pre-enable variants for % with left shift
+# others are loaded via xmodmap during using driver
+association_between_keyboard_layout_and_percentage_ev_key = {
+    "qwerty": EV_KEY.KEY_5,
+    "azerty": EV_KEY.KEY_APOSTROPHE,
+    "qwertz": EV_KEY.KEY_MINUS
+}
+for keyboard_layout, percentage_key in association_between_keyboard_layout_and_percentage_ev_key.items():
     dev.enable(percentage_key)
+
+def check_keyboard_layout():
+    global percentage_key, dev, udev
+
+    try:
+        result = subprocess.check_output(["setxkbmap -print | sed -nr 's#.*xkb_keycodes.*aliases\((.*)\).*#\\1#p'"], shell=True)
+
+        log.info("Current keyboard layout:")
+        log.info(result.decode().strip())
+    
+        current_keyboard_layout = result.decode().strip()
+        if not current_keyboard_layout in association_between_keyboard_layout_and_percentage_ev_key:
+
+            result = subprocess.check_output(["xmodmap -pke | grep percent | awk '$5 == \"percent\"' | sed -nr 's#.*keycode(.*)+=.*#\\1#p'"], shell=True)
+            decodedResult = result.decode().strip()
+
+            log.info("Automatically detected percent key for shift press:")
+            log.info(decodedResult)
+
+            # so value will be appropriate for evdev keys
+            if int(decodedResult) >= 8:
+
+                percentage_key = EV_KEY.codes[int(decodedResult) - 8]
+
+                log.info("With -8 as conversion to evdev:")
+                log.info(int(decodedResult) - 8)
+            else:
+                percentage_key = EV_KEY.codes[int(decodedResult)]
+
+            dev.enable(percentage_key)
+            udev = dev.create_uinput_device()
+
+            association_between_keyboard_layout_and_percentage_ev_key[current_keyboard_layout] = percentage_key
+        else:
+            percentage_key = association_between_keyboard_layout_and_percentage_ev_key[current_keyboard_layout]
+
+
+    except:
+        log.info('Getting keyboard layout (qwerty, azerty, ..) via setxkbmap failed')
+
+check_keyboard_layout()
 
 udev = dev.create_uinput_device()
 
@@ -304,7 +344,7 @@ def increase_brightness():
     log.info("Increased brightness of backlight to")
     log.info(brightness)
 
-    config.set(CONFIG_SECTION, CONFIG_BRIGHTNESS, backlight_levels[brightness])
+    config.set(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
     with open(CONFIG_FILE_NAME, 'w') as configfile:
         config.write(configfile)
 
@@ -389,14 +429,22 @@ def set_tracking_id(value):
 
 
 def pressed_numpad_key():
+    global percentage_key
+
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS and percentage_key is not None:
+
+        left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
+        percent_key_with_shift_input_event = InputEvent(percentage_key, 1)
+
         events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, 1),
+            InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
+            left_shift_input_event,
             InputEvent(EV_SYN.SYN_REPORT, 0),
-            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
+            InputEvent(EV_MSC.MSC_SCAN, percent_key_with_shift_input_event.code.value),
+            percent_key_with_shift_input_event,
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
     else:
@@ -417,15 +465,22 @@ def replaced_numpad_key(touched_key_now):
 
 
 def unpressed_numpad_key(replaced_by_key=None):
+    global percentage_key
 
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS and percentage_key is not None:
+
+        left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
+        percent_key_with_shift_input_event = InputEvent(percentage_key, 0)
+
         events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, 0),
+            InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
+            left_shift_input_event,
             InputEvent(EV_SYN.SYN_REPORT, 0),
-            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
+            InputEvent(EV_MSC.MSC_SCAN, percent_key_with_shift_input_event.code.value),
+            percent_key_with_shift_input_event,
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
     else:
@@ -552,6 +607,7 @@ def local_numlock_pressed():
 
 
 def send_numlock_key(value):
+
     events = [
         InputEvent(EV_MSC.MSC_SCAN, 70053),
         InputEvent(EV_KEY.KEY_NUMLOCK, value),
@@ -837,6 +893,12 @@ def check_touchpad_status_endless_cycle():
         sleep(0.5)
 
 
+def check_keyboard_layout_endless_cycle():
+    while True:
+        check_keyboard_layout()
+        sleep(0.5)
+
+
 def check_numpad_automatical_disable_due_inactivity():
     global disable_due_inactivity_time, last_event_time, numlock
 
@@ -878,5 +940,9 @@ if disable_due_inactivity_time > 0:
     t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
     threads.append(t)
     t.start()
+
+t = threading.Thread(target=check_keyboard_layout_endless_cycle)
+threads.append(t)
+t.start()
 
 listen_touchpad_events()
