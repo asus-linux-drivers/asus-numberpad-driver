@@ -65,8 +65,8 @@ laptop_full=$(dmidecode -s system-product-name)
 
 echo "Detected laptop: $laptop_full"
 
-detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d',' -f1)
-detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d',' -f2)
+detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f1)
+detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f2)
 
 for option in $(ls numpad_layouts); do
         if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
