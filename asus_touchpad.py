@@ -11,6 +11,7 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
+
 import libevdev.const
 import numpy as np
 from evdev import InputDevice, ecodes as ecodess
@@ -118,7 +119,7 @@ while try_times > 0:
             # Look for the touchpad #
             if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
                 touchpad_detected = 1
-                log.debug('Detect touchpad from %s', line.strip())
+                log.debug('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
 
             if touchpad_detected == 1:
@@ -139,7 +140,8 @@ while try_times > 0:
             # Look for the keyboard
             if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or ("Name=\"ASUE" in line and "Keyboard" in line)):
                 keyboard_detected = 1
-                log.debug('Detect keyboard from %s', line.strip())
+                log.debug(
+                    'Detecting keyboard from string: \"%s\"', line.strip())
 
             # We look for keyboard with numlock, scrollock, capslock inputs
             if keyboard_detected == 1 and "H: " in line:
@@ -301,8 +303,7 @@ def pressed_touchpad_top_left_icon(e):
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
-        log.info("Touched top_left_icon in time:")
-        log.info(time())
+        log.info("Touched top_left_icon in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
     else:
         set_none_to_current_mt_slot()
@@ -628,8 +629,7 @@ def pressed_touchpad_top_right_icon(value):
 
     if value == 1:
         top_right_icon_touch_start_time = time()
-        log.info("Touched numlock in time:")
-        log.info(time())
+        log.info("Touched numlock in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
 
 
@@ -675,10 +675,9 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
         press_duration > top_left_icon_activation_time):
 
-        log.info("Press top_left_icon taken longer then is required activation time:")
-        log.info(time() - top_left_icon_touch_start_time)
-        log.info("Activation time is:")
-        log.info(top_left_icon_activation_time)
+        log.info("The top_left_icon was pressed longer than the activation time: %s",
+                 time() - top_left_icon_touch_start_time)
+        log.info("Activation time: %s", top_left_icon_activation_time)
 
         # start cycle again (smooth change of brightness)
         top_left_icon_touch_start_time = time()
@@ -699,10 +698,9 @@ def takes_top_right_icon_touch_longer_then_set_up_activation_time():
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         press_duration > top_right_icon_activation_time):
 
-        log.info("Press top_right_icon taken longer then is required activation time:")
-        log.info(time() - top_right_icon_touch_start_time)
-        log.info("Activation time is:")
-        log.info(top_right_icon_activation_time)
+        log.info("The top_right_icon was pressed longer than the activation time: %s",
+                 time() - top_right_icon_touch_start_time)
+        log.info("Activation time: %s", top_right_icon_activation_time)
 
         top_right_icon_touch_start_time = 0
 
