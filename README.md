@@ -1,8 +1,8 @@
 # Asus touchpad NumberPad driver
 
-The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations you can find [here](#configuration).
+The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations can be found [here](#configuration).
 
-If you find a project useful, do not forget to give project a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
+If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
 
 |                   Without % = symbols                   |                   With % = symbols                    | With % = symbols (but incompatible with the non-universal version) |                    With NumLock key                     | Without % = symbols (but incompatible with the non-universal version) |
 | :-----------------------------------------------------: | :---------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------: | :-------------------------------------------------------------------: |
@@ -12,18 +12,18 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 ## Features
 
 - Multiple NumberPad layouts (keys, paddings)
-- Automatic NumberPad layout assignation
+- Automatic NumberPad model detection
 - Customizable activation time (default 1s)
-- Support sending of unicode strings with `<left_shift>+<left_ctrl>+<U>+<0-F>` (e.g. used for percents key)
+- Unicode characters sending support (example: `<left_shift>+<left_ctrl>+<U>+<0-F>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
-- Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
+- Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after at least 0.3 of width and height)
 - Customizable default level of backlight (default is last used level - works even between reboots)
-- Numpad is automatically disabled due inactivity (default 1 min)
-- Disabling Touchpad (e.g. Fn+special key) disables numpad aswell
-- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables numpad aswell, reflect enabling sys numlock is optional)
-- Touchpad physical buttons (left, right and middle) are ignored when is numpad on
-- Repeat key pressing when a key is held (optional)
-- Multitouch for maximum 5 fingers at the same moment (optional)
+- NumberPad is automatically disabled due inactivity (default 1 min)
+- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell
+- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables NumberPad as well, reflect enabling sys numlock is optional)
+- Touchpad physical buttons (left, right and middle) are ignored when is NumberPad on
+- Repeating the key, when it is held (optional)
+- Multitouch with up to 5 fingers support (optional)
 
 ## Installation
 
