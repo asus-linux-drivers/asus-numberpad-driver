@@ -30,11 +30,11 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 The package is [available](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) to install from AUR
 
 ```bash
-paru -S  asus-touchpad-numpad-driver-${model}-${layout}-git 
+paru -S  asus-touchpad-numpad-driver-${model}-git 
 ```
 
-Replace model with available models and layout with `qwerty` or `azerty`
-Example: `asus-touchpad-numpad-driver-ux433fa-qwerty-git`
+Replace model with available models.
+Example: `asus-touchpad-numpad-driver-ux433fa-git`
 
 or via GIT
 
