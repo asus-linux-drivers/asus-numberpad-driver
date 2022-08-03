@@ -221,9 +221,9 @@ for col in keys:
 # pre-enable variants for % with left shift
 # others are loaded via xmodmap during using driver
 association_between_keyboard_layout_and_percentage_ev_key = {
-    "qwerty": EV_KEY.KEY_5,
-    "azerty": EV_KEY.KEY_APOSTROPHE,
-    "qwertz": EV_KEY.KEY_MINUS
+    #"qwerty": EV_KEY.KEY_5,
+    #"azerty": EV_KEY.KEY_APOSTROPHE,
+    #"qwertz": EV_KEY.KEY_MINUS
 }
 for keyboard_layout, percentage_key in association_between_keyboard_layout_and_percentage_ev_key.items():
     dev.enable(percentage_key)
@@ -438,7 +438,10 @@ def pressed_numpad_key():
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS and percentage_key is not None:
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS:
+
+        if percentage_key is None:
+            return
 
         left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
         percent_key_with_shift_input_event = InputEvent(percentage_key, 1)
@@ -474,7 +477,10 @@ def unpressed_numpad_key(replaced_by_key=None):
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS and percentage_key is not None:
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_KEY_PERCENTS:
+
+        if percentage_key is None:
+            return
 
         left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
         percent_key_with_shift_input_event = InputEvent(percentage_key, 0)
