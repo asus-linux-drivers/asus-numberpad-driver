@@ -35,9 +35,13 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
 
-  - type: input
+  - type: textarea
     id: environment
     attributes:
-      label: Program version
+      label: Desktop
+      value: |
+        - Program version [e.g. 57c742a]
+        - Distro [e.g. Arch Linux]
+        - Kernel [e.g. 5.18.15.arch1-2]
     validations:
       required: true
