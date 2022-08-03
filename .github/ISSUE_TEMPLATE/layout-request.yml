@@ -28,7 +28,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Numpad Layout (screenshot or code)
+      label: Numpad Layout (photo/picture or code)
 
   - type: input
     attributes:
