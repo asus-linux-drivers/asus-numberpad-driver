@@ -7,11 +7,11 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip
+    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip xorg-xinput
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-pip
+    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-pip xinput
 fi
 
 pip3 install numpy evdev
@@ -60,67 +60,61 @@ if [[ -d numpad_layouts/__pycache__ ]]; then
     rm -rf numpad_layouts/__pycache__
 fi
 
-echo
-echo "Select your model keypad layout:"
-PS3='Please enter your choice '
-options=($(ls numpad_layouts) "Quit")
-select selected_opt in "${options[@]}"; do
-    if [ "$selected_opt" = "Quit" ]; then
-        exit 0
-    fi
+laptop=$(dmidecode -s system-product-name | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
+laptop_full=$(dmidecode -s system-product-name)
 
+echo "Detected laptop: $laptop_full"
+
+detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f1)
+detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f2)
+
+if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
+    echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+else
     for option in $(ls numpad_layouts); do
-        if [ "$option" = "$selected_opt" ]; then
-            model=${selected_opt::-3}
+        if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
+            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). If not you can specify numpad layout later by yourself and please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Is that correct? [y/N]" response
+            case "$response" in [yY][eE][sS]|[yY])
+                model=$detected_layout_via_offline_table
+                ;;
+            *)
+                ;;
+            esac
+        fi
+    done
+fi
+
+if [ -z "$model" ]; then
+    echo
+    echo "Select your model keypad layout:"
+    PS3='Please enter your choice '
+    options=($(ls numpad_layouts) "Quit")
+    select selected_opt in "${options[@]}"; do
+        if [ "$selected_opt" = "Quit" ]; then
+            exit 0
+        fi
+
+        for option in $(ls numpad_layouts); do
+            if [ "$option" = "$selected_opt" ]; then
+                model=${selected_opt::-3}
+                break
+            fi
+        done
+
+        if [ -z "$model" ]; then
+            echo "invalid option $REPLY"
+        else
             break
         fi
     done
+fi
 
-    if [ -z "$model" ]; then
-        echo "invalid option $REPLY"
-    else
-        break
-    fi
-done
-
-DETECTED_LAYOUT=$(setxkbmap -print | sed -nr 's#.*xkb_keycodes.*aliases\((.*)\).*#\1#p')
-
-case $DETECTED_LAYOUT in
-"qwerty")
-    percentage_key=6 # Number 5
-    ;;
-
-"azerty")
-    percentage_key=40 # Apostrophe key
-    ;;
-
-*)
-    echo "Keyboard layout not detected!"
-    echo "Please select your layout manually."
-    PS3='Please enter your choice [1-3]: '
-    options=("Qwerty" "Azerty" "Quit")
-    select opt in "${options[@]}"; do
-        case $opt in
-        "Qwerty")
-            percentage_key=6 # Number 5
-            break
-            ;;
-        "Azerty")
-            percentage_key=40 # Apostrophe key
-            break
-            ;;
-        "Quit")
-            exit 0
-            ;;
-        *) echo "invalid option $REPLY" ;;
-        esac
-    done
-    ;;
-esac
+echo "Selected key layout $model"
 
 echo "Installing asus touchpad service to /etc/systemd/system/"
+
 xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-cat asus_touchpad.service | LAYOUT=$model PERCENTAGE_KEY=$percentage_key XAUTHORITY=$xauthority envsubst '$LAYOUT $PERCENTAGE_KEY $XAUTHORITY' >/etc/systemd/system/asus_touchpad_numpad.service
+cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY' >/etc/systemd/system/asus_touchpad_numpad.service
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver

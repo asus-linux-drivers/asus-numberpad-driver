@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import configparser
 import importlib
 import logging
 import math
@@ -10,15 +11,15 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-from evdev import InputDevice
+
 import libevdev.const
 import numpy as np
+from evdev import InputDevice, ecodes as ecodess
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
-import configparser
 
 CONFIG_FILE_NAME = "asus_touchpad_dev"
 CONFIG_SECTION = "main"
-CONFIG_BRIGHTNESS = "brightness"
+CONFIG_LAST_BRIGHTNESS = "last_brightness"
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_NAME)
@@ -36,14 +37,15 @@ logging.basicConfig()
 log = logging.getLogger('Pad')
 log.setLevel(os.environ.get('LOG', 'INFO'))
 
-# Select model from command line
-model = 'up5401ea'  # Model used in the derived script (with symbols)
+# Numpad layout model
+model = None
 if len(sys.argv) > 1:
     model = sys.argv[1]
-
-model_layout = importlib.import_module('numpad_layouts.' + model)
-
-percentage_key: libevdev.const = EV_KEY.KEY_5
+try:
+    model_layout = importlib.import_module('numpad_layouts.' + model)
+except:
+    log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
+    sys.exit(1)
 
 disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
 touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
@@ -56,12 +58,12 @@ top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activatio
 sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
 
 if not top_right_icon_width > 0 or not top_right_icon_height > 0:
-    log.debug('top_right_icon width and height is required to set > 0.')
+    log.error('top_right_icon width and height is required to set > 0.')
     sys.exit(1)
 
 keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
-    log.debug('keys is required to set, dimension has to be atleast array of len 1 inside array')
+    log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
@@ -69,7 +71,7 @@ backlight_levels = getattr(model_layout, "backlight_levels", [])
 default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
 if default_backlight_level == "0x01":
     try:
-        default_backlight_level = config.get(CONFIG_SECTION, CONFIG_BRIGHTNESS)
+        default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
     except:
         pass
 
@@ -95,9 +97,6 @@ right_offset = getattr(model_layout, "right_offset", 0)
 top_offset = getattr(model_layout, "top_offset", 0)
 bottom_offset = getattr(model_layout, "bottom_offset", 0)
 
-if len(sys.argv) > 2:
-    percentage_key = EV_KEY.codes[int(sys.argv[2])]
-
 # Figure out devices from devices file
 touchpad: Optional[str] = None
 touchpad_name: Optional[str] = None
@@ -120,7 +119,7 @@ while try_times > 0:
             # Look for the touchpad #
             if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
                 touchpad_detected = 1
-                log.debug('Detect touchpad from %s', line.strip())
+                log.debug('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
 
             if touchpad_detected == 1:
@@ -141,7 +140,8 @@ while try_times > 0:
             # Look for the keyboard
             if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or ("Name=\"ASUE" in line and "Keyboard" in line)):
                 keyboard_detected = 1
-                log.debug('Detect keyboard from %s', line.strip())
+                log.debug(
+                    'Detecting keyboard from string: \"%s\"', line.strip())
 
             # We look for keyboard with numlock, scrollock, capslock inputs
             if keyboard_detected == 1 and "H: " in line:
@@ -204,30 +204,47 @@ col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
 # Create a new keyboard device to send numpad events
-# KEY_5:6
-# KEY_APOSTROPHE:40
-# [...]
-percentage_key = EV_KEY.KEY_5
-
-if len(sys.argv) > 2:
-    percentage_key = EV_KEY.codes[int(sys.argv[2])]
-
 dev = Device()
 dev.name = "Asus Touchpad/Numpad"
-dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_NUMLOCK)
+# predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
+dev.enable(EV_KEY.KEY_LEFTSHIFT)
+dev.enable(EV_KEY.KEY_LEFTCTRL)
+dev.enable(EV_KEY.KEY_U)
+dev.enable(EV_KEY.KEY_0)
+dev.enable(EV_KEY.KEY_1)
+dev.enable(EV_KEY.KEY_2)
+dev.enable(EV_KEY.KEY_3)
+dev.enable(EV_KEY.KEY_4)
+dev.enable(EV_KEY.KEY_5)
+dev.enable(EV_KEY.KEY_6)
+dev.enable(EV_KEY.KEY_7)
+dev.enable(EV_KEY.KEY_8)
+dev.enable(EV_KEY.KEY_9)
+dev.enable(EV_KEY.KEY_A)
+dev.enable(EV_KEY.KEY_B)
+dev.enable(EV_KEY.KEY_C)
+dev.enable(EV_KEY.KEY_D)
+dev.enable(EV_KEY.KEY_E)
+dev.enable(EV_KEY.KEY_F)
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable.code)
 
+def isEvent(event):
+    if getattr(event, "name", None) is not None and\
+            getattr(ecodess, event.name):
+        return True
+    else:
+        return False
+
+
 for col in keys:
     for key in col:
-        dev.enable(key)
-
-if percentage_key != EV_KEY.KEY_5:
-    dev.enable(percentage_key)
+        if getattr(key, "name", None) is not None and\
+            getattr(ecodess, key.name):
+            dev.enable(key)
 
 udev = dev.create_uinput_device()
-
 
 def use_bindings_for_touchpad_left_key():
     global numlock
@@ -286,8 +303,7 @@ def pressed_touchpad_top_left_icon(e):
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
-        log.info("Touched top_left_icon in time:")
-        log.info(time())
+        log.info("Touched top_left_icon in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
     else:
         set_none_to_current_mt_slot()
@@ -304,7 +320,7 @@ def increase_brightness():
     log.info("Increased brightness of backlight to")
     log.info(brightness)
 
-    config.set(CONFIG_SECTION, CONFIG_BRIGHTNESS, backlight_levels[brightness])
+    config.set(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
     with open(CONFIG_FILE_NAME, 'w') as configfile:
         config.write(configfile)
 
@@ -388,17 +404,64 @@ def set_tracking_id(value):
         log.error(e)
 
 
+def get_compose_key_events_for_unicode_string(value):
+
+    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, value)
+    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, value)
+    key_U = InputEvent(EV_KEY.KEY_U, value)
+
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
+        left_ctrl_input_event,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
+        left_shift_input_event,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, key_U.code.value),
+        key_U,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+    ]
+
+    return events
+
+
+def get_events_for_unicode_string(string):
+
+    for c in string:
+
+        key_events = []
+
+        for hex_digit in '%X' % ord(c):
+
+            key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+            key = EV_KEY.codes[int(key_code)]
+            key_event_press = InputEvent(key, 1)
+            key_event_unpress = InputEvent(key, 0)
+
+            key_events = key_events + [
+                InputEvent(EV_MSC.MSC_SCAN, key_event_press.code.value),
+                key_event_press,
+                InputEvent(EV_SYN.SYN_REPORT, 0),
+                InputEvent(EV_MSC.MSC_SCAN, key_event_unpress.code.value),
+                key_event_unpress,
+                InputEvent(EV_SYN.SYN_REPORT, 0)
+            ]
+
+        start_events = get_compose_key_events_for_unicode_string(1)
+        end_events = get_compose_key_events_for_unicode_string(0)
+        return start_events + key_events + end_events
+
+
 def pressed_numpad_key():
+
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
-        events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, 1),
-            InputEvent(EV_SYN.SYN_REPORT, 0),
-            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
-            InputEvent(EV_SYN.SYN_REPORT, 0)
-        ]
+    if not isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+
+        unicode_string = abs_mt_slot_numpad_key[abs_mt_slot_value]
+        events = get_events_for_unicode_string(unicode_string)
+
     else:
         events = [
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
@@ -418,32 +481,28 @@ def replaced_numpad_key(touched_key_now):
 
 def unpressed_numpad_key(replaced_by_key=None):
 
+
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == percentage_key:
-        events = [
-            InputEvent(EV_KEY.KEY_LEFTSHIFT, 0),
-            InputEvent(EV_SYN.SYN_REPORT, 0),
-            InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
-            InputEvent(EV_SYN.SYN_REPORT, 0)
-        ]
-    else:
+    if isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+
         events = [
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
-   
+
+        try:
+            udev.send_events(events)
+
+        except OSError as e:
+            log.warning("Cannot send press event, %s", e)
+
+
     if replaced_by_key:
         abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
     else:
         set_none_to_current_mt_slot()
-
-    try:
-        udev.send_events(events)
-
-    except OSError as e:
-        log.warning("Cannot send press event, %s", e)
 
 
 def get_touched_key():
@@ -552,6 +611,7 @@ def local_numlock_pressed():
 
 
 def send_numlock_key(value):
+
     events = [
         InputEvent(EV_MSC.MSC_SCAN, 70053),
         InputEvent(EV_KEY.KEY_NUMLOCK, value),
@@ -569,8 +629,7 @@ def pressed_touchpad_top_right_icon(value):
 
     if value == 1:
         top_right_icon_touch_start_time = time()
-        log.info("Touched numlock in time:")
-        log.info(time())
+        log.info("Touched numlock in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
 
 
@@ -616,10 +675,9 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
         press_duration > top_left_icon_activation_time):
 
-        log.info("Press top_left_icon taken longer then is required activation time:")
-        log.info(time() - top_left_icon_touch_start_time)
-        log.info("Activation time is:")
-        log.info(top_left_icon_activation_time)
+        log.info("The top_left_icon was pressed longer than the activation time: %s",
+                 time() - top_left_icon_touch_start_time)
+        log.info("Activation time: %s", top_left_icon_activation_time)
 
         # start cycle again (smooth change of brightness)
         top_left_icon_touch_start_time = time()
@@ -640,10 +698,9 @@ def takes_top_right_icon_touch_longer_then_set_up_activation_time():
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         press_duration > top_right_icon_activation_time):
 
-        log.info("Press top_right_icon taken longer then is required activation time:")
-        log.info(time() - top_right_icon_touch_start_time)
-        log.info("Activation time is:")
-        log.info(top_right_icon_activation_time)
+        log.info("The top_right_icon was pressed longer than the activation time: %s",
+                 time() - top_right_icon_touch_start_time)
+        log.info("Activation time: %s", top_right_icon_activation_time)
 
         top_right_icon_touch_start_time = 0
 

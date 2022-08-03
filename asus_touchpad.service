@@ -3,7 +3,7 @@ Description=Asus Touchpad to Numpad Handler
 
 [Service]
 Type=idle
-ExecStart=/usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $PERCENTAGE_KEY
+ExecStart=/usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT
 StandardInput=tty-force
 StandardOutput=append:/var/log/asus_touchpad_numpad-driver/error.log
 StandardError=append:/var/log/asus_touchpad_numpad-driver/error.log

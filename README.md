@@ -11,9 +11,10 @@ If you find a project useful, do not forget to give project a [![GitHub stars](h
 
 ## Features
 
-- Multiple layouts
-- Customizable numpad padding
+- Multiple NumberPad layouts (keys, paddings)
+- Automatic NumberPad layout assignation
 - Customizable activation time (default 1s)
+- Support sending of unicode strings with `<left_shift>+<left_ctrl>+<U>+<0-F>` (e.g. used for percents key)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable slide gesture beginning on top left (default action is calculator with numpad activation and a requirement is end slide after atleast 0.3 of width and height)
 - Customizable default level of backlight (default is last used level - works even between reboots)
@@ -121,7 +122,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | `try_times`                 |             | 5         | how many times to try find a touchpad device in each service start attempt  
 | `try_sleep`                 |             | 0.1 [s]   | time between tries
 | **Key layout**              |             |
-| `keys`                      | Required    |           | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array
+| `keys`                      | Required    |           | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array<br><br>everything else what is not an event is sent as unicode `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"`)
 | `multitouch`                |             | `False`   | up to quint tap when enabled<br><br>Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using numpad for calculating)
 | `one_touch_key_rotation`    |             | `False`   | possibility of altering multiple keys during one-touch
 | `key_repetitions`           |             | `False`   | possible to enable with value `True` hold key for repeated pressing key like on a physical keyboard
