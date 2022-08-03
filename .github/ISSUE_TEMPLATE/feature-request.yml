@@ -1,0 +1,20 @@
+name: ✨ Feature request
+description: Suggest an idea for a new feature
+title: '[Feature Request] Short Description'
+labels: ['enhancement']
+assignees:
+  - kamack38
+  - ldrahnik
+body:
+  - type: textarea
+    attributes:
+      label: Short Description
+
+  - type: input
+    attributes:
+      label: New dependencies
+      placeholder: Does this feature requires any new dependencies? If yes what?
+
+  - type: textarea
+    attributes:
+      label: Additional Info

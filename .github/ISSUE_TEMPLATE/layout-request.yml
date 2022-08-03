@@ -1,0 +1,59 @@
+name: ⭐ Layout request
+description: Add new numpad layout
+title: '[Layout Request] Layout Name'
+labels: ['enhancement', 'numpad layout']
+assignees:
+  - kamack38
+  - ldrahnik
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure to [test existing layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/tree/master/numpad_layouts) before filing this issue!
+
+  - type: input
+    attributes:
+      label: Layout Name
+      placeholder: Layout Name
+
+  - type: input
+    attributes:
+      label: Your device (sudo dmidecode -s system-product-name)
+      placeholder: Your device
+
+  - type: input
+    attributes:
+      label: Supported Devices
+      placeholder: device1, device2...
+
+  - type: textarea
+    attributes:
+      label: Numpad Layout (screenshot or code)
+
+  - type: input
+    attributes:
+      label: Top offset [If exists]
+
+  - type: input
+    attributes:
+      label: Right offset [If exists]
+
+  - type: input
+    attributes:
+      label: Bottom offset [If exists]
+
+  - type: input
+    attributes:
+      label: Left offset [If exists]
+
+  - type: input
+    attributes:
+      label: Top left icon data (width, height)
+
+  - type: input
+    attributes:
+      label: Top right icon data (width, height) (numlock key)
+
+  - type: textarea
+    attributes:
+      label: Additional Info
