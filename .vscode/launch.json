@@ -11,7 +11,8 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "sudo": true
+            "sudo": true,
+            "args": ["up5401ea"]
         }
     ]
 }
