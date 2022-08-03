@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import configparser
 import importlib
 import logging
 import math
@@ -10,11 +11,10 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-from evdev import InputDevice
 import libevdev.const
 import numpy as np
+from evdev import InputDevice
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
-import configparser
 
 EV_KEY_KEY_PERCENTS = "EV_KEY.KEY_PERCENTS"
 
