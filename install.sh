@@ -60,7 +60,7 @@ if [[ -d numpad_layouts/__pycache__ ]]; then
     rm -rf numpad_layouts/__pycache__
 fi
 
-laptop=$(dmidecode -s system-product-name | cut -d'_' -f2)
+laptop=$(dmidecode -s system-product-name | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
 laptop_full=$(dmidecode -s system-product-name)
 
 echo "Detected laptop: $laptop_full"
@@ -68,17 +68,21 @@ echo "Detected laptop: $laptop_full"
 detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f1)
 detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f2)
 
-for option in $(ls numpad_layouts); do
+if [ -z "$detected_layout_via_offline_table" ]; then
+    echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+else
+    for option in $(ls numpad_layouts); do
         if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). Is that correct? If not you can specify numpad layout by yourself later. [y/N] " response
-            case "$response" in [yY][eE][sS]|[yY]) 
+            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). If not you can specify numpad layout later by yourself and please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Is that correct? [y/N]" response
+            case "$response" in [yY][eE][sS]|[yY])
                 model=$detected_layout_via_offline_table
                 ;;
             *)
                 ;;
             esac
         fi
-done
+    done
+fi
 
 if [ -z "$model" ]; then
     echo
@@ -105,6 +109,8 @@ if [ -z "$model" ]; then
     done
 fi
 
+echo "Selected key layout $model"
+
 echo "Installing asus touchpad service to /etc/systemd/system/"
 
 xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
@@ -113,7 +119,6 @@ cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYO
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver
 install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
-install layout_data.py /usr/share/asus_touchpad_numpad-driver/
 install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
