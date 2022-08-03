@@ -265,6 +265,7 @@ def check_keyboard_layout():
 
 
     except:
+        percentage_key = None
         log.info('Getting keyboard layout (qwerty, azerty, ..) via setxkbmap failed')
 
 check_keyboard_layout()
