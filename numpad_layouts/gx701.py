@@ -4,6 +4,7 @@ from libevdev import EV_KEY
 top_offset = 0
 
 touchpad_physical_buttons_are_inside_numpad = False
+sys_numlock_enables_numpad = True
 
 keys = [
     ["#", EV_KEY.KEY_KPSLASH, EV_KEY.KEY_KPASTERISK, EV_KEY.KEY_KPMINUS],
