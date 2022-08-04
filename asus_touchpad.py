@@ -47,6 +47,7 @@ except:
     log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
     sys.exit(1)
 
+touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
 disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
 touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
 key_repetitions = getattr(model_layout, "key_repetitions", False)
@@ -734,8 +735,8 @@ def listen_touchpad_events():
 
         last_event_time = time()
 
-        # ignore POINTER_BUTTON when is numpad on
-        if numlock:
+        # ignore POINTER_BUTTON when is numpad on and buttons are not outside of numpad area
+        if numlock and touchpad_physical_buttons_are_inside_numpad:
             if e.matches(EV_KEY.BTN_LEFT):
                 continue
             elif e.matches(EV_KEY.BTN_RIGHT):
