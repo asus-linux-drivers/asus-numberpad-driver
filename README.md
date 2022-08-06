@@ -4,10 +4,10 @@ The driver is written in python and runs as a systemctl service. Driver contains
 
 If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
 
-|                   Without % = symbols                   |                   With % = symbols                    | With % = symbols (but incompatible with the non-universal version) |                    With NumLock key                     | With # symbol and NumLock key outside of touchpad |
-| :-----------------------------------------------------: | :---------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------: | :-------------------------------------------------------------------: |
-|                 Model/Layout = ux433fa                  |                Model/Layout = up5401ea                |                       Model/Layout = ux581l                        |                   Model/Layout = g533                   |                         Model/Layout = gx701                          |
-| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg) | ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) |           ![model ux581](images/Asus-ZenBook-UX581l.jpg)           | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png) |        ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)         |
+|                   Without % = symbols<br><br>Without left icon                   |                   With % = symbols<br><br>Without left icon               |    With % = symbols<br><br>Without left icon<br><br>Rectangle style of backlight              |            With % = symbols                    | With % = symbols<br><br>Vertical model |                    With NumLock key                     | With # symbol<br><br>With NumLock key outside of touchpad<br><br>With left, right key outside of NumPad | Without % = symbols<br><br>With NumLock key on the top left<br><br>With left, right key outside of NumberPad 
+| :-----------------------------------------------------: | :---------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------: | :-------------------------------------------------------------------: | :-----------------------------------------------------: | :-----------------------------------------------------: | :-----------------------------------------------------: |
+|                 Model/Layout = ux433fa                  |                Model/Layout = e210ma                    |    Model/Layout = b7402                    |     Model/Layout = up5401ea                |                       Model/Layout = ux581l                        |                   Model/Layout = g533                   |                         Model/Layout = gx701                          |                         Model/Layout = gx551 |   
+| ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg) | ![with % = symbols but left icon is missing](images/Asus-E210MA.jpg) | ![with % = symbols, left icon is missing and rectangles style of backlight](images/Asus-B7402.jpeg) | ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) |           ![model ux581](images/Asus-ZenBook-UX581l.jpg)           | ![with numlock](images/Asus-ROG-Strix-Scar-15-g533.png) |        ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)         |         ![model gx551](images/Asus-GX551.jpg)         |
 
 ## Features
 
@@ -99,12 +99,15 @@ During the install process `sudo ./install.sh`, you're required to select your k
 
 ```
 Select models keypad layout:
-1) g533.py
-2) gx701.py
-3) up5401ea.py
-4) ux433fa.py
-5) ux581l.py
-6) Quit
+1) b7402.py
+2) e210ma.py
+3) g533.py
+4) gx551.py
+5) gx701.py
+6) up5401ea.py
+7) ux433fa.py
+8) ux581l.py
+9) Quit
 Please enter your choice
 ```
 
@@ -122,7 +125,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | `try_times`                                   |          | 5                 | how many times to try find a touchpad device in each service start attempt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `try_sleep`                                   |          | 0.1 [s]           | time between tries                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **Key layout**                                |          |
-| `keys`                                        | Required |                   | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array<br><br>everything else what is not an event is sent as unicode `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `keys`                                        | Required |                   | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array<br><br>everything else  what is not an event except `None` is sent as unicode `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `multitouch`                                  |          | `False`           | up to quint tap when enabled<br><br>Example 1: can be enabled numpad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using numpad for calculating)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `one_touch_key_rotation`                      |          | `False`           | possibility of altering multiple keys during one-touch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `key_repetitions`                             |          | `False`           | possible to enable with value `True` hold key for repeated pressing key like on a physical keyboard                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -140,6 +143,9 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | `top_right_icon_width` | Required | | width of the top right icon
 | `top_right_icon_height` | Required | | height of the top right icon
 | `top_right_icon_activation_time` | | 1 [s] | amount of time you have to touch `top_right_icon` for the numpad activation/deactivation
+|
+| `top_right_icon_is_on_top_left` | | `False` | valid value is `False` or `True`
+|
 | **Paddings** | | | numpad has padding zones around where nothing happens when is touched except top icons
 | `top_offset` | | 0 | top numpad offset
 | `right_offset` | | 0 | right numpad offset
