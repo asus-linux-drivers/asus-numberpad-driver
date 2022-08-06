@@ -775,12 +775,16 @@ def listen_touchpad_events():
 
                     local_numlock_pressed()
 
+                continue
+
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
                 takes_top_left_icon_touch_longer_then_set_up_activation_time() and\
                 len(backlight_levels) > 0 and top_left_icon_brightness_func_disabled is not True:
 
-                    increase_brightness()
+                increase_brightness()
+
+                continue
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
