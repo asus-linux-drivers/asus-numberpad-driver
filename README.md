@@ -72,6 +72,8 @@ sudo modprobe i2c-dev
 sudo i2cdetect -l
 ```
 
+To see the exact commands for your package manager look [here](./install.sh)
+
 ## Troubleshooting
 
 To show debug logs run:
