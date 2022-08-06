@@ -50,33 +50,20 @@ and to uninstall, just run:
 sudo ./uninstall.sh
 ```
 
-### Required packages
+### Dependencies
 
 **Everything is included in install script `sudo ./install.sh`**
 
-- Debian / Ubuntu (22.04 is supported) / Linux Mint / Pop!\_OS / Zorin OS:
+- libevdev
+- i2c-tools
+- git
+- xinput
 
-```bash
-sudo apt install libevdev2 python3-libevdev i2c-tools git python3-pip xinput
-```
+#### Python dependencies
 
-- Arch Linux / Manjaro:
-
-```bash
-sudo pacman -S libevdev python-libevdev i2c-tools git python-pip xorg-xinput
-```
-
-- Fedora:
-
-```bash
-sudo dnf install libevdev python-libevdev i2c-tools git python-pip xinput
-```
-
-Python lib NumPy, evdev
-
-```bash
-pip3 install numpy evdev
-```
+- libevdev
+- numpy
+- evdev
 
 Then enable i2c
 
@@ -84,6 +71,8 @@ Then enable i2c
 sudo modprobe i2c-dev
 sudo i2cdetect -l
 ```
+
+To see the exact commands for your package manager look [here](./install.sh)
 
 ## Troubleshooting
 

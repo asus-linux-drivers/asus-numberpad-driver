@@ -7,19 +7,11 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput
+    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput python3-numpy python3-evdev
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip xorg-xinput
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git xorg-xinput python-numpy python-evdev
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-pip xinput
-fi
-
-pip3 install numpy evdev
-
-# Checking if the pip3 is successfuly loaded
-if [[ $? != 0 ]]; then
-    echo "pip3 is not loaded correctly. Make sure you have installed python3-pip package"
-    exit 1
+    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git xinput python-evdev python3-numpy
 fi
 
 modprobe i2c-dev
