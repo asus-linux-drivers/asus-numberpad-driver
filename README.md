@@ -143,9 +143,7 @@ Example: If you want to set the activation time to 2 seconds and you have chosen
 | `top_right_icon_width` | Required | | width of the top right icon
 | `top_right_icon_height` | Required | | height of the top right icon
 | `top_right_icon_activation_time` | | 1 [s] | amount of time you have to touch `top_right_icon` for the NumberPad activation/deactivation
-|
 | `top_right_icon_is_on_top_left` | | `False` | valid value is `False` or `True`
-|
 | **Paddings** | | | NumberPad has padding zones around where nothing happens when is touched except top icons
 | `top_offset` | | 0 | top NumberPad offset
 | `right_offset` | | 0 | right NumberPad offset
