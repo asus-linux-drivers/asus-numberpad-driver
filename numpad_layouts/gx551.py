@@ -9,6 +9,11 @@ top_right_icon_width = 400
 top_right_icon_height = 400
 top_right_icon_is_on_top_left = True
 
+top_offset = 200
+right_offset = 200
+left_offset = 200
+bottom_offset = 80
+
 keys = [
     [None, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_KPASTERISK, EV_KEY.KEY_KPMINUS],
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPPLUS],
