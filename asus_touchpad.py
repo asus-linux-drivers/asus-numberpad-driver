@@ -47,6 +47,8 @@ except:
     log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
     sys.exit(1)
 
+
+top_right_icon_is_on_top_left = getattr(model_layout, "top_right_icon_is_on_top_left", False)
 touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
 disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
 touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
@@ -269,11 +271,16 @@ def use_bindings_for_touchpad_left_key():
 def is_pressed_touchpad_top_right_icon():
     global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
 
-    if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
-        abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
-            return True
+    if not top_right_icon_is_on_top_left:
+        if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
+            abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
+                return True
     else:
-        return False
+        if abs_mt_slot_x_values[abs_mt_slot_value] <= top_right_icon_width and\
+            abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
+                return True
+
+    return False
 
 
 def is_pressed_touchpad_top_left_icon():
@@ -829,7 +836,12 @@ def listen_touchpad_events():
                 continue
 
             try:
-                abs_mt_slot_numpad_key[abs_mt_slot_value] = keys[row][col]
+
+                key = keys[row][col]
+                if key is None:
+                    continue
+
+                abs_mt_slot_numpad_key[abs_mt_slot_value] = key
             except IndexError:
                 log.error('Unhandled col/row %d/%d for position %d-%d',
                           col,
