@@ -60,7 +60,7 @@ multitouch = getattr(model_layout, "multitouch", False)
 one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
-top_right_icon_activation_time = getattr(model_layout, "top_right_icon_activation_time", 1)
+activation_time = getattr(model_layout, "activation_time", 1)
 sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
 
 if not top_right_icon_width > 0 or not top_right_icon_height > 0:
@@ -395,7 +395,7 @@ support_for_maximum_abs_mt_slots: int = 1
 if multitouch:
     support_for_maximum_abs_mt_slots = 5
 unsupported_abs_mt_slot: bool = False
-top_right_icon_touch_start_time = 0
+numlock_touch_start_time = 0
 top_left_icon_touch_start_time = 0
 last_event_time = 0
 brightness: int = 0
@@ -534,10 +534,11 @@ def get_touched_key():
 
 
 def is_not_finger_moved_to_another_key():
-    global abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values,\
-        top_left_icon_touch_start_time, top_right_icon_touch_start_time
+    global abs_mt_slot_numpad_key, abs_mt_slot_x_values,\
+        abs_mt_slot_y_values, numlock_touch_start_time
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
+    touched_key_now = get_touched_key()
 
     if touched_key_when_pressed is None:
         return
@@ -545,14 +546,15 @@ def is_not_finger_moved_to_another_key():
     if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
-        if top_right_icon_touch_start_time != 0 and\
-            not is_pressed_touchpad_top_right_icon():
+        if numlock_touch_start_time != 0 and\
+            not is_pressed_touchpad_top_right_icon() and\
+            touched_key_now != EV_KEY.KEY_NUMLOCK:
+
                 log.info("Finger moved away from defined area for numlock / right_icon")
                 log.info("Unpressed numlock key")
-                top_right_icon_touch_start_time = 0
+                numlock_touch_start_time = 0
 
     elif numlock:
-        touched_key_now = get_touched_key()
         if touched_key_now != touched_key_when_pressed:
 
             if one_touch_key_rotation and touched_key_when_pressed != None and touched_key_now != None:
@@ -636,10 +638,10 @@ def send_numlock_key(value):
 
 
 def pressed_touchpad_top_right_icon(value):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key
+    global numlock_touch_start_time, abs_mt_slot_numpad_key
 
     if value == 1:
-        top_right_icon_touch_start_time = time()
+        numlock_touch_start_time = time()
         log.info("Touched numlock in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
 
@@ -698,22 +700,22 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
         return False
 
 
-def takes_top_right_icon_touch_longer_then_set_up_activation_time():
-    global top_right_icon_activation_time, top_right_icon_touch_start_time
+def takes_numlock_longer_then_set_up_activation_time():
+    global activation_time, numlock_touch_start_time
 
-    if top_right_icon_touch_start_time == 0:
+    if numlock_touch_start_time == 0:
         return
 
-    press_duration = time() - top_right_icon_touch_start_time
+    press_duration = time() - numlock_touch_start_time
 
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
-        press_duration > top_right_icon_activation_time):
+        press_duration > activation_time):
 
-        log.info("The top_right_icon was pressed longer than the activation time: %s",
-                 time() - top_right_icon_touch_start_time)
-        log.info("Activation time: %s", top_right_icon_activation_time)
+        log.info("The numpad numlock was pressed longer than the activation time: %s",
+                 time() - numlock_touch_start_time)
+        log.info("Activation time: %s", activation_time)
 
-        top_right_icon_touch_start_time = 0
+        numlock_touch_start_time = 0
 
         return True
     else:
@@ -739,7 +741,7 @@ def get_system_numlock():
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
-        unsupported_abs_mt_slot, top_right_icon_touch_start_time, touchpad_name, last_event_time
+        unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time
 
     for e in d_t.events():
 
@@ -767,8 +769,9 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            if is_pressed_touchpad_top_right_icon() and\
-                takes_top_right_icon_touch_longer_then_set_up_activation_time():
+            touched_key = get_touched_key()
+            top_right_icon = is_pressed_touchpad_top_right_icon()
+            if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
 
                 # get touchpad device state once 
                 # only when is reached activation time
@@ -819,10 +822,6 @@ def listen_touchpad_events():
                 use_bindings_for_touchpad_left_key()
                 continue
 
-            # Numpad is not activated
-            if not numlock:
-                continue
-
             if(
                 abs_mt_slot_x_values[abs_mt_slot_value] < minx_numpad or
                 abs_mt_slot_x_values[abs_mt_slot_value] > maxx_numpad or
@@ -845,10 +844,20 @@ def listen_touchpad_events():
             try:
 
                 key = keys[row][col]
+
+                # Numpad is not activated
+                if not numlock and key != EV_KEY.KEY_NUMLOCK:
+                    continue
+
                 if key is None:
                     continue
 
-                abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+                if key == EV_KEY.KEY_NUMLOCK:
+                    pressed_touchpad_top_right_icon(e.value)
+                    continue
+                else:
+                    abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+
             except IndexError:
                 log.error('Unhandled col/row %d/%d for position %d-%d',
                           col,
