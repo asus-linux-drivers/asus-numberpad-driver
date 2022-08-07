@@ -48,6 +48,7 @@ except:
     sys.exit(1)
 
 
+numpad_disables_sys_numlock = getattr(model_layout, "numpad_disables_sys_numlock", True)
 top_right_icon_is_on_top_left = getattr(model_layout, "top_right_icon_is_on_top_left", False)
 touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
 disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
@@ -605,7 +606,7 @@ def local_numlock_pressed():
 
         # has to close as possible to send_numlock (because threads checking diff between these
         numlock = False
-        if sys_numlock:
+        if sys_numlock and numpad_disables_sys_numlock:
             send_numlock_key(1)
             send_numlock_key(0)
             log.info("System numlock deactivated")
@@ -912,7 +913,7 @@ def check_touchpad_status_endless_cycle():
 
 
 def check_numpad_automatical_disable_due_inactivity():
-    global disable_due_inactivity_time, last_event_time, numlock
+    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock
 
     while True:
         if\
@@ -923,7 +924,7 @@ def check_numpad_automatical_disable_due_inactivity():
             numlock_lock.acquire()
 
             sys_numlock = get_system_numlock()
-            if sys_numlock:
+            if sys_numlock and numpad_disables_sys_numlock:
                 send_numlock_key(1)
                 send_numlock_key(0)
                 log.info("System numlock deactivated")
