@@ -89,10 +89,7 @@ top_left_icon_slide_func_activate_numpad = getattr(model_layout, "top_left_icon_
 top_left_icon_slide_func_activation_x_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_x_ratio", 0.3)
 top_left_icon_slide_func_activation_y_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_y_ratio", 0.3)
 top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
-    InputEvent(EV_KEY.KEY_CALC, 1),
-    InputEvent(EV_SYN.SYN_REPORT, 0),
-    InputEvent(EV_KEY.KEY_CALC, 0),
-    InputEvent(EV_SYN.SYN_REPORT, 0)
+    EV_KEY.KEY_CALC
 ])
 
 try_times = getattr(model_layout, "try_times", 5)
@@ -234,7 +231,7 @@ dev.enable(EV_KEY.KEY_D)
 dev.enable(EV_KEY.KEY_E)
 dev.enable(EV_KEY.KEY_F)
 for key_to_enable in top_left_icon_slide_func_keys:
-    dev.enable(key_to_enable.code)
+    dev.enable(key_to_enable)
 
 def isEvent(event):
     if getattr(event, "name", None) is not None and\
@@ -257,7 +254,10 @@ def use_bindings_for_touchpad_left_key():
 
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
-        key_events.append(custom_key)
+        key_events.append(InputEvent(custom_key, 1))
+        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+        key_events.append(InputEvent(custom_key, 0))
+        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
 
     try:
         udev.send_events(key_events)
