@@ -773,8 +773,8 @@ def listen_touchpad_events():
                 # get touchpad device state once 
                 # only when is reached activation time
                 is_touchpad_enabled = is_device_enabled(touchpad_name)                
-                if (is_touchpad_enabled and touchpad_disables_numpad) or\
-                    not touchpad_disables_numpad:
+                if (not touchpad_disables_numpad and not is_touchpad_enabled) or\
+                    is_touchpad_enabled:
 
                     local_numlock_pressed()
 
