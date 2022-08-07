@@ -21,6 +21,8 @@ CONFIG_FILE_NAME = "asus_touchpad_dev"
 CONFIG_SECTION = "main"
 CONFIG_LAST_BRIGHTNESS = "brightness"
 
+EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
+
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_NAME)
 
@@ -315,7 +317,7 @@ def pressed_touchpad_top_left_icon(e):
     if e.value == 1:
         top_left_icon_touch_start_time = time()
         log.info("Touched top_left_icon in time: %s", time())
-        abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_CALC
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY_TOP_LEFT_ICON
     else:
         set_none_to_current_mt_slot()
 
@@ -540,7 +542,7 @@ def is_not_finger_moved_to_another_key():
     if touched_key_when_pressed is None:
         return
 
-    if touched_key_when_pressed == EV_KEY.KEY_CALC:
+    if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
         if top_right_icon_touch_start_time != 0 and\
@@ -654,7 +656,7 @@ def is_slided_from_top_left_icon(e):
     activation_min_x = top_left_icon_slide_func_activation_x_ratio * maxx
     activation_min_y = top_left_icon_slide_func_activation_x_ratio * maxy
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
         abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxx and\
         abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxy:
 
@@ -681,7 +683,7 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
 
     press_duration = time() - top_left_icon_touch_start_time
 
-    if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_CALC and\
+    if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
         press_duration > top_left_icon_activation_time):
 
         log.info("The top_left_icon was pressed longer than the activation time: %s",
