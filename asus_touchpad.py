@@ -19,7 +19,7 @@ from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 
 CONFIG_FILE_NAME = "asus_touchpad_dev"
 CONFIG_SECTION = "main"
-CONFIG_LAST_BRIGHTNESS = "last_brightness"
+CONFIG_LAST_BRIGHTNESS = "brightness"
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_NAME)
