@@ -591,7 +591,6 @@ def local_numlock_pressed():
     # Activating
     if not numlock:
 
-        # has to close as possible to send_numlock (because threads checking diff between these)
         numlock = True
         if not sys_numlock:
             send_numlock_key(1)
@@ -604,7 +603,6 @@ def local_numlock_pressed():
     # Inactivating
     else:
 
-        # has to close as possible to send_numlock (because threads checking diff between these
         numlock = False
         if sys_numlock and numpad_disables_sys_numlock:
             send_numlock_key(1)
