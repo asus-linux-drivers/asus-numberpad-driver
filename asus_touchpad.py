@@ -83,6 +83,8 @@ top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
 top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
 top_left_icon_activation_time = getattr(model_layout, "top_left_icon_activation_time", 1)
 top_left_icon_brightness_func_disabled = getattr(model_layout, "top_left_icon_brightness_func_disabled", None)
+if not backlight_levels:
+    top_left_icon_brightness_func_disabled = True
 top_left_icon_slide_func_activate_numpad = getattr(model_layout, "top_left_icon_slide_func_activate_numpad", True)
 top_left_icon_slide_func_activation_x_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_x_ratio", 0.3)
 top_left_icon_slide_func_activation_y_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_y_ratio", 0.3)
