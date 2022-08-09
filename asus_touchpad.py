@@ -63,14 +63,12 @@ top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
 activation_time = getattr(model_layout, "activation_time", 1)
 sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
 
-if not top_right_icon_width > 0 or not top_right_icon_height > 0:
-    log.error('top_right_icon width and height is required to set > 0.')
-    sys.exit(1)
-
 keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
     log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
+
+keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 
@@ -519,11 +517,15 @@ def unpressed_numpad_key(replaced_by_key=None):
 
 
 def get_touched_key():
-    global abs_mt_slot_x_values, abs_mt_slot_y_values
+    global abs_mt_slot_x_values, abs_mt_slot_y_values, keys_ignore_offset
 
     try:
         col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
         row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+
+        if([max(row, 0), max(col, 0)] in keys_ignore_offset):
+            row = max(row, 0)
+            col = max(col, 0)
 
         if row < 0 or col < 0:
             return None
@@ -546,9 +548,9 @@ def is_not_finger_moved_to_another_key():
     if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
-        if numlock_touch_start_time != 0 and\
-            not is_pressed_touchpad_top_right_icon() and\
-            touched_key_now != EV_KEY.KEY_NUMLOCK:
+        if numlock_touch_start_time != 0 and touched_key_now != EV_KEY.KEY_NUMLOCK:
+            #not is_pressed_touchpad_top_right_icon() and\
+            
 
                 log.info("Finger moved away from defined area for numlock / right_icon")
                 log.info("Unpressed numlock key")
@@ -741,7 +743,8 @@ def get_system_numlock():
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
-        unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time
+        unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
+        keys_ignore_offset
 
     for e in d_t.events():
 
@@ -822,20 +825,23 @@ def listen_touchpad_events():
                 use_bindings_for_touchpad_left_key()
                 continue
 
-            if(
-                abs_mt_slot_x_values[abs_mt_slot_value] < minx_numpad or
-                abs_mt_slot_x_values[abs_mt_slot_value] > maxx_numpad or
-                abs_mt_slot_y_values[abs_mt_slot_value] < miny_numpad or
-                abs_mt_slot_y_values[abs_mt_slot_value] > maxy_numpad
-            ):
-                continue
-
             col = math.floor(
                 (abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
             row = math.floor(
                 (abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
 
-            if row < 0 or col < 0:
+            if([max(row, 0), max(col, 0)] in keys_ignore_offset):
+                row = max(row, 0)
+                col = max(col, 0)
+            elif (
+                    abs_mt_slot_x_values[abs_mt_slot_value] > minx_numpad and
+                    abs_mt_slot_x_values[abs_mt_slot_value] < maxx_numpad and
+                    abs_mt_slot_y_values[abs_mt_slot_value] > miny_numpad and
+                    abs_mt_slot_y_values[abs_mt_slot_value] < maxy_numpad
+                ):
+                if (row < 0 or col < 0):
+                    continue
+            else:
                 continue
 
             if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
