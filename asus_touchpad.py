@@ -666,8 +666,10 @@ def is_slided_from_top_left_icon(e):
 
         top_left_icon_touch_start_time = 0
 
+        set_none_to_current_mt_slot()
         return True
     else:
+        set_none_to_current_mt_slot()
         return False
 
 
