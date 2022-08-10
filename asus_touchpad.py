@@ -83,6 +83,7 @@ top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
 top_left_icon_activation_time = getattr(model_layout, "top_left_icon_activation_time", 1)
 top_left_icon_brightness_func_disabled = getattr(model_layout, "top_left_icon_brightness_func_disabled", None)
 top_left_icon_slide_func_activate_numpad = getattr(model_layout, "top_left_icon_slide_func_activate_numpad", True)
+top_left_icon_slide_func_deactivate_numpad = getattr(model_layout, "top_left_icon_slide_func_deactivate_numpad", True)
 top_left_icon_slide_func_activation_x_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_x_ratio", 0.05)
 top_left_icon_slide_func_activation_y_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_y_ratio", 0.05)
 top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
@@ -260,6 +261,8 @@ def use_bindings_for_touchpad_left_key_slide_function():
         udev.send_events(key_events)
 
         if top_left_icon_slide_func_activate_numpad is True and not numlock:
+            local_numlock_pressed()
+        elif top_left_icon_slide_func_deactivate_numpad is True and numlock:
             local_numlock_pressed()
 
         log.info("Used bindings for touchpad left_icon slide function")
