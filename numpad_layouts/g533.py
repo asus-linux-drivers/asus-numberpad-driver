@@ -19,8 +19,6 @@ backlight_levels = [
     "0x45",
     "0x46"
 ]
-# default has to be value from array above ^^!
-default_backlight_level = "0x41"
 
 keys = [
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9,

@@ -17,20 +17,9 @@ import numpy as np
 from evdev import InputDevice, ecodes as ecodess
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 
-CONFIG_FILE_NAME = "asus_touchpad_dev"
-CONFIG_SECTION = "main"
-CONFIG_LAST_BRIGHTNESS = "brightness"
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
-config = configparser.ConfigParser()
-config.read(CONFIG_FILE_NAME)
-
-# when we open first time
-try:
-    config.add_section(CONFIG_SECTION)
-except:
-    pass
 
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
@@ -38,6 +27,12 @@ except:
 logging.basicConfig()
 log = logging.getLogger('Pad')
 log.setLevel(os.environ.get('LOG', 'INFO'))
+
+
+# Constants
+try_times = 5
+try_sleep = 0.1
+
 
 # Numpad layout model
 model = None
@@ -49,56 +44,102 @@ except:
     log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
     sys.exit(1)
 
-
-numpad_disables_sys_numlock = getattr(model_layout, "numpad_disables_sys_numlock", True)
-top_right_icon_is_on_top_left = getattr(model_layout, "top_right_icon_is_on_top_left", False)
-touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
-disable_due_inactivity_time = getattr(model_layout, "disable_due_inactivity_time", 60)
-touchpad_disables_numpad = getattr(model_layout, "touchpad_disables_numpad", True)
-key_repetitions = getattr(model_layout, "key_repetitions", False)
-multitouch = getattr(model_layout, "multitouch", False)
-one_touch_key_rotation = getattr(model_layout, "one_touch_key_rotation", False)
+left_offset = getattr(model_layout, "left_offset", 0)
+right_offset = getattr(model_layout, "right_offset", 0)
+top_offset = getattr(model_layout, "top_offset", 0)
+bottom_offset = getattr(model_layout, "bottom_offset", 0)
+top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
+top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
-activation_time = getattr(model_layout, "activation_time", 1)
-sys_numlock_enables_numpad = getattr(model_layout, "sys_numlock_enables_numpad", False)
-
 keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
     log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
-
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
-
+touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 
-default_backlight_level = getattr(model_layout, "default_backlight_level", "0x01")
+
+# Config
+CONFIG_FILE_NAME = "asus_touchpad_dev"
+CONFIG_SECTION = "main"
+CONFIG_LAST_BRIGHTNESS = "brightness"
+CONFIG_DEFAULT_BACKLIGHT_LEVEL = "default_backlight_level"
+CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT = "0x01"
+CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
+CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = 1
+CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
+CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD = "top_left_icon_slide_func_activates_numpad"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT = True
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_activation_x_ratio"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.3
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.3
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS = "top_left_icon_slide_func_keys"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS_DEFAULT = [
+    EV_KEY.KEY_CALC
+]
+CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
+CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT = True
+CONFIG_DISABLE_DUE_INACTIVITY_TIME = "disable_due_inactivity_time"
+CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT = 60
+CONFIG_TOUCHPAD_DISABLES_NUMPAD = "touchpad_disables_numpad"
+CONFIG_TOUCHPAD_DISABLES_NUMPAD_DEFAULT = True
+CONFIG_KEY_REPETITIONS = "key_repetitions"
+CONFIG_KEY_REPETITIONS_DEFAULT = False
+CONFIG_MULTITOUCH = "multitouch"
+CONFIG_MULTITOUCH_DEFAULT = False
+CONFIG_ONE_TOUCH_KEY_ROTATION = "one_touch_key_rotation"
+CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT = False
+CONFIG_ACTIVATION_TIME = "activation_time"
+CONFIG_ACTIVATION_TIME_DEFAULT = 1
+CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
+CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
+
+config = configparser.ConfigParser()
+config.read(CONFIG_FILE_NAME)
+
+# when we open first time
+def config_get(key, key_default):
+    try:
+        config.get(CONFIG_SECTION, key)
+    except:
+        return key_default
+
+try:
+    config.add_section(CONFIG_SECTION)
+except:
+    pass
+
+numpad_disables_sys_numlock = config_get(CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK, CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT)
+disable_due_inactivity_time = config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT)
+touchpad_disables_numpad = config_get(CONFIG_TOUCHPAD_DISABLES_NUMPAD, CONFIG_TOUCHPAD_DISABLES_NUMPAD_DEFAULT)
+key_repetitions = config_get(CONFIG_KEY_REPETITIONS, CONFIG_KEY_REPETITIONS_DEFAULT)
+multitouch = config_get(CONFIG_MULTITOUCH, CONFIG_MULTITOUCH_DEFAULT)
+one_touch_key_rotation = config_get(CONFIG_ONE_TOUCH_KEY_ROTATION, CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT)
+activation_time = config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT)
+sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
+# TODO: numlock not found in keys and right icon has no dimmensions, auto enable sys_numlock_enables_numpad
+top_left_icon_activation_time = config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT)
+top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
+top_left_icon_slide_func_activation_x_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT)
+top_left_icon_slide_func_activation_y_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT)
+top_left_icon_slide_func_keys = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS_DEFAULT)
+
+default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
 if default_backlight_level == "0x01":
     try:
         default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
     except:
         pass
 
-top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
-top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
-top_left_icon_activation_time = getattr(model_layout, "top_left_icon_activation_time", 1)
-top_left_icon_brightness_func_disabled = getattr(model_layout, "top_left_icon_brightness_func_disabled", None)
+# Numpad layout config depending values
+top_left_icon_brightness_func_disabled = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT)
 if not backlight_levels:
     top_left_icon_brightness_func_disabled = True
-top_left_icon_slide_func_activate_numpad = getattr(model_layout, "top_left_icon_slide_func_activate_numpad", True)
-top_left_icon_slide_func_activation_x_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_x_ratio", 0.3)
-top_left_icon_slide_func_activation_y_ratio = getattr(model_layout, "top_left_icon_slide_func_activation_y_ratio", 0.3)
-top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
-    EV_KEY.KEY_CALC
-])
 
-try_times = getattr(model_layout, "try_times", 5)
-try_sleep = getattr(model_layout, "try_sleep", 0.1)
-
-left_offset = getattr(model_layout, "left_offset", 0)
-right_offset = getattr(model_layout, "right_offset", 0)
-top_offset = getattr(model_layout, "top_offset", 0)
-bottom_offset = getattr(model_layout, "bottom_offset", 0)
 
 # Figure out devices from devices file
 touchpad: Optional[str] = None
@@ -262,7 +303,7 @@ def use_bindings_for_touchpad_left_key():
     try:
         udev.send_events(key_events)
 
-        if top_left_icon_slide_func_activate_numpad is True and not numlock:
+        if top_left_icon_slide_func_activates_numpad is True and not numlock:
             local_numlock_pressed()
 
         log.info("Used bindings for touchpad left_icon slide function")
@@ -274,15 +315,10 @@ def use_bindings_for_touchpad_left_key():
 def is_pressed_touchpad_top_right_icon():
     global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
 
-    if not top_right_icon_is_on_top_left:
-        if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
-            abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
-                return True
-    else:
-        if abs_mt_slot_x_values[abs_mt_slot_value] <= top_right_icon_width and\
-            abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
-                return True
-
+    if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
+        abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
+            return True
+  
     return False
 
 
