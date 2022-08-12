@@ -15,6 +15,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Customizable default level of backlight (default is last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
 - Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell
+- Driver supports laptop suspend
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables NumberPad as well, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is NumberPad on (unless they are outside the NumberPad area like in layout `gx701`)
 - Repeating the key, when it is held (optional)
