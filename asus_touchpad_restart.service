@@ -1,0 +1,10 @@
+[Unit]
+Description=Restart Asus Touchpad to Numpad Handler after woke up from suspend
+After=suspend.target
+
+[Service]
+Type=simple
+ExecStart=systemctl --no-block restart asus_touchpad_numpad.service
+
+[Install]
+WantedBy=suspend.target
