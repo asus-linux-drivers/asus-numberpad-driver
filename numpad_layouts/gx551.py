@@ -3,12 +3,12 @@ from libevdev import EV_KEY
 # Subtract 0.3 (a third key) as the UX581L has about a third key space at the top
 top_offset = 0
 
-touchpad_physical_buttons_are_inside_numpad = False
-
 top_offset = 200
 right_offset = 200
 left_offset = 200
 bottom_offset = 80
+
+touchpad_physical_buttons_are_inside_numpad = False
 
 keys = [
     [EV_KEY.KEY_NUMLOCK, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_KPASTERISK, EV_KEY.KEY_KPMINUS],
