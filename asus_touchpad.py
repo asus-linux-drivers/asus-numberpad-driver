@@ -98,20 +98,29 @@ CONFIG_ACTIVATION_TIME_DEFAULT = 1
 CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
 CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
 
+# when we open first time
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_NAME)
 
-# when we open first time
+try:
+    config.add_section(CONFIG_SECTION)
+except:
+    pass
+
+# methods for read & write from config file
 def config_get(key, key_default):
     try:
         config.get(CONFIG_SECTION, key)
     except:
         return key_default
 
-try:
-    config.add_section(CONFIG_SECTION)
-except:
-    pass
+def config_set(key, value):
+    config.set(CONFIG_SECTION, key, value)
+    try:
+        with open(CONFIG_FILE_NAME, 'w') as configFile:
+            config.write(configFile)
+    except:
+        pass
 
 numpad_disables_sys_numlock = config_get(CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK, CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT)
 disable_due_inactivity_time = config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT)
@@ -369,9 +378,7 @@ def increase_brightness():
     log.info("Increased brightness of backlight to")
     log.info(brightness)
 
-    config.set(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
-    with open(CONFIG_FILE_NAME, 'w') as configfile:
-        config.write(configfile)
+    config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
 
     numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
             backlight_levels[brightness] + " 0xad"
