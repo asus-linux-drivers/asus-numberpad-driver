@@ -119,6 +119,7 @@ cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYO
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver
 install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
+install asus_touchpad_dev /usr/share/asus_touchpad_numpad-driver/
 install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null

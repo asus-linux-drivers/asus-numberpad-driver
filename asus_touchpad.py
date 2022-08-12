@@ -586,9 +586,8 @@ def is_not_finger_moved_to_another_key():
     if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
-        if numlock_touch_start_time != 0 and touched_key_now != EV_KEY.KEY_NUMLOCK:
-            #not is_pressed_touchpad_top_right_icon() and\
-            
+        if numlock_touch_start_time != 0 and touched_key_now != EV_KEY.KEY_NUMLOCK and\
+            not is_pressed_touchpad_top_right_icon():
 
                 log.info("Finger moved away from defined area for numlock / right_icon")
                 log.info("Unpressed numlock key")
