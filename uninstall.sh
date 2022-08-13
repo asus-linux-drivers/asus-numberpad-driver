@@ -13,6 +13,13 @@ then
 	exit 1
 fi
 
+systemctl stop asus_touchpad_numpad_restart
+if [[ $? != 0 ]]
+then
+	echo "asus_touchpad_numpad_restart.service cannot be stopped correctly..."
+	exit 1
+fi
+
 systemctl disable asus_touchpad_numpad
 if [[ $? != 0 ]]
 then
@@ -20,10 +27,24 @@ then
 	exit 1
 fi
 
+systemctl disable asus_touchpad_numpad_restart
+if [[ $? != 0 ]]
+then
+	echo "asus_touchpad_numpad_restart.service cannot be disabled correctly..."
+	exit 1
+fi
+
 rm -f /lib/systemd/system/asus_touchpad_numpad.service
 if [[ $? != 0 ]]
 then
 	echo "/lib/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
+	exit 1
+fi
+
+rm -f /lib/systemd/system/asus_touchpad_numpad_restart.service
+if [[ $? != 0 ]]
+then
+	echo "/lib/systemd/system/asus_touchpad_numpad_restart.service cannot be removed correctly..."
 	exit 1
 fi
 

@@ -6,20 +6,15 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput
+    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput python3-numpy python3-evdev
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-pip xorg-xinput
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git xorg-xinput python-numpy python-evdev
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-pip xinput
-fi
-
-pip3 install numpy evdev
-
-# Checking if the pip3 is successfuly loaded
-if [[ $? != 0 ]]; then
-    echo "pip3 is not loaded correctly. Make sure you have installed python3-pip package"
-    exit 1
+    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git xinput python-evdev python3-numpy
 fi
 
 modprobe i2c-dev
@@ -114,7 +109,8 @@ echo "Selected key layout $model"
 echo "Installing asus touchpad service to /etc/systemd/system/"
 
 xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY' >/etc/systemd/system/asus_touchpad_numpad.service
+cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY' > /etc/systemd/system/asus_touchpad_numpad.service
+cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver
@@ -133,12 +129,29 @@ else
     echo "Asus touchpad service enabled"
 fi
 
+systemctl enable asus_touchpad_numpad_restart
+
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when enabling the asus_touchpad_numpad_restart.service"
+    exit 1
+else
+    echo "Asus touchpad restart service enabled"
+fi
+
 systemctl restart asus_touchpad_numpad
 if [[ $? != 0 ]]; then
     echo "Something went wrong when enabling the asus_touchpad_numpad.service"
     exit 1
 else
     echo "Asus touchpad service started"
+fi
+
+systemctl restart asus_touchpad_numpad_restart
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when enabling the asus_touchpad_numpad_restart.service"
+    exit 1
+else
+    echo "Asus touchpad restart service started"
 fi
 
 exit 0
