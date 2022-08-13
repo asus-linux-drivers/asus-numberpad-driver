@@ -74,9 +74,9 @@ CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD = "top_left_icon_slide_func_activates_numpad"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_activation_x_ratio"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.3
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.05
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.3
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.05
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS = "top_left_icon_slide_func_keys"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_KEYS_DEFAULT = [
     EV_KEY.KEY_CALC
@@ -301,7 +301,7 @@ for col in keys:
 
 udev = dev.create_uinput_device()
 
-def use_bindings_for_touchpad_left_key():
+def use_bindings_for_touchpad_left_key_slide_function():
     global numlock
 
     key_events = []
@@ -315,6 +315,8 @@ def use_bindings_for_touchpad_left_key():
         udev.send_events(key_events)
 
         if top_left_icon_slide_func_activates_numpad is True and not numlock:
+            local_numlock_pressed()
+        elif top_left_icon_slide_func_deactivate_numpad is True and numlock:
             local_numlock_pressed()
 
         log.info("Used bindings for touchpad left_icon slide function")
@@ -696,10 +698,10 @@ def is_slided_from_top_left_icon(e):
     global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
 
     if e.value != 0:
-        return
+        return False
 
     if top_left_icon_touch_start_time == 0:
-        return
+        return False
 
     activation_min_x = top_left_icon_slide_func_activation_x_ratio * maxx
     activation_min_y = top_left_icon_slide_func_activation_x_ratio * maxy
@@ -716,9 +718,13 @@ def is_slided_from_top_left_icon(e):
         log.info(activation_min_y)
 
         top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
 
         return True
     else:
+        top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
+
         return False
 
 
@@ -727,7 +733,7 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
         top_left_icon_touch_start_time
 
     if top_left_icon_touch_start_time == 0:
-        return
+        return False
 
     press_duration = time() - top_left_icon_touch_start_time
 
@@ -866,7 +872,7 @@ def listen_touchpad_events():
                 pressed_touchpad_top_left_icon(e)
                 continue
             elif is_slided_from_top_left_icon(e):
-                use_bindings_for_touchpad_left_key()
+                use_bindings_for_touchpad_left_key_slide_function()
                 continue
 
             col = math.floor(
