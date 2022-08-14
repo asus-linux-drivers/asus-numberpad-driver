@@ -233,6 +233,7 @@ dev.enable(EV_KEY.KEY_C)
 dev.enable(EV_KEY.KEY_D)
 dev.enable(EV_KEY.KEY_E)
 dev.enable(EV_KEY.KEY_F)
+dev.enable(EV_KEY.KEY_SPACE)
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable.code)
 
@@ -429,15 +430,15 @@ def set_tracking_id(value):
 
 def get_compose_key_end_events_for_unicode_string():
 
-    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
-    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
+    enter_pressed = InputEvent(EV_KEY.KEY_SPACE, 1)
+    enter_unpressed = InputEvent(EV_KEY.KEY_SPACE, 0)
 
     events = [
-        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
-        left_ctrl_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, enter_pressed.code.value),
+        enter_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
-        left_shift_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, enter_unpressed.code.value),
+        enter_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0)
     ]
 
@@ -446,23 +447,31 @@ def get_compose_key_end_events_for_unicode_string():
 
 def get_compose_key_start_events_for_unicode_string():
 
-    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
-    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
+    left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
+    left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
+    left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
+    left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
     key_U_pressed = InputEvent(EV_KEY.KEY_U, 1)
     key_U_unpressed = InputEvent(EV_KEY.KEY_U, 0)
 
     events = [
-        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
-        left_ctrl_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_pressed.code.value),
+        left_ctrl_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
-        left_shift_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_pressed.code.value),
+        left_shift_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
         InputEvent(EV_MSC.MSC_SCAN, key_U_pressed.code.value),
         key_U_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_unpressed.code.value),
+        left_shift_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
         InputEvent(EV_MSC.MSC_SCAN, key_U_unpressed.code.value),
         key_U_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_unpressed.code.value),
+        left_ctrl_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
     ]
 
