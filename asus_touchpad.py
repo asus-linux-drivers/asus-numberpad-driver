@@ -911,9 +911,15 @@ def listen_touchpad_events():
             else:
                 unpressed_numpad_key()
 
+# auto ended thread for checking touchpad status (activated/deactivated)
+# via xinput when is for example used wayland
+getting_device_status_failure_count = 0
 
 def is_device_enabled(device_name):
+    global getting_device_status_failure_count
     try:
+        getting_device_status_failure_count = 0
+
         propData = subprocess.check_output(['xinput', '--list-props', device_name])
         propData = propData.decode()
 
@@ -925,8 +931,11 @@ def is_device_enabled(device_name):
                 else:
                     return False
 
+        getting_device_status_failure_count += 1
         return False
     except:
+        getting_device_status_failure_count += 1
+
         log.info('Getting Device Enabled via xinput failed')
         return True
 
@@ -953,7 +962,7 @@ def check_system_numlock_status():
 
 
 def check_touchpad_status_endless_cycle():
-    while True:
+    while True and getting_device_status_failure_count < 9:
         check_touchpad_status()
         sleep(0.5)
 
