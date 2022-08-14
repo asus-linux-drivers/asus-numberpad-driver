@@ -11,7 +11,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Customizable activation/deactivation time (default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon
 - Customizable slide gesture beginning on top left (required is end slide after at least 5% of width and height, default behaviour is sending `KEY_CALC` with NumberPad activation/deactivation = prepared to be bound to script with toggle functionality of prefered calculator app)
-- Unicode characters sending support (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>`)
+- Unicode characters sending support (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (default is last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
