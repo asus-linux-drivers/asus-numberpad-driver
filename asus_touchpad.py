@@ -427,11 +427,29 @@ def set_tracking_id(value):
         log.error(e)
 
 
-def get_compose_key_events_for_unicode_string(value):
+def get_compose_key_end_events_for_unicode_string():
 
-    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, value)
-    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, value)
-    key_U = InputEvent(EV_KEY.KEY_U, value)
+    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
+    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
+
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
+        left_ctrl_input_event,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
+        left_shift_input_event,
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    return events
+
+
+def get_compose_key_start_events_for_unicode_string():
+
+    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
+    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
+    key_U_pressed = InputEvent(EV_KEY.KEY_U, 1)
+    key_U_unpressed = InputEvent(EV_KEY.KEY_U, 0)
 
     events = [
         InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
@@ -440,8 +458,11 @@ def get_compose_key_events_for_unicode_string(value):
         InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
         left_shift_input_event,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, key_U.code.value),
-        key_U,
+        InputEvent(EV_MSC.MSC_SCAN, key_U_pressed.code.value),
+        key_U_pressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, key_U_unpressed.code.value),
+        key_U_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
     ]
 
@@ -470,8 +491,8 @@ def get_events_for_unicode_string(string):
                 InputEvent(EV_SYN.SYN_REPORT, 0)
             ]
 
-        start_events = get_compose_key_events_for_unicode_string(1)
-        end_events = get_compose_key_events_for_unicode_string(0)
+        start_events = get_compose_key_start_events_for_unicode_string()
+        end_events = get_compose_key_end_events_for_unicode_string()
         return start_events + key_events + end_events
 
 
