@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "sudo": true,
-            "args": ["up5401ea"]
+            "args": ["up5401ea", ""]
         }
     ]
 }
