@@ -109,13 +109,12 @@ echo "Selected key layout $model"
 echo "Installing asus touchpad service to /etc/systemd/system/"
 
 xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-cat asus_touchpad.service | LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY' > /etc/systemd/system/asus_touchpad_numpad.service
+cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
 cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver
 install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
-install asus_touchpad_dev /usr/share/asus_touchpad_numpad-driver/
 install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
