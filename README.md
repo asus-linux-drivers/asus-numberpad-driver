@@ -8,13 +8,14 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 - Multiple NumberPad layouts (keys, paddings)
 - Automatic NumberPad model detection
-- Customizable activation time (default 1s)
-- Unicode characters sending support (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>`)
-- Smooth change of backlight levels (endless loop with customizable interval, default 1s)
+- Customizable activation/deactivation time (default 1s)
+- Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon
 - Customizable slide gesture beginning on top left (required is end slide after at least 5% of width and height, default behaviour is sending `KEY_CALC` with NumberPad activation/deactivation = prepared to be bound to script with toggle functionality of prefered calculator app)
+- Unicode characters sending support (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
+- Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (default is last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
-- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell
+- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell (this functionality is supported only via `xinput` from `xorg`, no `wayland` support yet)
 - Driver supports laptop suspend
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables NumberPad as well, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is NumberPad on (unless they are outside the NumberPad area like in layout `gx701`)
@@ -144,7 +145,7 @@ enabled = 1
 | **Top left icon**                             |          |                   | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions) |
 | `top_left_icon_width`                         |          |                   | width of the top left icon
 | `top_left_icon_height`                        |          |                   | height of the top left icon
-| `top_left_icon_slide_func_keys`               |          | `EV_KEY.KEY_CALC` | array of `InputEvent`
+| `top_left_icon_slide_func_keys`               |          | `[EV_KEY.KEY_CALC]` | array of `InputEvent`
 | **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height`
 | `top_right_icon_width`                        |          |                   | width of the top right icon
 | `top_right_icon_height`                       |          |                   | height of the top right icon
@@ -175,17 +176,21 @@ enabled = 1
 | `key_repetitions`                             |          | `False`           | possible to enable with value `True` hold key for repeated pressing key like on a physical keyboard
 | **Top left icon**                             |          |                   | custom function is used when is NumberPad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is NumberPad activated, `top_left_icon_brightness_function_disabled` is not True, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
 | `top_left_icon_activation_time`               |          | 1 [s]             | amount of time for touch `top_left_icon`
-| `top_left_icon_slide_func_activation_x_ratio` |          | 0.3               | ratio of touchpad width of slide
-| `top_left_icon_slide_func_activation_y_ratio` |          | 0.3               | ratio of touchpad height of slide
+| `top_left_icon_slide_func_activation_x_ratio` |          | 0.05 (5%)         | ratio of touchpad width of slide
+| `top_left_icon_slide_func_activation_y_ratio` |          | 0.05 (5%)         | ratio of touchpad height of slide
 | `top_left_icon_slide_func_activates_numpad`   |          | `True`            | valid value is `True` or `False`
+| `top_left_icon_slide_func_deactivate_numpad`  |          | `True`            | valid value is `True` or `False`   
 | `top_left_icon_brightness_func_disabled`      |          |                   | valid value is only `True`, is auto disabled when is empty
 `backlight_levels`
+| **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and untouched atleast after ratio of touchpad width > `top_right_icon_slide_func_activation_x_ratio` and height > `top_right_icon_slide_func_activation_y_ratio` |                                           
+| `top_right_icon_slide_func_activation_x_ratio`|          | 0.05 (5%)         | ratio of touchpad width of slide                       
+| `top_right_icon_slide_func_activation_y_ratio`|          | 0.05 (5%)         | ratio of touchpad height of slide 
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hexa format `0x00` (has to be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
 
 ## Credits
 
-Thank you very much [github.com/mohamed-badaoui](github.com/mohamed-badaoui) and all the contributors of [asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
+Thank you very much all the contributors of [asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
 
 Thank you who-t for great post about multitouch [Understanding evdev](http://who-t.blogspot.com/2016/09/understanding-evdev.html).
 

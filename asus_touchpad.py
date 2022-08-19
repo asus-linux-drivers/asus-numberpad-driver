@@ -93,6 +93,10 @@ CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_a
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.05
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.05
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_right_icon_slide_func_activation_x_ratio"
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.05
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_right_icon_slide_func_activation_y_ratio"
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.05
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT = 0
 CONFIG_DISABLE_DUE_INACTIVITY_TIME = "disable_due_inactivity_time"
@@ -302,6 +306,7 @@ dev.enable(EV_KEY.KEY_C)
 dev.enable(EV_KEY.KEY_D)
 dev.enable(EV_KEY.KEY_E)
 dev.enable(EV_KEY.KEY_F)
+dev.enable(EV_KEY.KEY_SPACE)
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
 
@@ -321,7 +326,17 @@ for col in keys:
 
 udev = dev.create_uinput_device()
 
-def use_bindings_for_touchpad_left_key_slide_function():
+
+def use_slide_func_for_top_right_icon():
+    global numlock
+
+    local_numlock_pressed()
+
+    log.info("Func for touchpad right_icon slide function")
+
+
+def use_bindings_for_touchpad_left_icon_slide_function():
+
     global numlock, top_left_icon_slide_func_deactivates_numpad, top_left_icon_slide_func_activates_numpad, top_left_icon_slide_func_keys
 
     key_events = []
@@ -546,6 +561,8 @@ def load_all_config_values():
     global top_left_icon_slide_func_deactivates_numpad
     global top_left_icon_slide_func_activation_x_ratio
     global top_left_icon_slide_func_activation_y_ratio
+    global top_right_icon_slide_func_activation_x_ratio
+    global top_right_icon_slide_func_activation_y_ratio
     global numlock
     global default_backlight_level
     global top_left_icon_brightness_func_disabled
@@ -578,6 +595,9 @@ def load_all_config_values():
     top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_activation_x_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT)
     top_left_icon_slide_func_activation_y_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT)
+    top_right_icon_slide_func_activation_x_ratio = config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT)
+    top_right_icon_slide_func_activation_y_ratio = config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT)
+
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
@@ -639,21 +659,50 @@ def set_tracking_id(value):
         log.error(e)
 
 
-def get_compose_key_events_for_unicode_string(value):
+def get_compose_key_end_events_for_unicode_string():
 
-    left_shift_input_event = InputEvent(EV_KEY.KEY_LEFTSHIFT, value)
-    left_ctrl_input_event = InputEvent(EV_KEY.KEY_LEFTCTRL, value)
-    key_U = InputEvent(EV_KEY.KEY_U, value)
+    enter_pressed = InputEvent(EV_KEY.KEY_SPACE, 1)
+    enter_unpressed = InputEvent(EV_KEY.KEY_SPACE, 0)
 
     events = [
-        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_input_event.code.value),
-        left_ctrl_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, enter_pressed.code.value),
+        enter_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_input_event.code.value),
-        left_shift_input_event,
+        InputEvent(EV_MSC.MSC_SCAN, enter_unpressed.code.value),
+        enter_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    return events
+
+
+def get_compose_key_start_events_for_unicode_string():
+
+    left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
+    left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
+    left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
+    left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
+    key_U_pressed = InputEvent(EV_KEY.KEY_U, 1)
+    key_U_unpressed = InputEvent(EV_KEY.KEY_U, 0)
+
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_pressed.code.value),
+        left_ctrl_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, key_U.code.value),
-        key_U,
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_pressed.code.value),
+        left_shift_pressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, key_U_pressed.code.value),
+        key_U_pressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_unpressed.code.value),
+        left_shift_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, key_U_unpressed.code.value),
+        key_U_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_unpressed.code.value),
+        left_ctrl_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
     ]
 
@@ -682,8 +731,8 @@ def get_events_for_unicode_string(string):
                 InputEvent(EV_SYN.SYN_REPORT, 0)
             ]
 
-        start_events = get_compose_key_events_for_unicode_string(1)
-        end_events = get_compose_key_events_for_unicode_string(0)
+        start_events = get_compose_key_start_events_for_unicode_string()
+        end_events = get_compose_key_end_events_for_unicode_string()
         return start_events + key_events + end_events
 
 
@@ -772,13 +821,7 @@ def is_not_finger_moved_to_another_key():
     if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
-        if numlock_touch_start_time != 0 and touched_key_now != EV_KEY.KEY_NUMLOCK and\
-            not is_pressed_touchpad_top_right_icon():
-
-                log.info("Finger moved away from defined area for numlock / right_icon")
-                log.info("Unpressed numlock key")
-                numlock_touch_start_time = 0
-
+        pass
     elif numlock:
         if touched_key_now != touched_key_when_pressed:
 
@@ -835,6 +878,36 @@ def pressed_touchpad_top_right_icon(value):
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
 
 
+def is_slided_from_top_right_icon(e):
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
+
+    if e.value != 0:
+        return
+
+    if top_right_icon_touch_start_time == 0:
+        return
+
+    activation_min_x = top_right_icon_slide_func_activation_x_ratio * maxx
+    activation_min_y = top_right_icon_slide_func_activation_x_ratio * maxy
+
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
+        abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
+        abs_mt_slot_y_values[abs_mt_slot_value] < maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
+
+        log.info("Slided from top_right_icon taken longer then is required. X, y:")
+        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
+        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
+        log.info("Required is min x, y:")
+        log.info(activation_min_x)
+        log.info(activation_min_y)
+
+        top_right_icon_touch_start_time = 0
+
+        return True
+    else:
+        return False
+
+
 def is_slided_from_top_left_icon(e):
     global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
 
@@ -845,11 +918,11 @@ def is_slided_from_top_left_icon(e):
         return False
 
     activation_min_x = top_left_icon_slide_func_activation_x_ratio * maxx
-    activation_min_y = top_left_icon_slide_func_activation_x_ratio * maxy
+    activation_min_y = top_left_icon_slide_func_activation_y_ratio * maxy
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
         abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxx and\
-        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxy:
+        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_y_ratio * maxy:
 
         log.info("Slided from top_left_icon taken longer then is required. X, y:")
         log.info(abs_mt_slot_x_values[abs_mt_slot_value])
@@ -989,7 +1062,10 @@ def listen_touchpad_events():
                 pressed_touchpad_top_left_icon(e)
                 continue
             elif is_slided_from_top_left_icon(e):
-                use_bindings_for_touchpad_left_key_slide_function()
+                use_bindings_for_touchpad_left_icon_slide_function()
+                continue
+            elif is_slided_from_top_right_icon(e):
+                use_slide_func_for_top_right_icon()
                 continue
 
             col = math.floor(
@@ -1049,6 +1125,34 @@ def listen_touchpad_events():
             else:
                 unpressed_numpad_key()
 
+# auto ended thread for checking touchpad status (activated/deactivated)
+# via xinput when is for example used wayland
+getting_device_status_failure_count = 0
+
+def is_device_enabled(device_name):
+    global getting_device_status_failure_count
+    try:
+        getting_device_status_failure_count = 0
+
+        propData = subprocess.check_output(['xinput', '--list-props', device_name])
+        propData = propData.decode()
+
+        for line in propData.splitlines():
+            if 'Device Enabled' in line:
+                line = line.strip()
+                if line[-1] == '1':
+                    return True
+                else:
+                    return False
+
+        getting_device_status_failure_count += 1
+        return False
+    except:
+        getting_device_status_failure_count += 1
+
+        log.info('Getting Device Enabled via xinput failed')
+        return True
+
 
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
@@ -1072,9 +1176,8 @@ def check_system_numlock_status():
 
 
 def check_touchpad_status_endless_cycle():
-    while True:
-        if touchpad_disables_numpad:
-            check_touchpad_status()
+    while True and getting_device_status_failure_count < 9:
+        check_touchpad_status()
         sleep(0.5)
 
 
