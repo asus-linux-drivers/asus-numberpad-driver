@@ -579,24 +579,24 @@ def load_all_config_values():
         pass
 
     numpad_disables_sys_numlock = config_get(CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK, CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT)
-    disable_due_inactivity_time = config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT)
+    disable_due_inactivity_time = int(config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT))
     touchpad_disables_numpad = config_get(CONFIG_TOUCHPAD_DISABLES_NUMPAD, CONFIG_TOUCHPAD_DISABLES_NUMPAD_DEFAULT)
     key_repetitions = config_get(CONFIG_KEY_REPETITIONS, CONFIG_KEY_REPETITIONS_DEFAULT)
     multitouch = config_get(CONFIG_MULTITOUCH, CONFIG_MULTITOUCH_DEFAULT)
     one_touch_key_rotation = config_get(CONFIG_ONE_TOUCH_KEY_ROTATION, CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT)
-    activation_time = config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT)
+    activation_time = int(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
     key_numlock_is_used = any(EV_KEY.KEY_NUMLOCK in x for x in keys)
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad = True
     config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, key_numlock_is_used, True, True)
-    top_left_icon_activation_time = config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT)
+    top_left_icon_activation_time = int(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)
-    top_left_icon_slide_func_activation_x_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT)
-    top_left_icon_slide_func_activation_y_ratio = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT)
-    top_right_icon_slide_func_activation_x_ratio = config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT)
-    top_right_icon_slide_func_activation_y_ratio = config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT)
+    top_left_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
+    top_left_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
+    top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
+    top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
 
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
@@ -637,6 +637,7 @@ support_for_maximum_abs_mt_slots: int = 1
 unsupported_abs_mt_slot: bool = False
 numlock_touch_start_time = 0
 top_left_icon_touch_start_time = 0
+top_right_icon_touch_start_time = 0
 last_event_time = 0
 
 config = configparser.ConfigParser()
@@ -869,10 +870,20 @@ def send_numlock_key(value):
         log.error("Cannot send event, %s", e)
 
 
-def pressed_touchpad_top_right_icon(value):
+def pressed_numlock_key(value):
     global numlock_touch_start_time, abs_mt_slot_numpad_key
 
     if value == 1:
+        numlock_touch_start_time = time()
+        log.info("Touched numlock in time: %s", time())
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
+
+
+def pressed_touchpad_top_right_icon(value):
+    global top_right_icon_touch_start_time, numlock_touch_start_time, abs_mt_slot_numpad_key
+
+    if value == 1:
+        top_right_icon_touch_start_time = time()
         numlock_touch_start_time = time()
         log.info("Touched numlock in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
@@ -888,7 +899,7 @@ def is_slided_from_top_right_icon(e):
         return
 
     activation_min_x = top_right_icon_slide_func_activation_x_ratio * maxx
-    activation_min_y = top_right_icon_slide_func_activation_x_ratio * maxy
+    activation_min_y = top_right_icon_slide_func_activation_y_ratio * maxy
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
@@ -902,6 +913,7 @@ def is_slided_from_top_right_icon(e):
         log.info(activation_min_y)
 
         top_right_icon_touch_start_time = 0
+        numlock_touch_start_time = 0
 
         return True
     else:
@@ -1102,7 +1114,7 @@ def listen_touchpad_events():
                     continue
 
                 if key == EV_KEY.KEY_NUMLOCK:
-                    pressed_touchpad_top_right_icon(e.value)
+                    pressed_numlock_key(e.value)
                     continue
                 else:
                     abs_mt_slot_numpad_key[abs_mt_slot_value] = key
