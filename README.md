@@ -6,7 +6,8 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 ## Features
 
-- Multiple NumberPad layouts (keys, paddings)
+- Multiple pre-created NumberPad layouts with possibility create custom one (keys, sizes, paddings..)
+- Customization through 2-way sync configuration file
 - Automatic NumberPad model detection
 - Customizable activation/deactivation time (default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon
