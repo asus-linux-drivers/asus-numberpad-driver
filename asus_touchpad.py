@@ -544,7 +544,7 @@ def local_numlock_pressed():
 
 
 def read_config_file():
-    global config
+    global config, config_file_dir
 
     config_file_path = config_file_dir + CONFIG_FILE_NAME
     config.read(config_file_path)
