@@ -543,6 +543,13 @@ def local_numlock_pressed():
     numlock_lock.release()
 
 
+def read_config_file():
+    global config
+
+    config_file_path = config_file_dir + CONFIG_FILE_NAME
+    config.read(config_file_path)
+
+
 def load_all_config_values():
     global config
     global keys
@@ -571,7 +578,7 @@ def load_all_config_values():
 
     config_lock.acquire()
 
-    config.read(CONFIG_FILE_NAME)
+    read_config_file()
 
     try:
         config.add_section(CONFIG_SECTION)
