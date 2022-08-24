@@ -87,10 +87,16 @@ To see the exact commands for your package manager look [here](./install.sh)
 
 ## Troubleshooting
 
-To show debug logs run:
+To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
 
 ```bash
-LOG=DEBUG sudo -E ./asus_touchpad.py
+# LOG=DEBUG sudo -E ./asus_touchpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: asus_touchpad_numpad_dev, by default is taken CWD - current working directory>
+
+cd asus-touchpad-numpad-driver
+LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "" # now driver use root of repository as directory for config file named asus_touchpad_numpad_dev
+
+cd asus-touchpad-numpad-driver
+LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad-driver/" # now driver use installed config
 ```
 
 ## Configuration
