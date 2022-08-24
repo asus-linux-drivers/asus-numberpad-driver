@@ -43,7 +43,7 @@ if len(sys.argv) > 1:
 try:
     model_layout = importlib.import_module('numpad_layouts.' + model)
 except:
-    log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script.")
+    log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script or add missing first argument (valid value is b7402, e210ma, g533, gx551, gx701, up5401, ..).")
     sys.exit(1)
 
 # Config file dir
