@@ -468,25 +468,6 @@ def deactivate_numpad():
         pass
 
 
-def is_device_enabled(device_name):
-    try:
-        propData = subprocess.check_output(['xinput', '--list-props', device_name])
-        propData = propData.decode()
-
-        for line in propData.splitlines():
-            if 'Device Enabled' in line:
-                line = line.strip()
-                if line[-1] == '1':
-                    return True
-                else:
-                    return False
-
-        return False
-    except:
-        log.info('Getting Device Enabled via xinput failed')
-        return True
-
-
 def get_system_numlock():
     global dev_k
 
