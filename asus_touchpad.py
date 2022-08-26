@@ -1180,6 +1180,8 @@ def check_touchpad_status_endless_cycle():
         check_touchpad_status()
         sleep(0.5)
 
+    log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_status_failure_count)
+
 
 def check_numpad_automatical_disable_due_inactivity():
     global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock
