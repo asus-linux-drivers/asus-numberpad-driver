@@ -101,6 +101,8 @@ LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad
 
 ## Configuration
 
+### Keyboard layout
+
 During the install process `sudo ./install.sh`, you're required to select your keyboard layout:
 
 ```
@@ -120,31 +122,6 @@ Please enter your choice
 Each key layout (`g533.py`, `gx701.py`, ..) chosen during the install process corresponds to the specific file. To change any layout depending settings you need to locally edit the selected layout file and change the value of the corresponding variable from the first table below.
 
 Example: If you want to set the size of top right icon to bigger and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variables (`top_right_icon_width = 400`,`top_right_icon_height = 400`) in the layout file (`asus-touchpad-numpad-driver/numpad_layouts/up5401ea.py`) and install the layout again.
-
-What is not depending on specific keyboard of Numpad is mentioned in second table and can be changed in config file `asus_touchpad_numpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev`. Example:
-
-```
-[main]
-numpad_disables_sys_numlock = 0
-disable_due_inactivity_time = 60
-touchpad_disables_numpad = 1
-key_repetitions = 0
-multitouch = 0
-one_touch_key_rotation = 0
-activation_time = 1
-top_right_icon_slide_func_activation_x_ratio = 0.05
-top_right_icon_slide_func_activation_y_ratio = 0.05
-sys_numlock_enables_numpad = 0
-top_left_icon_activation_time = 1
-top_left_icon_slide_func_activates_numpad = 1
-top_left_icon_slide_func_deactivates_numpad = 1
-top_left_icon_slide_func_activation_x_ratio = 0.05
-top_left_icon_slide_func_activation_y_ratio = 0.05
-default_backlight_level = 0x01
-top_left_icon_brightness_func_disabled = 0
-brightness = 0x46
-enabled = 1
-```
 
 | Option                                        | Required | Default           | Description |
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -168,9 +145,32 @@ enabled = 1
 
 
 
+### Configuration file
 
+What is not depending on specific keyboard of Numpad is mentioned in table below and can be changed in config file `asus_touchpad_numpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev`. Example:
 
-### Config file (everything is under [main] section)
+```
+[main]
+numpad_disables_sys_numlock = 0
+disable_due_inactivity_time = 60
+touchpad_disables_numpad = 1
+key_repetitions = 0
+multitouch = 0
+one_touch_key_rotation = 0
+activation_time = 1
+top_right_icon_slide_func_activation_x_ratio = 0.05
+top_right_icon_slide_func_activation_y_ratio = 0.05
+sys_numlock_enables_numpad = 0
+top_left_icon_activation_time = 1
+top_left_icon_slide_func_activates_numpad = 1
+top_left_icon_slide_func_deactivates_numpad = 1
+top_left_icon_slide_func_activation_x_ratio = 0.05
+top_left_icon_slide_func_activation_y_ratio = 0.05
+default_backlight_level = 0x01
+top_left_icon_brightness_func_disabled = 0
+brightness = 0x46
+enabled = 1
+```
 
 | Option                                        | Required | Default           | Description |
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
