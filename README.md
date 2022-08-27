@@ -16,7 +16,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (default is last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
-- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell (this functionality is supported only via `xinput` from `xorg`, no `wayland` support yet)
+- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell (this functionality is supported only via `xinput` from `xorg`, no `wayland` support yet https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
 - Driver supports laptop suspend
 - Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables NumberPad as well, reflect enabling sys numlock is optional)
 - Touchpad physical buttons (left, right and middle) are ignored when is NumberPad on (unless they are outside the NumberPad area like in layout `gx701`)
