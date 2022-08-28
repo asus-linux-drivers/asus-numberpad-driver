@@ -214,7 +214,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 sudo systemctl stop asus_touchpad_numpad.service
 ```
 
-- **Start point [x:0,y:0] of touchpad is left top!**
+- **Start point [x:0,y:0] of touchpad is on the left top!**
 
 ## Existing similar projects
 
