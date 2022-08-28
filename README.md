@@ -8,7 +8,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#keyboard-layout) (keys, sizes, paddings..)
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file)
-- Automatic NumberPad model detection via [list of used NumberPad layout for laptop](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts)
+- Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts)
 - Customizable activation/deactivation time (default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon
 - Customizable slide gesture beginning on top left (required is end slide after at least 5% of width and height, default behaviour is sending `KEY_CALC` with NumberPad activation/deactivation = by default it is prepared for key `XF86Calculator` be bound to script with toggle functionality of prefered calculator app, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh))
