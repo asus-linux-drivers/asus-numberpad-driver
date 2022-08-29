@@ -108,9 +108,29 @@ echo "Selected key layout $model"
 
 echo "Installing asus touchpad service to /etc/systemd/system/"
 
-xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
-cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
+# this works because sudo sets the environment variable SUDO_USER to the original username
+session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
+wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
+
+if [ "$wayland_or_x11" = "x11" ]; then
+    echo "X11 is detected"
+
+    xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
+    cat asus_touchpad.X11.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
+
+elif [ "$wayland_or_x11" = "wayland" ]; then
+    echo "Wayland is detected, unfortunatelly you will not be able use feature: `Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell`, at this moment is supported only X11"
+
+    cat asus_touchpad.default.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
+else
+    echo "Wayland or X11 is not detected"
+
+    cat asus_touchpad.default.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cp asus_touchpad_restart.service /etc/systemd/system/asus_touchpad_numpad_restart.service
+fi
+
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
 mkdir -p /var/log/asus_touchpad_numpad-driver
