@@ -18,7 +18,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - NumberPad is automatically disabled due inactivity (default 1 min)
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
-- Disabling NumberPad by default disable sys Numlock as well (can be disabled which is usefull when is connected external keyboard)
+- Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
 - By default ignoring touchpad physical buttons events (left, right and middle one) when is NumberPad activated, unless buttons are outside the NumberPad area like layout `gx701` has (ignoring can be disabled)
 - Repeating the key, when is held (disabled by default)
 - Multitouch with up to 5 fingers support (disabled by default)
