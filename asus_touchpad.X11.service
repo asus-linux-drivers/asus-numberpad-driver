@@ -2,7 +2,7 @@
 Description=Asus Touchpad to Numpad Handler
 
 [Service]
-Type=simple
+Type=idle
 ExecStart=/usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $CONFIG_FILE_DIR
 StandardInput=tty-force
 StandardOutput=append:/var/log/asus_touchpad_numpad-driver/error.log
@@ -11,6 +11,8 @@ TimeoutSec=5
 Restart=on-failure
 # For some operating systems with boot failure, adding this following property might resolve the issue  
 ExecStartPre=/bin/sleep 2
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=$XAUTHORITY"
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical.target
