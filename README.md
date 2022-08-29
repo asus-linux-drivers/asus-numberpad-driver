@@ -9,19 +9,21 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#keyboard-layout) (keys, sizes, paddings..)
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file)
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts)
-- Customizable activation/deactivation time (default 1s)
-- Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon
-- Customizable slide gesture beginning on top left (required is end slide after at least 5% of width and height, default behaviour is sending `KEY_CALC` with NumberPad activation/deactivation = by default it is prepared for key `XF86Calculator` be bound to script with toggle functionality of prefered calculator app, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh))
-- Unicode characters sending support (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
+- Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
+- Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 5% of width and height)
+- Customizable slide gesture beginning on top left (by default it is prepared for bounding key `XF86Calculator` to script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh), so by default first slide gesture activate NumberPad and calculator app and next deactivate NumberPad and close calculator app, by default is also required end slide after at least 5% of width and height)
+- Support of unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
-- Customizable default level of backlight (default is last used level - works even between reboots)
+- Customizable default level of backlight (by default is default level last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
-- Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell (this functionality is supported only via `xinput` from `xorg`, no `wayland` support yet https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
+- Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
+- Enabling sys NumLock do not activate NumberPad (can be enabled)
+- Disabling NumberPad by default disable sys Numlock as well (can be disabled which is usefull when is connected external keyboard)
+- By default ignoring touchpad physical buttons events (left, right and middle one) when is NumberPad activated, unless buttons are outside the NumberPad area like layout `gx701` has (ignoring can be disabled)
+- Repeating the key, when is held (disabled by default)
+- Multitouch with up to 5 fingers support (disabled by default)
 - Driver supports laptop suspend
-- Numlock state corresponds to the system numlock state (disabling sys numlock from e.g. external keyboard disables NumberPad as well, reflect enabling sys numlock is optional)
-- Touchpad physical buttons (left, right and middle) are ignored when is NumberPad on (unless they are outside the NumberPad area like in layout `gx701`)
-- Repeating the key, when it is held (optional)
-- Multitouch with up to 5 fingers support (optional)
+- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
 
 ## Layouts
 
