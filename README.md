@@ -24,6 +24,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Multitouch with up to 5 fingers support (disabled by default)
 - Driver supports laptop suspend
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
+- Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#external-keyboard-configuration)
 
 ## Layouts
 
@@ -182,7 +183,6 @@ enabled = 1
 | `touchpad_disables_numpad`                    |          | `1`            | when is touchpad disabled is disabled NumberPad aswell, valid value is `1` or `0` (e.g. via Fn+special key)<br><br>status is taken from result of `xinput` - to toggle touchpad can be used [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh)
 | `sys_numlock_enables_numpad`                  |          | `0`           | obtained via active `LED_NUML` of keyboard device<br><br>enable with `1`, by default NumberPad reflects only disabling system numlock (then is disabled)    
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` is every time during inactivation of NumberPad sent `KEY_NUMLOCK`. Is useful do not send NumLock when is to laptop connected external keyboard and goal is only disable NumberPad on laptop but keep NumLock on external keyboard enabled    
-| `numpad_disables_sys_numlock`                  |          | `1`           | disabling system NumLock when is NumberPad disabled may be unwanted when is external keyboard connected
 | **Key layout**                                |          |
 | `activation_time`              |          | `1` [s]             | amount of time you have to touch `top_right_icon` or another spot with key `EV_KEY.KEY_NUMLOCK` for the NumberPad activation/deactivation
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled NumberPad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using NumberPad for calculating)
@@ -201,6 +201,24 @@ enabled = 1
 | `top_right_icon_slide_func_activation_y_ratio`|          | `0.05` (5%)         | ratio of touchpad height of slide 
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hexa format `0x00` (has to be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
+
+### External keyboard configuration
+
+With driver is installed `udev` rule `90-numberpad-external-keyboard` which run `.sh` scripts for necessary change of configuration when is external keyboard connected or disconnected.
+
+State connected external keyboard / adding external keyboard means these changes:
+
+```
+sys_numlock_enables_numpad=0
+disabling_numpad_disable_sys_numlock=0
+```
+
+State without external keyboard / removing external keyboard means these changes:
+
+```
+sys_numlock_enables_numpad=1
+disabling_numpad_disable_sys_numlock=1
+```
 
 ## Credits
 
