@@ -577,7 +577,7 @@ def load_all_config_values():
     key_numlock_is_used = any(EV_KEY.KEY_NUMLOCK in x for x in keys)
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad = True
-    config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, key_numlock_is_used, True, True)
+    config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad, True, True)
     top_left_icon_activation_time = int(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)

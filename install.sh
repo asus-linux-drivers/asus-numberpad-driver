@@ -137,6 +137,19 @@ mkdir -p /var/log/asus_touchpad_numpad-driver
 install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
 install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
 
+echo "Installing udev rules to /usr/lib/udev/rules.d/"
+
+cp udev/90-numberpad-external-keyboard.rules /usr/lib/udev/rules.d/
+
+echo "Added 90-numberpad-external-keyboard.rules"
+mkdir -p /usr/share/asus_touchpad_numpad-driver/udev
+cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
+cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
+chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
+chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
+
+sudo udevadm control --reload-rules
+
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
 systemctl enable asus_touchpad_numpad
