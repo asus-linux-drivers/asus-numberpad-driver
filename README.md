@@ -1,8 +1,15 @@
 # Asus touchpad NumberPad driver
 
+![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
+[![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat)]()
+[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-touchpad-numpad-driver/v1.0.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/commit/)
+[![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/compare)
+[![Ask Me Anything !](https://img.shields.io/badge/Ask%20about-anything-1abc9c.svg)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/new/choose)
+
 The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations can be found [here](#configuration).
 
-If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
+If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=social&label=Star&maxAge=2592000)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
 
 ## Features
 
@@ -248,3 +255,7 @@ sudo systemctl stop asus_touchpad_numpad.service
 **Why have been these projects created?** Because linux does not support NumberPad integration to touchpad ([reported issue for Ubuntu here](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1810183))
 
 **Why was this project created?** Because compared to mentioned projects I implemented more features and fixed more found bugs and I have time keep driver up-to-date.
+
+**Stargazers project history?**
+
+[![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-touchpad-numpad-driver)
