@@ -7,7 +7,6 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-cd "$parent_path"
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
     echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip xinput python3-numpy python3-evdev
