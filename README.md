@@ -17,7 +17,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file)
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts)
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
-- Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 5% of width and height)
+- Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 20% of touchpad width and height)
 - Customizable slide gesture beginning on top left (by default it is prepared for bounding key `XF86Calculator` to script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh), so by default first slide gesture activate NumberPad and calculator app and next deactivate NumberPad and close calculator app, by default is also required end each slide after at least 5% of width and height)
 - Support of unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
@@ -168,14 +168,14 @@ key_repetitions = 0
 multitouch = 0
 one_touch_key_rotation = 0
 activation_time = 1
-top_right_icon_slide_func_activation_x_ratio = 0.05
-top_right_icon_slide_func_activation_y_ratio = 0.05
+top_right_icon_slide_func_activation_x_ratio = 0.2
+top_right_icon_slide_func_activation_y_ratio = 0.2
 sys_numlock_enables_numpad = 0
 top_left_icon_activation_time = 1
 top_left_icon_slide_func_activates_numpad = 1
 top_left_icon_slide_func_deactivates_numpad = 1
-top_left_icon_slide_func_activation_x_ratio = 0.05
-top_left_icon_slide_func_activation_y_ratio = 0.05
+top_left_icon_slide_func_activation_x_ratio = 0.2
+top_left_icon_slide_func_activation_y_ratio = 0.2
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
 brightness = 0x46
@@ -197,15 +197,15 @@ enabled = 1
 | `key_repetitions`                             |          | `0`           | possible to enable with value `1` hold key for repeated pressing key like on a physical keyboard
 | **Top left icon**                             |          |                   | custom function is used when is NumberPad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is NumberPad activated, `top_left_icon_brightness_function_disabled` is not `1`, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
 | `top_left_icon_activation_time`               |          | `1` [s]             | amount of time for touch `top_left_icon`
-| `top_left_icon_slide_func_activation_x_ratio` |          | `0.05` (5%)         | ratio of touchpad width of slide
-| `top_left_icon_slide_func_activation_y_ratio` |          | `0.05` (5%)         | ratio of touchpad height of slide
+| `top_left_icon_slide_func_activation_x_ratio` |          | `0.3` (30%)         | ratio of touchpad width of slide
+| `top_left_icon_slide_func_activation_y_ratio` |          | `0.3` (30%)         | ratio of touchpad height of slide
 | `top_left_icon_slide_func_activates_numpad`   |          | `1`            | valid value is `1` or `0`
 | `top_left_icon_slide_func_deactivate_numpad`  |          | `1`            | valid value is `1` or `0`   
 | `top_left_icon_brightness_func_disabled`      |          |                   | valid value is only `1`, is auto disabled when is empty
 `backlight_levels`
 | **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate numpad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and untouched atleast after ratio of touchpad width > `top_right_icon_slide_func_activation_x_ratio` and height > `top_right_icon_slide_func_activation_y_ratio` |                                           
-| `top_right_icon_slide_func_activation_x_ratio`|          | `0.05` (5%)         | ratio of touchpad width of slide                       
-| `top_right_icon_slide_func_activation_y_ratio`|          | `0.05` (5%)         | ratio of touchpad height of slide 
+| `top_right_icon_slide_func_activation_x_ratio`|          | `0.3` (30%)         | ratio of touchpad width of slide
+| `top_right_icon_slide_func_activation_y_ratio`|          | `0.3` (30%)         | ratio of touchpad height of slide 
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hexa format `0x00` (has to be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
 
