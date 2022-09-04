@@ -28,7 +28,8 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
 - By default ignoring touchpad physical buttons events (left, right and middle one) when is NumberPad activated, unless when are buttons outside the NumberPad area like layout `gx701` has (ignoring can be disabled)
 - Repeating the key, when is held (disabled by default)
-- Multitouch with up to 5 fingers support (disabled by default)
+- Multitouch with up to 5 fingers (disabled by default)
+- Safe slide gestures against accidental touches by default (by default is multitouch disabled so is not allowed use more then only 1 finger at the same moment)
 - Driver supports laptop suspend
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#external-keyboard-configuration)
