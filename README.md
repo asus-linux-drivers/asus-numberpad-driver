@@ -212,7 +212,7 @@ enabled = 1
 
 ### External keyboard configuration
 
-With driver is installed `udev` rule `90-numberpad-external-keyboard` which run `.sh` scripts for necessary change of configuration when is external keyboard connected or disconnected.
+Is installed also `udev` rule `90-numberpad-external-keyboard` which run `.sh` scripts for NumberPad configuration change when is external keyboard connected or disconnected.
 
 State connected external keyboard / adding external keyboard means these changes:
 
