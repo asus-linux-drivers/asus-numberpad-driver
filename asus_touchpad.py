@@ -317,6 +317,30 @@ def isEvent(event):
     else:
         return False
 
+def is_device_enabled(device_name):
+    global getting_device_status_failure_count
+    try:
+        getting_device_status_failure_count = 0
+
+        propData = subprocess.check_output(['xinput', '--list-props', device_name])
+        propData = propData.decode()
+
+        for line in propData.splitlines():
+            if 'Device Enabled' in line:
+                line = line.strip()
+                if line[-1] == '1':
+                    return True
+                else:
+                    return False
+
+        getting_device_status_failure_count += 1
+        return False
+    except:
+        getting_device_status_failure_count += 1
+
+        log.info('Getting Device Enabled via xinput failed')
+        return True
+
 
 for col in keys:
     for key in col:
@@ -424,6 +448,20 @@ def increase_brightness():
         subprocess.call(numpad_cmd, shell=True)
     except:
         pass
+
+
+def send_numlock_key(value):
+
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, 70053),
+        InputEvent(EV_KEY.KEY_NUMLOCK, value),
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
 
 
 def activate_numpad():
@@ -844,20 +882,6 @@ def check_system_numlock_vs_local():
     numlock_lock.release()
 
 
-def send_numlock_key(value):
-
-    events = [
-        InputEvent(EV_MSC.MSC_SCAN, 70053),
-        InputEvent(EV_KEY.KEY_NUMLOCK, value),
-        InputEvent(EV_SYN.SYN_REPORT, 0)
-    ]
-
-    try:
-        udev.send_events(events)
-    except OSError as e:
-        log.error("Cannot send event, %s", e)
-
-
 def pressed_numlock_key(value):
     global numlock_touch_start_time, abs_mt_slot_numpad_key
 
@@ -988,6 +1012,13 @@ def takes_numlock_longer_then_set_up_activation_time():
         return False
 
 
+def stop_top_left_right_icon_slide_gestures():
+    global top_left_icon_touch_start_time, top_right_icon_touch_start_time
+    
+    top_left_icon_touch_start_time = 0
+    top_right_icon_touch_start_time = 0
+
+
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
@@ -1015,6 +1046,10 @@ def listen_touchpad_events():
                 unsupported_abs_mt_slot = True
 
         if unsupported_abs_mt_slot == True:
+            # slide gestures with multitouch True: second finger stops slide gesture
+            # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED 
+            if multitouch:
+                stop_top_left_right_icon_slide_gestures()
             continue
 
         if e.matches(EV_MSC.MSC_TIMESTAMP):
@@ -1128,31 +1163,6 @@ def listen_touchpad_events():
 # auto ended thread for checking touchpad status (activated/deactivated)
 # via xinput when is for example used wayland
 getting_device_status_failure_count = 0
-
-def is_device_enabled(device_name):
-    global getting_device_status_failure_count
-    try:
-        getting_device_status_failure_count = 0
-
-        propData = subprocess.check_output(['xinput', '--list-props', device_name])
-        propData = propData.decode()
-
-        for line in propData.splitlines():
-            if 'Device Enabled' in line:
-                line = line.strip()
-                if line[-1] == '1':
-                    return True
-                else:
-                    return False
-
-        getting_device_status_failure_count += 1
-        return False
-    except:
-        getting_device_status_failure_count += 1
-
-        log.info('Getting Device Enabled via xinput failed')
-        return True
-
 
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
