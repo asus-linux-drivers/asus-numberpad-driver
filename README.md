@@ -1,7 +1,7 @@
 # Asus touchpad NumberPad driver
 
 ![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
-![Maintainer](https://img.shields.io/badge/maintainer-kamack33-blue)
+![Contributor](https://img.shields.io/badge/contributor-kamack33-blue)
 [![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat)]()
 [![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-touchpad-numpad-driver/v1.1.0.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/commit/)
 [![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues?q=is%3Aissue+is%3Aclosed)
