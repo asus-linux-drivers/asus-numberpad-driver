@@ -8,12 +8,25 @@ fi
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
+# this works because sudo sets the environment variable SUDO_USER to the original username
+session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
+wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
+
 if [[ $(sudo apt install 2>/dev/null) ]]; then
     echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip python3-numpy python3-evdev
+    if [ "$wayland_or_x11" = "x11" ]; then
+        sudo apt -y install xinput
+    fi
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
     echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-numpy python-evdev
+    if [ "$wayland_or_x11" = "x11" ]; then
+        sudo pacman --noconfirm --needed -S xorg-xinput
+    fi
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
     echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-evdev python3-numpy
+    if [ "$wayland_or_x11" = "x11" ]; then
+        sudo dnf -y install xinput
+    fi
 fi
 
 modprobe i2c-dev
@@ -106,10 +119,6 @@ fi
 echo "Selected key layout $model"
 
 echo "Installing asus touchpad service to /etc/systemd/system/"
-
-# this works because sudo sets the environment variable SUDO_USER to the original username
-session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
-wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 if [ "$wayland_or_x11" = "x11" ]; then
     echo "X11 is detected"
