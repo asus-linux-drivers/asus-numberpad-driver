@@ -1247,4 +1247,8 @@ t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 t.start()
 
-listen_touchpad_events()
+try:
+    listen_touchpad_events()
+except:
+    log.error("Listening touchpad events unexpectedly failed")
+    sys.exit(1)
