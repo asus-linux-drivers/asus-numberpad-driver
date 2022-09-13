@@ -566,7 +566,11 @@ def read_config_file():
     global config, config_file_dir
 
     config_file_path = config_file_dir + CONFIG_FILE_NAME
-    config.read(config_file_path)
+
+    try:
+        config.read(config_file_path)
+    except configparser.MissingSectionHeaderError:
+        config.add_section(CONFIG_SECTION)
 
 
 def load_all_config_values():
@@ -598,11 +602,6 @@ def load_all_config_values():
     config_lock.acquire()
 
     read_config_file()
-
-    try:
-        config.add_section(CONFIG_SECTION)
-    except:
-        pass
 
     numpad_disables_sys_numlock = config_get(CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK, CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT)
     disable_due_inactivity_time = int(config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT))
