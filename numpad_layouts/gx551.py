@@ -1,6 +1,5 @@
 from libevdev import EV_KEY
 
-# Subtract 0.3 (a third key) as the UX581L has about a third key space at the top
 left_offset = 20
 right_offset = 20
 
