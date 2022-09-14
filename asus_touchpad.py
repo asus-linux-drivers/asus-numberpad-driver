@@ -568,10 +568,12 @@ def read_config_file():
     config_file_path = config_file_dir + CONFIG_FILE_NAME
 
     try:
-        config.read(config_file_path)
-    except configparser.MissingSectionHeaderError:
-        config.add_section(CONFIG_SECTION)
+        if not config.has_section(CONFIG_SECTION):
+            config.add_section(CONFIG_SECTION)
 
+        config.read(config_file_path)
+    except:
+        pass
 
 def load_all_config_values():
     global config
