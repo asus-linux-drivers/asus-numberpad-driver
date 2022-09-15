@@ -1,0 +1,3 @@
+libevdev
+evdev
+numpy

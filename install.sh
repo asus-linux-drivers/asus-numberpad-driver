@@ -13,20 +13,28 @@ session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 python3-libevdev i2c-tools git python3-pip python3-numpy python3-evdev
+    echo 'apt is here' && sudo apt -y install libevdev2 i2c-tools git python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo apt -y install xinput
     fi
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev python-libevdev i2c-tools git python-numpy python-evdev
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools git python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo pacman --noconfirm --needed -S xorg-xinput
     fi
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev python-libevdev i2c-tools git python-evdev python3-numpy
+    echo 'dnf is here' && sudo dnf -y install libevdev i2c-tools git python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo dnf -y install xinput
     fi
+fi
+
+python3 -m pip install -r requirements.txt
+
+# Checking if the pip dependencies are successfuly loaded
+if [[ $? != 0 ]]; then
+    echo "pip dependencies via file requirements.txt cannot be loaded correctly."
+    exit 1
 fi
 
 modprobe i2c-dev
