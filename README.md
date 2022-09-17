@@ -95,7 +95,7 @@ sudo modprobe i2c-dev
 sudo i2cdetect -l
 ```
 
-To see the exact commands for your package manager look [here](./install.sh)
+To see the exact commands for your package manager look [here](./install.sh) (for python dependencies take a look at [requirements.txt](./requirements.txt))
 
 ## Troubleshooting
 
