@@ -50,16 +50,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 ## Installation
 
-The package is [available](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) to install from AUR
-
-```bash
-paru -S asus-touchpad-numpad-driver-${model}-git
-```
-
-Replace model with available models.
-Example: `asus-touchpad-numpad-driver-ux433fa-git`
-
-or via GIT
+Using `git`
 
 ```bash
 git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
@@ -67,7 +58,21 @@ cd asus-touchpad-numpad-driver
 sudo ./install.sh
 ```
 
-and to uninstall, just run:
+or download latest release from [release page](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases), extract and run:
+
+```bash
+sudo ./install.sh
+```
+
+or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-touchpad-numpad-driver-ux433fa-git`)
+
+```bash
+paru -S asus-touchpad-numpad-driver-${model}-git
+```
+
+## Uninstallation
+
+And to uninstall, just run:
 
 ```bash
 sudo ./uninstall.sh
