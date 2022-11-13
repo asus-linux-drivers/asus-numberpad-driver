@@ -217,7 +217,7 @@ while try_times > 0:
                               touchpad, line.strip())
 
             # Look for the keyboard
-            if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or ("Name=\"ASUE" in line and "Keyboard" in line)):
+            if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line) and "Keyboard" in line)):
                 keyboard_detected = 1
                 log.debug(
                     'Detecting keyboard from string: \"%s\"', line.strip())
