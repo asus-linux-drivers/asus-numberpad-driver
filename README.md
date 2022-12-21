@@ -1,5 +1,6 @@
 # Asus touchpad NumberPad driver
 
+[![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 ![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
 ![Contributor](https://img.shields.io/badge/contributor-kamack33-blue)
 [![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat)]()
