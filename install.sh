@@ -88,7 +88,7 @@ if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_t
 else
     for option in $(ls numpad_layouts); do
         if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself and please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Is recommended numpad layout correct? [y/N]" response
+            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
             case "$response" in [yY][eE][sS]|[yY])
                 model=$detected_layout_via_offline_table
                 ;;
