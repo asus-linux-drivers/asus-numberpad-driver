@@ -29,7 +29,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
-- By default ignoring touchpad physical buttons events (left, right and middle one) when is NumberPad activated, unless when are buttons outside the NumberPad area like layout `gx701` has (ignoring can be disabled)
+- By default are ignored touchpad physical button clicks (left, right and middle one) when is NumberPad activated, unless when are buttons outside the NumberPad area like layout `gx701` has (ignoring can be disabled via option `touchpad_physical_buttons_are_inside_numpad = 0`)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Safe slide gestures against accidental touches by default (by default is multitouch disabled so is not allowed use more then only 1 finger at the same moment)
