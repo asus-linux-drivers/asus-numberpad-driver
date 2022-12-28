@@ -903,7 +903,7 @@ def pressed_touchpad_top_right_icon(value):
 
 
 def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time
 
     if e.value != 0:
         return
