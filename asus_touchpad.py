@@ -198,7 +198,7 @@ while try_times > 0:
             # Look for the touchpad #
             if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
                 touchpad_detected = 1
-                log.debug('Detecting touchpad from string: \"%s\"', line.strip())
+                log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
 
             if touchpad_detected == 1:
@@ -206,20 +206,20 @@ while try_times > 0:
                     # search device id
                     device_id = re.sub(r".*i2c-(\d+)/.*$",
                                        r'\1', line).replace("\n", "")
-                    log.debug('Set touchpad device id %s from %s',
+                    log.info('Set touchpad device id %s from %s',
                               device_id, line.strip())
 
                 if "H: " in line:
                     touchpad = line.split("event")[1]
                     touchpad = touchpad.split(" ")[0]
                     touchpad_detected = 2
-                    log.debug('Set touchpad id %s from %s',
+                    log.info('Set touchpad id %s from %s',
                               touchpad, line.strip())
 
             # Look for the keyboard
             if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line) and "Keyboard" in line)):
                 keyboard_detected = 1
-                log.debug(
+                log.info(
                     'Detecting keyboard from string: \"%s\"', line.strip())
 
             # We look for keyboard with numlock, scrollock, capslock inputs
@@ -232,7 +232,7 @@ while try_times > 0:
 
                 if "LED_NUML" in k_capabilities.values().__str__():
                     keyboard_detected = 2
-                    log.debug('Set keyboard %s from %s', keyboard, line.strip())
+                    log.info('Set keyboard %s from %s', keyboard, line.strip())
                 else:
                     keyboard_detected = 0
                     dev_k = None
@@ -272,8 +272,8 @@ ai = d_t.absinfo[EV_ABS.ABS_Y]
 (miny, maxy) = (ai.minimum, ai.maximum)
 miny_numpad = miny + top_offset
 maxy_numpad = maxy - bottom_offset
-log.debug('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-log.debug('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
           maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
@@ -1088,7 +1088,7 @@ def listen_touchpad_events():
            e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
            e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
-            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
+            log.info('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
                 abs_mt_slot_y_values[abs_mt_slot_value]))
 
             if is_pressed_touchpad_top_right_icon():
