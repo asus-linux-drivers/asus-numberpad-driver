@@ -148,7 +148,7 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 | **Key layout**                                |          |
 | `keys`                                        | Required |                   | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array<br><br>everything else what is not an event except `None` is sent as unicode `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`)
 | `keys_ignore_offset`                          |          | `[]`              | map of keys which should be touchable even on offset area<br><br>e.g. used in layout `gx551` with value `[0,0]` where is NumLock key on the top left and right icon as primary activation area for NumLock is not used |
-| `touchpad_physical_buttons_are_inside_numpad` |          | `True`            | valid value is `True` or `False`
+| `touchpad_physical_buttons_are_inside_numpad` |          | `True`            | by default are ignored touchpad physical button clicks (left, right and middle one) when is NumberPad activated, unless when are buttons outside the NumberPad area like layout `gx701` has<br><br>ignoring can be disabled via this option and value `False`
 | **Top left icon**                             |          |                   | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions) |
 | `top_left_icon_width`                         |          |                   | width of the top left icon
 | `top_left_icon_height`                        |          |                   | height of the top left icon
