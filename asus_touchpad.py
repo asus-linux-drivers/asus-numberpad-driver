@@ -154,8 +154,6 @@ def config_save():
     try:
         with open(config_file_path, 'w') as configFile:
             config.write(configFile)
-
-        log.info('Saving config file: \"%s\"', config_file_path)
     except:
         log.error('Error during writting to config file: \"%s\"', config_file_path)
         pass
