@@ -69,7 +69,6 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
     log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
-touchpad_physical_buttons_are_inside_numpad = getattr(model_layout, "touchpad_physical_buttons_are_inside_numpad", True)
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 
 
@@ -113,6 +112,8 @@ CONFIG_ACTIVATION_TIME = "activation_time"
 CONFIG_ACTIVATION_TIME_DEFAULT = True
 CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
 CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
+CONFIG_ENABLED_POINTER_BUTTONS = "enabled_pointer_buttons"
+CONFIG_ENABLED_POINTER_BUTTONS_DEFAULT = True
 
 config = configparser.ConfigParser()
 config_lock = threading.Lock()
@@ -283,6 +284,9 @@ row_height = (maxy_numpad - miny_numpad) / row_count
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = "Asus Touchpad/Numpad"
+dev.enable(EV_KEY.BTN_LEFT)
+dev.enable(EV_KEY.BTN_RIGHT)
+dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 # predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
@@ -598,6 +602,7 @@ def load_all_config_values():
     global top_left_icon_brightness_func_disabled
     global support_for_maximum_abs_mt_slots
     global config_lock
+    global enabled_pointer_buttons
 
     config_lock.acquire()
 
@@ -622,7 +627,7 @@ def load_all_config_values():
     top_left_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
-
+    enabled_pointer_buttons = config_get(CONFIG_ENABLED_POINTER_BUTTONS, CONFIG_ENABLED_POINTER_BUTTONS_DEFAULT)
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
@@ -1018,24 +1023,69 @@ def stop_top_left_right_icon_slide_gestures():
     top_right_icon_touch_start_time = 0
 
 
+def pressed_pointer_button(key, msc, value):
+    
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, msc),
+        InputEvent(key, value),
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
+
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
+
+    if value == 1:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+    else:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+
+
+def is_key_pointer_button(key):
+    result = key == EV_KEY.BTN_LEFT or key == EV_KEY.BTN_RIGHT or key == EV_KEY.BTN_MIDDLE
+    return result
+
+
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
-        keys_ignore_offset
+        keys_ignore_offset, enabled_pointer_buttons
 
     for e in d_t.events():
 
         last_event_time = time()
 
-        # ignore POINTER_BUTTON when is numpad on and buttons are not outside of numpad area
-        if numlock and touchpad_physical_buttons_are_inside_numpad:
+        current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
+        current_slot_y = abs_mt_slot_y_values[abs_mt_slot_value]
+        current_slot_key = abs_mt_slot_numpad_key[abs_mt_slot_value]
+
+        # POINTER_BUTTON handling starts
+        #    
+        # can not be excluded situation
+        # when is send number or character together
+        # with POINTER_BUTTON because can be send in slot firstly!
+        #
+        # for each EV_KEY.BTN_LEFT, EV_KEY.BTN_RIGHT, EV_KEY.BTN_MIDDLE
+        # if is send always only BTN_LEFT
+        # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
+        if is_key_pointer_button(e.code) and not enabled_pointer_buttons:
+            continue
+
+        if numlock:
             if e.matches(EV_KEY.BTN_LEFT):
-                continue
-            elif e.matches(EV_KEY.BTN_RIGHT):
-                continue
-            elif e.matches(EV_KEY.BTN_MIDDLE):
-                continue
+                if(current_slot_x <= (maxx / 100) * 35):
+                    pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
+                elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
+                    pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
+                else:
+                    pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
+        # POINTER_BUTTON handling ends
+
+        if is_key_pointer_button(current_slot_key):
+            #log.info("skipping because current slot is pointer button")
+            continue
 
         if e.matches(EV_ABS.ABS_MT_SLOT):
             if(e.value < support_for_maximum_abs_mt_slots):
@@ -1103,18 +1153,18 @@ def listen_touchpad_events():
                 continue
 
             col = math.floor(
-                (abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
+                (current_slot_x - minx_numpad) / col_width)
             row = math.floor(
-                (abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
+                (current_slot_y - miny_numpad) / row_height)
 
             if([max(row, 0), max(col, 0)] in keys_ignore_offset):
                 row = max(row, 0)
                 col = max(col, 0)
             elif (
-                    abs_mt_slot_x_values[abs_mt_slot_value] > minx_numpad and
-                    abs_mt_slot_x_values[abs_mt_slot_value] < maxx_numpad and
-                    abs_mt_slot_y_values[abs_mt_slot_value] > miny_numpad and
-                    abs_mt_slot_y_values[abs_mt_slot_value] < maxy_numpad
+                    current_slot_x > minx_numpad and
+                    current_slot_x < maxx_numpad and
+                    current_slot_y > miny_numpad and
+                    current_slot_y < maxy_numpad
                 ):
                 if (row < 0 or col < 0):
                     continue
@@ -1145,8 +1195,8 @@ def listen_touchpad_events():
                 log.error('Unhandled col/row %d/%d for position %d-%d',
                           col,
                           row,
-                          abs_mt_slot_x_values[abs_mt_slot_value],
-                          abs_mt_slot_y_values[abs_mt_slot_value]
+                          current_slot_x,
+                          current_slot_y
                           )
                 continue
 
@@ -1158,6 +1208,7 @@ def listen_touchpad_events():
                     unpressed_numpad_key()
             else:
                 unpressed_numpad_key()
+
 
 # auto ended thread for checking touchpad status (activated/deactivated)
 # via xinput when is for example used wayland
