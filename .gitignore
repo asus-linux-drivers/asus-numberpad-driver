@@ -1,3 +1,8 @@
 __pycache__
 *~
 asus_touchpad_numpad_dev
+bin
+lib
+lib64
+share
+pyvenv.cfg
