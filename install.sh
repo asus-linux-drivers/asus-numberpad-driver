@@ -13,22 +13,22 @@ session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 i2c-tools git python3-pip
+    echo 'apt is here' && sudo apt -y install libevdev2 i2c-tools git python3-dev python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo apt -y install xinput
     fi
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools git python3-pip
+    # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools git python python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo pacman --noconfirm --needed -S xorg-xinput
     fi
 elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev i2c-tools git python3-pip
+    echo 'dnf is here' && sudo dnf -y install libevdev i2c-tools git python3-devel python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo dnf -y install xinput
     fi
 fi
-
 python3 -m pip install -r requirements.txt
 
 # Checking if the pip dependencies are successfuly loaded
