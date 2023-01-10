@@ -19,7 +19,7 @@ if [[ $(sudo apt install 2>/dev/null) ]]; then
     fi
 elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools git python python3-pip
+    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools git python python-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         sudo pacman --noconfirm --needed -S xorg-xinput
     fi
