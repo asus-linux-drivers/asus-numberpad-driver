@@ -11,7 +11,6 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-
 import libevdev.const
 import numpy as np
 from evdev import InputDevice, ecodes as ecodess
@@ -27,7 +26,7 @@ numlock: bool = False
 # LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
 # LOG=ERROR sudo -E ./asus_touchpad.py  # only error messages
 logging.basicConfig()
-log = logging.getLogger('Pad')
+log = logging.getLogger('asus-touchpad-numpad-driver')
 log.setLevel(os.environ.get('LOG', 'INFO'))
 
 
