@@ -243,6 +243,10 @@ while try_times > 0:
     if touchpad_detected != 2 or keyboard_detected != 2:
         try_times -= 1
         if try_times == 0:
+            with open('/proc/bus/input/devices', 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    log.error(line)
             if keyboard_detected != 2:
                 log.error("Can't find keyboard (code: %s)", keyboard_detected)
                 # keyboard is optional, no sys.exit(1)!
