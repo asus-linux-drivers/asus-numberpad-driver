@@ -339,7 +339,7 @@ def is_device_enabled(device_name):
     except:
         getting_device_status_failure_count += 1
 
-        log.info('Getting Device Enabled via xinput failed')
+        log.exception('Getting Device Enabled via xinput failed')
         return True
 
 
