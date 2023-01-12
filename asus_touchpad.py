@@ -1299,5 +1299,5 @@ t.start()
 try:
     listen_touchpad_events()
 except:
-    log.error("Listening touchpad events unexpectedly failed")
+    logging.exception("Listening touchpad events unexpectedly failed")
     sys.exit(1)
