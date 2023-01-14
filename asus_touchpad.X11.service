@@ -1,5 +1,6 @@
 [Unit]
 Description=Asus Touchpad to Numpad Handler
+BindsTo=graphical.target
 
 [Service]
 Type=idle
