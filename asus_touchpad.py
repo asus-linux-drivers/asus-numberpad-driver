@@ -420,6 +420,8 @@ def set_none_to_current_mt_slot():
     abs_mt_slot_numpad_key[abs_mt_slot_value] = None
     abs_mt_slot_x_values[abs_mt_slot_value] = 0
     abs_mt_slot_y_values[abs_mt_slot_value] = 0
+    #abs_mt_slot_x_init_values[abs_mt_slot_value] = -1
+    #abs_mt_slot_y_init_values[abs_mt_slot_value] = -1
 
 
 def pressed_touchpad_top_left_icon(e):
@@ -475,8 +477,6 @@ def activate_numpad():
     config_set(CONFIG_ENABLED, True)
 
     try:
-        d_t.grab()
-
         subprocess.call("i2ctransfer -f -y " + device_id +
             " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
         if default_backlight_level != "0x01":
@@ -491,7 +491,7 @@ def activate_numpad():
             # (if exists)
             # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
             brightness = -1
-    except (OSError, libevdev.device.DeviceGrabError):
+    except (OSError):
         pass
 
 
@@ -504,10 +504,10 @@ def deactivate_numpad():
             " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"    
 
     try:
-        d_t.ungrab()
+        ungrab()
         subprocess.call(numpad_cmd, shell=True)
         brightness = 0
-    except (OSError, libevdev.device.DeviceGrabError):
+    except (OSError):
         pass
 
 
@@ -665,6 +665,9 @@ abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
+#abs_mt_slot_x_init_values = np.array([-1, -1, -1, -1, -1], int)
+#abs_mt_slot_y_init_values = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_grab_status = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 1
 unsupported_abs_mt_slot: bool = False
@@ -771,6 +774,7 @@ def get_events_for_unicode_string(string):
 
 
 def pressed_numpad_key():
+    global abs_mt_slot_grab_status, abs_mt_slot_numpad_key, abs_mt_slot_value
 
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
@@ -787,6 +791,7 @@ def pressed_numpad_key():
         ]
 
     try:
+        grab()
         udev.send_events(events)
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
@@ -797,8 +802,45 @@ def replaced_numpad_key(touched_key_now):
     pressed_numpad_key()
 
 
-def unpressed_numpad_key(replaced_by_key=None):
+def grab():
+    global d_t
 
+    try:
+        log.info("grab")
+        d_t.grab()
+        abs_mt_slot_grab_status[abs_mt_slot_value] = 1
+    except libevdev.device.DeviceGrabError as e:
+        log.error("Error of grabbing, %s", e)
+
+
+def is_grabbed_more_than_one_time():
+    result = 0
+
+    for status in abs_mt_slot_grab_status:
+        if status:
+            result = 1
+
+    if result > 1:
+        return True
+    else:
+        return False
+
+
+def ungrab():
+    global d_t, abs_mt_slot_grab_status
+
+    if not multitouch or not is_grabbed_more_than_one_time():
+        is_grabbed = abs_mt_slot_grab_status[abs_mt_slot_value]
+        if is_grabbed:
+            abs_mt_slot_grab_status[abs_mt_slot_value] = 0
+
+            try:
+                d_t.ungrab()
+            except libevdev.device.DeviceGrabError as e:
+                log.error("Error of grabbing during pressed key, %s", e)
+
+
+def unpressed_numpad_key(replaced_by_key=None):
 
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
@@ -812,10 +854,10 @@ def unpressed_numpad_key(replaced_by_key=None):
 
         try:
             udev.send_events(events)
+            ungrab()
 
         except OSError as e:
             log.warning("Cannot send press event, %s", e)
-
 
     if replaced_by_key:
         abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
@@ -1026,28 +1068,45 @@ def stop_top_left_right_icon_slide_gestures():
     top_right_icon_touch_start_time = 0
 
 
-def pressed_pointer_button(key, msc, value):
-    
-    events = [
-        InputEvent(EV_MSC.MSC_SCAN, msc),
-        InputEvent(key, value),
-        InputEvent(EV_SYN.SYN_REPORT, 0)
-    ]
+#def pressed_pointer_button(key, msc, value):
+#    
+#    events = [
+#        InputEvent(EV_MSC.MSC_SCAN, msc),
+#        InputEvent(key, value),
+#        InputEvent(EV_SYN.SYN_REPORT, 0)
+#    ]
 
-    try:
-        udev.send_events(events)
-    except OSError as e:
-        log.error("Cannot send event, %s", e)
+#    try:
+#        udev.send_events(events)
+#    except OSError as e:
+#        log.error("Cannot send event, %s", e)
 
-    if value == 1:
-        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
-    else:
-        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+#    if value == 1:
+#        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+#    else:
+#        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
 
 def is_key_pointer_button(key):
     result = key == EV_KEY.BTN_LEFT or key == EV_KEY.BTN_RIGHT or key == EV_KEY.BTN_MIDDLE
     return result
+
+
+# def is_not_finger_moved_to_end_grab():
+#    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_x_values, abs_mt_slot_y_values
+#
+#    # already ungrabbed (so nothing is changed)
+#    if not abs_mt_slot_grab_status[abs_mt_slot_value]:
+#        return
+#
+#    if\
+#        abs_mt_slot_x_init_values[abs_mt_slot_value] > abs_mt_slot_x_values[abs_mt_slot_value] + 100 or\
+#        abs_mt_slot_x_init_values[abs_mt_slot_value] < abs_mt_slot_x_values[abs_mt_slot_value] + 100 or\
+#        abs_mt_slot_y_init_values[abs_mt_slot_value] > abs_mt_slot_y_values[abs_mt_slot_value] + 100 or\
+#        abs_mt_slot_y_init_values[abs_mt_slot_value] < abs_mt_slot_y_values[abs_mt_slot_value] + 100:
+#
+#        log.info("grab is ended, finger was moved")
+#        ungrab()
 
 
 def listen_touchpad_events():
@@ -1062,32 +1121,11 @@ def listen_touchpad_events():
 
         current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
         current_slot_y = abs_mt_slot_y_values[abs_mt_slot_value]
+
         current_slot_key = abs_mt_slot_numpad_key[abs_mt_slot_value]
 
-        # POINTER_BUTTON handling starts
-        #    
-        # can not be excluded situation
-        # when is send number or character together
-        # with POINTER_BUTTON because can be send in slot firstly!
-        #
-        # for each EV_KEY.BTN_LEFT, EV_KEY.BTN_RIGHT, EV_KEY.BTN_MIDDLE
-        # if is send always only BTN_LEFT
-        # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
-        if is_key_pointer_button(e.code) and not enabled_pointer_buttons:
-            continue
-
-        if numlock:
-            if e.matches(EV_KEY.BTN_LEFT):
-                if(current_slot_x <= (maxx / 100) * 35):
-                    pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
-                elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
-                    pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
-                else:
-                    pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
-        # POINTER_BUTTON handling ends
-
         if is_key_pointer_button(current_slot_key):
-            #log.info("skipping because current slot is pointer button")
+        #    #log.info("skipping because current slot is pointer button")
             continue
 
         if e.matches(EV_ABS.ABS_MT_SLOT):
@@ -1124,10 +1162,16 @@ def listen_touchpad_events():
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
+            #if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
+            #    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
+            #is_not_finger_moved_to_end_grab()
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+            #if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+            #    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
+            #is_not_finger_moved_to_end_grab()
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
@@ -1172,6 +1216,7 @@ def listen_touchpad_events():
                 if (row < 0 or col < 0):
                     continue
             else:
+                # offset area
                 continue
 
             if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:

@@ -30,7 +30,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
-- Supports pointer button clicks (areas are for left <= 35%, middle > 35% and < 60% and right > 65% of touchpad width) when is NumberPad activated (can be disabled), recommended area for executing clicks is bottom offset to avoid send NumberPad number or character together with click
+- Driver supports pointer moving & pointer button clicks when is NumberPad activated (left, right, middle click), recommended area for executing clicks or start moving is bottom offset to avoid send NumberPad number or char together with click
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Safe slide gestures against accidental touches by default (by default is multitouch disabled so is not allowed use more then only 1 finger at the same moment)
@@ -148,8 +148,8 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Key layout**                                |          |
 | `keys`                                        | Required |                   | map of keys as array of arrays, dimension has to be atleast array of len 1 inside array<br><br>everything else what is not an event except `None` is sent as unicode `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`)
-| `keys_ignore_offset`                          |          | `[]`              | map of keys which should be touchable even on offset area<br><br>e.g. used in layout `gx551` with value `[0,0]` where is NumLock key on the top left and right icon as primary activation area for NumLock is not used |
-| **Top left icon**                             |          |                   | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions) |
+| `keys_ignore_offset`                          |          | `[]`              | map of keys which should be touchable even on offset area<br><br>e.g. used in layout `gx551` with value `[0,0]` where is NumLock key on the top left and right icon as primary activation area for NumLock is not used     
+**Top left icon**                             |          |                   | any function is disabled when is missing option `top_left_icon_height` or `top_left_icon_width` and icon has to be touchable (`0` dimensions) |
 | `top_left_icon_width`                         |          |                   | width of the top left icon
 | `top_left_icon_height`                        |          |                   | height of the top left icon
 | `top_left_icon_slide_func_keys`               |          | `[EV_KEY.KEY_CALC]` | array of `InputEvent`
@@ -190,7 +190,6 @@ top_left_icon_slide_func_activation_y_ratio = 0.2
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
 brightness = 0x46
-enabled_pointer_buttons = 1
 enabled = 1
 ```
 
@@ -207,7 +206,6 @@ enabled = 1
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled NumberPad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using NumberPad for calculating)
 | `one_touch_key_rotation`                      |          | `0`           | possibility of altering multiple keys during one-touch
 | `key_repetitions`                             |          | `0`           | possible to enable with value `1` hold key for repeated pressing key like on a physical keyboard
-| `enabled_pointer_buttons`                             |          | `1`           | possible to disable pointer button clicks when is NumberPad activated with value `0`
 | **Top left icon**                             |          |                   | custom function is used when is NumberPad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is NumberPad activated, `top_left_icon_brightness_function_disabled` is not `1`, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
 | `top_left_icon_activation_time`               |          | `1` [s]             | amount of time for touch `top_left_icon`
 | `top_left_icon_slide_func_activation_x_ratio` |          | `0.3` (30%)         | ratio of touchpad width of slide
