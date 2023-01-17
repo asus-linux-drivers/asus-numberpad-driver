@@ -30,7 +30,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
-- Driver supports pointer moving & pointer button clicks when is NumberPad activated (left, right, middle click), recommended area for executing clicks or start moving is bottom offset to avoid send NumberPad number or char together with click
+- Driver supports pointer moves & pointer button clicks when is NumberPad activated, !recommended area for executing clicks or start moving is bottom offset to avoid send NumberPad number or char together with click! (can be disabled)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Safe slide gestures against accidental touches by default (by default is multitouch disabled so is not allowed use more then only 1 finger at the same moment)
@@ -189,6 +189,7 @@ top_left_icon_slide_func_activation_x_ratio = 0.2
 top_left_icon_slide_func_activation_y_ratio = 0.2
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
+enabled_touchpad_pointer = 1
 brightness = 0x46
 enabled = 1
 ```
@@ -201,6 +202,7 @@ enabled = 1
 | `touchpad_disables_numpad`                    |          | `1`            | when is touchpad disabled is disabled NumberPad aswell, valid value is `1` or `0` (e.g. via Fn+special key)<br><br>status is taken from result of `xinput` - to toggle touchpad can be used [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh)
 | `sys_numlock_enables_numpad`                  |          | `0`           | obtained via active `LED_NUML` of keyboard device<br><br>enable with `1`, by default NumberPad reflects only disabling system numlock (then is disabled)    
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` is every time during inactivation of NumberPad sent `KEY_NUMLOCK`. Is useful do not send NumLock when is to laptop connected external keyboard and goal is only disable NumberPad on laptop but keep NumLock on external keyboard enabled    
+| `enabled_touchpad_pointer`                  |          | `1`           | valid values are `0`, `1`, `2`<br><br>when is set to `1` touchpad pointer can be used to moving and can be clicked pointer buttons left, right and middle when is NumberPad activated, `0` disable this usage and `2` allowes only pointer button clicks
 | **Key layout**                                |          |
 | `activation_time`              |          | `1` [s]             | amount of time you have to touch `top_right_icon` or another spot with key `EV_KEY.KEY_NUMLOCK` for the NumberPad activation/deactivation
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled NumberPad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using NumberPad for calculating)

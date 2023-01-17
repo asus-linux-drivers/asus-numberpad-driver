@@ -111,8 +111,9 @@ CONFIG_ACTIVATION_TIME = "activation_time"
 CONFIG_ACTIVATION_TIME_DEFAULT = True
 CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
 CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
-CONFIG_ENABLED_POINTER_BUTTONS = "enabled_pointer_buttons"
-CONFIG_ENABLED_POINTER_BUTTONS_DEFAULT = True
+CONFIG_ENABLED_TOUCHPAD_POINTER = "enabled_touchpad_pointer"
+CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 1
+
 
 config = configparser.ConfigParser()
 config_lock = threading.Lock()
@@ -472,9 +473,12 @@ def send_numlock_key(value):
 
 
 def activate_numpad():
-    global brightness, device_id, default_backlight_level
+    global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t
 
     config_set(CONFIG_ENABLED, True)
+
+    if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
+        grab()
 
     try:
         subprocess.call("i2ctransfer -f -y " + device_id +
@@ -496,15 +500,17 @@ def activate_numpad():
 
 
 def deactivate_numpad():
-    global brightness, device_id
+    global brightness, device_id, enabled_touchpad_pointer, d_t
 
     config_set(CONFIG_ENABLED, False)
 
     numpad_cmd = "i2ctransfer -f -y " + device_id + \
-            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"    
-
+            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
     try:
-        ungrab()
+        if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
+            ungrab()
+        elif enabled_touchpad_pointer == 1:
+            ungrab_current_slot()
         subprocess.call(numpad_cmd, shell=True)
         brightness = 0
     except (OSError):
@@ -605,7 +611,7 @@ def load_all_config_values():
     global top_left_icon_brightness_func_disabled
     global support_for_maximum_abs_mt_slots
     global config_lock
-    global enabled_pointer_buttons
+    global enabled_touchpad_pointer
 
     config_lock.acquire()
 
@@ -630,7 +636,7 @@ def load_all_config_values():
     top_left_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
-    enabled_pointer_buttons = config_get(CONFIG_ENABLED_POINTER_BUTTONS, CONFIG_ENABLED_POINTER_BUTTONS_DEFAULT)
+    enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
@@ -805,12 +811,14 @@ def replaced_numpad_key(touched_key_now):
 def grab():
     global d_t
 
-    try:
-        log.info("grab")
-        d_t.grab()
-        abs_mt_slot_grab_status[abs_mt_slot_value] = 1
-    except libevdev.device.DeviceGrabError as e:
-        log.error("Error of grabbing, %s", e)
+    if enabled_touchpad_pointer == 1:
+        try:
+            log.info("grab")
+            d_t.grab()
+            abs_mt_slot_grab_status[abs_mt_slot_value] = 1
+
+        except libevdev.device.DeviceGrabError as e:
+            log.error("Error of grabbing, %s", e)
 
 
 def is_grabbed_more_than_one_time():
@@ -825,8 +833,29 @@ def is_grabbed_more_than_one_time():
     else:
         return False
 
-
 def ungrab():
+    global d_t
+
+    try:
+        log.info("un-grab")
+        d_t.ungrab()
+
+    except libevdev.device.DeviceGrabError as e:
+        log.error("Error of un-grabbing, %s", e)
+
+
+def grab():
+    global d_t
+
+    try:
+        log.info("grab")
+        d_t.grab()
+
+    except libevdev.device.DeviceGrabError as e:
+        log.error("Error of grabbing, %s", e)
+
+
+def ungrab_current_slot():
     global d_t, abs_mt_slot_grab_status
 
     if not multitouch or not is_grabbed_more_than_one_time():
@@ -854,7 +883,8 @@ def unpressed_numpad_key(replaced_by_key=None):
 
         try:
             udev.send_events(events)
-            ungrab()
+            if enabled_touchpad_pointer == 1:
+                ungrab_current_slot()
 
         except OSError as e:
             log.warning("Cannot send press event, %s", e)
@@ -1068,23 +1098,23 @@ def stop_top_left_right_icon_slide_gestures():
     top_right_icon_touch_start_time = 0
 
 
-#def pressed_pointer_button(key, msc, value):
-#    
-#    events = [
-#        InputEvent(EV_MSC.MSC_SCAN, msc),
-#        InputEvent(key, value),
-#        InputEvent(EV_SYN.SYN_REPORT, 0)
-#    ]
+def pressed_pointer_button(key, msc, value):
+    
+    events = [
+        InputEvent(EV_MSC.MSC_SCAN, msc),
+        InputEvent(key, value),
+        InputEvent(EV_SYN.SYN_REPORT, 0)
+    ]
 
-#    try:
-#        udev.send_events(events)
-#    except OSError as e:
-#        log.error("Cannot send event, %s", e)
+    try:
+        udev.send_events(events)
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
 
-#    if value == 1:
-#        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
-#    else:
-#        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
+    if value == 1:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+    else:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
 
 def is_key_pointer_button(key):
@@ -1106,14 +1136,14 @@ def is_key_pointer_button(key):
 #        abs_mt_slot_y_init_values[abs_mt_slot_value] < abs_mt_slot_y_values[abs_mt_slot_value] + 100:
 #
 #        log.info("grab is ended, finger was moved")
-#        ungrab()
+#        ungrab_current_slot()
 
 
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
-        keys_ignore_offset, enabled_pointer_buttons
+        keys_ignore_offset, enabled_touchpad_pointer
 
     for e in d_t.events():
 
@@ -1124,9 +1154,37 @@ def listen_touchpad_events():
 
         current_slot_key = abs_mt_slot_numpad_key[abs_mt_slot_value]
 
-        if is_key_pointer_button(current_slot_key):
-        #    #log.info("skipping because current slot is pointer button")
+
+        # POINTER_BUTTON own handling instead of touchpad driver starts
+        #    
+        # can not be excluded situation
+        # when is send number or character together
+        # with POINTER_BUTTON because can be send in slot firstly!
+        #
+        # for each EV_KEY.BTN_LEFT, EV_KEY.BTN_RIGHT, EV_KEY.BTN_MIDDLE
+        # if is send always only BTN_LEFT
+        # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
+        #
+        # enabled_touchpad_pointer value 0 is filtered out here
+        if is_key_pointer_button(e.code) and enabled_touchpad_pointer == 0:
             continue
+
+        # enabled_touchpad_pointer value 2 only! is processed
+        if numlock and enabled_touchpad_pointer == 2:
+            if e.matches(EV_KEY.BTN_LEFT):
+                if(current_slot_x <= (maxx / 100) * 35):
+                    pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
+                elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
+                    pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
+                else:
+                    pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
+
+            if is_key_pointer_button(current_slot_key):
+            #    #log.info("skipping because current slot is pointer button")
+                continue
+        # enabled_touchpad_pointer value 1 only! is processed futher
+        # POINTER_BUTTON own handling instead of touchpad driver ends
+
 
         if e.matches(EV_ABS.ABS_MT_SLOT):
             if(e.value < support_for_maximum_abs_mt_slots):
