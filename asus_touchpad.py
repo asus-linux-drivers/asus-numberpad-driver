@@ -472,6 +472,18 @@ def send_numlock_key(value):
         log.error("Cannot send event, %s", e)
 
 
+def grab_current_slot():
+    global d_t
+
+    try:
+        log.info("grab current slot")
+        d_t.grab()
+        abs_mt_slot_grab_status[abs_mt_slot_value] = 1
+
+    except libevdev.device.DeviceGrabError as e:
+        log.error("Error of grabbing, %s", e)
+
+
 def activate_numpad():
     global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t
 
@@ -797,7 +809,7 @@ def pressed_numpad_key():
         ]
 
     try:
-        grab()
+        grab_current_slot()
         udev.send_events(events)
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
@@ -806,19 +818,6 @@ def pressed_numpad_key():
 def replaced_numpad_key(touched_key_now):
     unpressed_numpad_key(touched_key_now)
     pressed_numpad_key()
-
-
-def grab():
-    global d_t
-
-    if enabled_touchpad_pointer == 1:
-        try:
-            log.info("grab")
-            d_t.grab()
-            abs_mt_slot_grab_status[abs_mt_slot_value] = 1
-
-        except libevdev.device.DeviceGrabError as e:
-            log.error("Error of grabbing, %s", e)
 
 
 def is_grabbed_more_than_one_time():
@@ -864,9 +863,10 @@ def ungrab_current_slot():
             abs_mt_slot_grab_status[abs_mt_slot_value] = 0
 
             try:
+                log.info("un-grab current slot")
                 d_t.ungrab()
             except libevdev.device.DeviceGrabError as e:
-                log.error("Error of grabbing during pressed key, %s", e)
+                log.error("Error of un-grabbing current slot during pressed key, %s", e)
 
 
 def unpressed_numpad_key(replaced_by_key=None):
