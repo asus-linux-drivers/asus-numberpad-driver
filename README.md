@@ -54,7 +54,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 ## Installation
 
-Using `git`
+Install latest dev version using `git`
 
 ```bash
 git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
@@ -62,7 +62,7 @@ cd asus-touchpad-numpad-driver
 sudo ./install.sh
 ```
 
-or download latest release from [release page](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases), extract and run:
+or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases), extract and run:
 
 ```bash
 sudo ./install.sh
