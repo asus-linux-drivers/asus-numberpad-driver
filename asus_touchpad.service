@@ -3,7 +3,7 @@ Description=Asus Touchpad to Numpad Handler
 
 [Service]
 Type=simple
-ExecStart=/usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $CONFIG_FILE_DIR
+ExecStart=/usr/bin/env python3 /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $CONFIG_FILE_DIR
 StandardInput=tty-force
 StandardOutput=append:/var/log/asus_touchpad_numpad-driver/error.log
 StandardError=append:/var/log/asus_touchpad_numpad-driver/error.log
