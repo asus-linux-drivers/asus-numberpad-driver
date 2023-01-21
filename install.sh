@@ -84,20 +84,67 @@ detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | h
 detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f2)
 
 if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
-    echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
-else
-    for option in $(ls numpad_layouts); do
-        if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-            read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
-            case "$response" in [yY][eE][sS]|[yY])
-                model=$detected_layout_via_offline_table
-                ;;
-            *)
-                ;;
-            esac
+    
+    #VENDOR_ID="04f3"
+    VENDOR_ID=$(sudo cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 1 -d ":")
+    #DEVICE_ID="31b9"
+    DEVICE_ID=$(sudo cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 2 -d ":")
+    USER_AGENT="user-agent-name-here"
+    DEVICE_LIST_CURL_URL="https://linux-hardware.org/?view=search&vendorid=$VENDOR_ID&deviceid=$DEVICE_ID&typeid=input%2Fkeyboard"
+    #echo $CURL_URL
+    DEVICE_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$DEVICE_LIST_CURL_URL" )
+    #echo $RESULT
+    DEVICE_URL=$(echo $DEVICE_LIST_CURL | xmllint --html --xpath '//td[@class="device"]//a[1]/@href' 2>/dev/null - | cut -f2 -d"\"")
+    #echo $DEVICE_URL_LIST
+    LAPTOP_LIST_CURL_URL="https://linux-hardware.org$DEVICE_URL"
+    #echo $LAPTOP_LIST_CURL_URL
+    LAPTOP_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$LAPTOP_LIST_CURL_URL" )
+    #echo $LAPTOP_LIST_CURL
+    LAPTOP_LIST=$(echo $LAPTOP_LIST_CURL | xmllint --html --xpath '//table[contains(@class, "computers_list")]//tr/td[3]/span/@title' 2>/dev/null -)
+    #echo $LAPTOP_LIST
+
+    # create laptop array
+    #
+    # [0] = Zenbook UX3402ZA_UX3402ZA
+    # [1] = Zenbook UM5401QAB_UM5401QA
+    # ...
+    #
+    IFS='\"' read -r -a array <<< $(echo $LAPTOP_LIST)
+    for index in "${!array[@]}"
+    do
+        if [[ "${array[index]}" != " title=" && "${array[index]}" != "title=" ]]; then
+            LAPTOP_NAME="${array[index]}"
+            #echo $LAPTOP_NAME
+
+            probe_laptop=$( echo $LAPTOP_NAME | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
+            #echo $probe_laptop
+            detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $probe_laptop | head -1 | cut -d'=' -f1)
+            detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $probe_laptop | head -1 | cut -d'=' -f2)
+
+            if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
+                continue
+            else
+                break
+            fi
         fi
     done
+
+    if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
+        echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+    fi
 fi
+
+for option in $(ls numpad_layouts); do
+    if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
+        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
+        case "$response" in [yY][eE][sS]|[yY])
+            model=$detected_layout_via_offline_table
+            ;;
+        *)
+            ;;
+        esac
+    fi
+done
 
 if [ -z "$model" ]; then
     echo
