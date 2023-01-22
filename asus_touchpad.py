@@ -113,7 +113,8 @@ CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
 CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
 CONFIG_ENABLED_TOUCHPAD_POINTER = "enabled_touchpad_pointer"
 CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 1
-
+CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
+CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = 1
 
 config = configparser.ConfigParser()
 config_lock = threading.Lock()
@@ -624,6 +625,7 @@ def load_all_config_values():
     global support_for_maximum_abs_mt_slots
     global config_lock
     global enabled_touchpad_pointer
+    global press_key_when_is_done_untouch
 
     config_lock.acquire()
 
@@ -649,6 +651,8 @@ def load_all_config_values():
     top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
+    press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
+
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
@@ -816,7 +820,12 @@ def pressed_numpad_key():
 
 
 def replaced_numpad_key(touched_key_now):
-    unpressed_numpad_key(touched_key_now)
+    if press_key_when_is_done_untouch == 1:
+        pressed_numpad_key()
+        unpressed_numpad_key(touched_key_now)
+    else:
+        unpressed_numpad_key(touched_key_now)
+
     pressed_numpad_key()
 
 
@@ -935,11 +944,20 @@ def is_not_finger_moved_to_another_key():
                 replaced_numpad_key(touched_key_now)
 
             elif touched_key_when_pressed != None:
-                unpressed_numpad_key()
+
+                if press_key_when_is_done_untouch == 0:
+                    unpressed_numpad_key()
+                else:
+                    # mark key as none when is one_touch_key_rotation
+                    # not allowed and are crossed init key borders so end of pointer moving will end with 
+                    # written number or character
+                    abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
             elif one_touch_key_rotation and touched_key_now != None:
                 abs_mt_slot_numpad_key[abs_mt_slot_value] = touched_key_now
-                pressed_numpad_key()
+
+                if press_key_when_is_done_untouch == 0:
+                    pressed_numpad_key()
 
 
 def check_system_numlock_vs_local():
@@ -1306,13 +1324,17 @@ def listen_touchpad_events():
                           )
                 continue
 
-            if e.value == 1:
+            if e.value == 1 and press_key_when_is_done_untouch == 0:
                 if key_repetitions:
                     pressed_numpad_key()
                 else:
                     pressed_numpad_key()
                     unpressed_numpad_key()
-            else:
+            elif e.value == 0 and press_key_when_is_done_untouch == 1:
+                # key repetitions is not possible do in this case (press_key_when_is_done_untouch = 1)
+                pressed_numpad_key()
+                unpressed_numpad_key()
+            elif e.value == 0 and press_key_when_is_done_untouch == 0:
                 unpressed_numpad_key()
 
 
