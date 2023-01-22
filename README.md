@@ -23,7 +23,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
-- When is NumberPad activated can be used customizable slide gesture beginning on top left (by default it is prepared for bounding key `XF86Calculator` to script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh) (`XF86Calculator` key press can be tested via `xdotool key XF86Calculator`), so first slide gesture activate calculator app and next close calculator app, by default is also required end each slide after at least 30% of width and height)
+- When is NumberPad activated can be used customizable slide gesture beginning on top left (by default is send key `XF86Calculator` so it is prepared for bounding script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh) (`XF86Calculator` key press can be tested via `xdotool key XF86Calculator`), so first slide gesture activates calculator app and next closes calculator app, by default is also required end each slide after at least 30% of width and height)
 - Support of unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701` via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (by default is default level last used level - works even between reboots)
@@ -31,10 +31,10 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
-- Driver supports pointer moves & pointer button clicks when is NumberPad activated, !recommended area for executing clicks or start moving is bottom offset to avoid send NumberPad number or char together with click! (can be disabled)
+- Driver supports pointer moves & pointer button clicks when is NumberPad activated (recommended area for executing clicks is bottom offset to avoid of sending number or other character together with click) (can be disabled)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
-- Safe slide gestures against accidental touches by default (by default is multitouch disabled so is not allowed use more then only 1 finger at the same moment)
+- Is implemented protection against multitouching when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
 - Driver supports laptop suspend
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#external-keyboard-configuration)

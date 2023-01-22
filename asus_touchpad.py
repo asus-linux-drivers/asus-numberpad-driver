@@ -1208,6 +1208,12 @@ def listen_touchpad_events():
             # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED 
             if multitouch:
                 stop_top_left_right_icon_slide_gestures()
+
+            if not multitouch:
+
+                # protection against multitouching when is multitouch not enable: when is used another finger on activated NumberPad and multitouch is not enabled (is allowed only 1 finger), slot is reseted
+                set_none_to_current_mt_slot()
+
             continue
 
         if e.matches(EV_MSC.MSC_TIMESTAMP):
