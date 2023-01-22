@@ -366,7 +366,6 @@ def use_slide_func_for_top_right_icon():
 
 
 def use_bindings_for_touchpad_left_icon_slide_function():
-
     global numlock, top_left_icon_slide_func_deactivates_numpad, top_left_icon_slide_func_activates_numpad, top_left_icon_slide_func_keys
 
     key_events = []
@@ -378,14 +377,7 @@ def use_bindings_for_touchpad_left_icon_slide_function():
 
     try:
         udev.send_events(key_events)
-
-        if top_left_icon_slide_func_activates_numpad is True and not numlock:
-            local_numlock_pressed()
-        elif top_left_icon_slide_func_deactivates_numpad is True and numlock:
-            local_numlock_pressed()
-
         log.info("Used bindings for touchpad left_icon slide function")
-
     except OSError as e:
         log.error("Cannot send event, %s", e)
 
@@ -1250,7 +1242,7 @@ def listen_touchpad_events():
             elif is_pressed_touchpad_top_left_icon():
                 pressed_touchpad_top_left_icon(e)
                 continue
-            elif is_slided_from_top_left_icon(e):
+            elif numlock and is_slided_from_top_left_icon(e):
                 use_bindings_for_touchpad_left_icon_slide_function()
                 continue
             elif is_slided_from_top_right_icon(e):
