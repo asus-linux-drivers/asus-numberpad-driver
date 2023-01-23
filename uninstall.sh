@@ -62,5 +62,12 @@ then
 	exit 1
 fi
 
+rm -f /usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules
+if [[ $? != 0 ]]
+then
+	echo "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules cannot be removed correctly..."
+	exit 1
+fi
+
 echo "Asus touchpad python driver uninstalled"
 exit 0
