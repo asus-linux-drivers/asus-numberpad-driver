@@ -34,7 +34,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Driver supports pointer moves & pointer button clicks when is NumberPad activated (recommended area for executing clicks is bottom offset to avoid of sending number or other character together with click) (can be disabled)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
-- Is implemented protection against multitouching when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
+- Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
 - Driver supports laptop suspend
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#external-keyboard-configuration)
