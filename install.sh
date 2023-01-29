@@ -180,18 +180,15 @@ if [ "$wayland_or_x11" = "x11" ]; then
 
     xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
     cat asus_touchpad.X11.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
-    cp asus_touchpad_suspend.service /etc/systemd/system/asus_touchpad_numpad_suspend.service
 
 elif [ "$wayland_or_x11" = "wayland" ]; then
     echo "Wayland is detected, unfortunatelly you will not be able use feature: `Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell`, at this moment is supported only X11"
 
     cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
-    cp asus_touchpad_suspend.service /etc/systemd/system/asus_touchpad_numpad_suspend.service
 else
     echo "Wayland or X11 is not detected"
 
     cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
-    cp asus_touchpad_suspend.service /etc/systemd/system/asus_touchpad_numpad_suspend.service
 fi
 
 
@@ -224,29 +221,12 @@ else
     echo "Asus touchpad service enabled"
 fi
 
-systemctl enable asus_touchpad_numpad_suspend
-
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when enabling the asus_touchpad_numpad_suspend.service"
-    exit 1
-else
-    echo "Asus touchpad suspend service enabled"
-fi
-
 systemctl restart asus_touchpad_numpad
 if [[ $? != 0 ]]; then
     echo "Something went wrong when enabling the asus_touchpad_numpad.service"
     exit 1
 else
     echo "Asus touchpad service started"
-fi
-
-systemctl restart asus_touchpad_numpad_suspend
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when enabling the asus_touchpad_numpad_suspend.service"
-    exit 1
-else
-    echo "Asus touchpad suspend service started"
 fi
 
 exit 0
