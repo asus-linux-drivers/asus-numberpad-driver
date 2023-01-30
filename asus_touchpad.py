@@ -978,6 +978,9 @@ def pressed_numlock_key(value):
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
         log.info("Un-touched numlock key (not top_right_icon) in time: %s", time())
+
+        numlock_touch_start_time = 0
+
         local_numlock_pressed()
 
 
@@ -991,8 +994,12 @@ def pressed_touchpad_top_right_icon(value):
         log.info("Touched top_right_icon (numlock) in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
-        local_numlock_pressed()
         log.info("Un-touched top_right_icon (numlock) in time: %s", time())
+
+        top_right_icon_touch_start_time = 0
+        numlock_touch_start_time = 0
+
+        local_numlock_pressed()
 
 
 def is_slided_from_top_right_icon(e):
