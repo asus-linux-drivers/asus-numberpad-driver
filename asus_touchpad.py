@@ -976,18 +976,25 @@ def pressed_numlock_key(value):
 
     if value == 1:
         numlock_touch_start_time = time()
-        log.info("Touched numlock in time: %s", time())
+        log.info("Touched numlock key (not top_right_icon) in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
+    elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
+        log.info("Un-touched numlock key (not top_right_icon) in time: %s", time())
+        local_numlock_pressed()
 
 
 def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, numlock_touch_start_time, abs_mt_slot_numpad_key
 
     if value == 1:
+        # is used for slide (that is why duplicated location for saving time())
         top_right_icon_touch_start_time = time()
         numlock_touch_start_time = time()
-        log.info("Touched numlock in time: %s", time())
+        log.info("Touched top_right_icon (numlock) in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
+    elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
+        local_numlock_pressed()
+        log.info("Un-touched top_right_icon (numlock) in time: %s", time())
 
 
 def is_slided_from_top_right_icon(e):
@@ -1219,12 +1226,13 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            touched_key = get_touched_key()
-            top_right_icon = is_pressed_touchpad_top_right_icon()
-            if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
+            if press_key_when_is_done_untouch == 0:
+                touched_key = get_touched_key()
+                top_right_icon = is_pressed_touchpad_top_right_icon()
+                if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
 
-                local_numlock_pressed()
-                continue
+                    local_numlock_pressed()
+                    continue
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
