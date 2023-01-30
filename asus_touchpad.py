@@ -549,6 +549,8 @@ def local_numlock_pressed():
 
     numlock_lock.acquire()
 
+    set_none_to_current_mt_slot()
+
     # Activating
     if not numlock:
 
@@ -572,8 +574,6 @@ def local_numlock_pressed():
 
         log.info("Numpad deactivated")
         deactivate_numpad()
-
-    set_none_to_current_mt_slot()
 
     numlock_lock.release()
 
@@ -1106,8 +1106,6 @@ def takes_numlock_longer_then_set_up_activation_time():
                  time() - numlock_touch_start_time)
         log.info("Activation time: %s", activation_time)
 
-        numlock_touch_start_time = 0
-
         return True
     else:
         return False
@@ -1218,6 +1216,8 @@ def listen_touchpad_events():
                 touched_key = get_touched_key()
                 top_right_icon = is_pressed_touchpad_top_right_icon()
                 if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
+
+                    numlock_touch_start_time = 0
 
                     local_numlock_pressed()
                     continue
