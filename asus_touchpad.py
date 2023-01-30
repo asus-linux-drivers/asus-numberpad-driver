@@ -679,8 +679,6 @@ abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
-#abs_mt_slot_x_init_values = np.array([-1, -1, -1, -1, -1], int)
-#abs_mt_slot_y_init_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_grab_status = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 1
@@ -1139,23 +1137,6 @@ def is_key_pointer_button(key):
     return result
 
 
-# def is_not_finger_moved_to_end_grab():
-#    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_x_values, abs_mt_slot_y_values
-#
-#    # already ungrabbed (so nothing is changed)
-#    if not abs_mt_slot_grab_status[abs_mt_slot_value]:
-#        return
-#
-#    if\
-#        abs_mt_slot_x_init_values[abs_mt_slot_value] > abs_mt_slot_x_values[abs_mt_slot_value] + 100 or\
-#        abs_mt_slot_x_init_values[abs_mt_slot_value] < abs_mt_slot_x_values[abs_mt_slot_value] + 100 or\
-#        abs_mt_slot_y_init_values[abs_mt_slot_value] > abs_mt_slot_y_values[abs_mt_slot_value] + 100 or\
-#        abs_mt_slot_y_init_values[abs_mt_slot_value] < abs_mt_slot_y_values[abs_mt_slot_value] + 100:
-#
-#        log.info("grab is ended, finger was moved")
-#        ungrab_current_slot()
-
-
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
@@ -1244,16 +1225,10 @@ def listen_touchpad_events():
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
-            #if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
-            #    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
-            #is_not_finger_moved_to_end_grab()
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
-            #if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
-            #    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
-            #is_not_finger_moved_to_end_grab()
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
