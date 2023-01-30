@@ -9,8 +9,6 @@ StandardOutput=append:/var/log/asus_touchpad_numpad-driver/error.log
 StandardError=append:/var/log/asus_touchpad_numpad-driver/error.log
 TimeoutSec=5
 Restart=on-failure
-# For some operating systems with boot failure, adding this following property might resolve the issue  
-#ExecStartPre=/bin/sleep 2
 
 [Install]
 WantedBy=default.target
