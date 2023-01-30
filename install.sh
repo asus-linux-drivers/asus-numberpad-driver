@@ -12,21 +12,21 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
-if [[ $(sudo apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && sudo apt -y install libevdev2 i2c-tools python3-dev python3-pip
+if [[ $(apt install 2>/dev/null) ]]; then
+    echo 'apt is here' && apt -y install libevdev2 i2c-tools python3-dev python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
-        sudo apt -y install xinput
+        apt -y install xinput
     fi
-elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
+elif [[ $(pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && sudo pacman --noconfirm --needed -S libevdev i2c-tools python python-pip
+    echo 'pacman is here' && pacman --noconfirm --needed -S libevdev i2c-tools python python-pip
     if [ "$wayland_or_x11" = "x11" ]; then
-        sudo pacman --noconfirm --needed -S xorg-xinput
+        pacman --noconfirm --needed -S xorg-xinput
     fi
-elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && sudo dnf -y install libevdev i2c-tools python3-devel python3-pip
+elif [[ $(dnf install 2>/dev/null) ]]; then
+    echo 'dnf is here' && dnf -y install libevdev i2c-tools python3-devel python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
-        sudo dnf -y install xinput
+        dnf -y install xinput
     fi
 fi
 python3 -m pip install -r requirements.txt
@@ -86,9 +86,9 @@ detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | h
 if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
     
     #VENDOR_ID="04f3"
-    VENDOR_ID=$(sudo cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 1 -d ":")
+    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 1 -d ":")
     #DEVICE_ID="31b9"
-    DEVICE_ID=$(sudo cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 2 -d ":")
+    DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 2 -d ":")
     USER_AGENT="user-agent-name-here"
     DEVICE_LIST_CURL_URL="https://linux-hardware.org/?view=search&vendorid=$VENDOR_ID&deviceid=$DEVICE_ID&typeid=input%2Fkeyboard"
     #echo $CURL_URL
@@ -208,7 +208,7 @@ cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR="/usr/share/asus
 chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
 chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
 
-sudo udevadm control --reload-rules
+udevadm control --reload-rules
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
