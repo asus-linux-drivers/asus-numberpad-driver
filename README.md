@@ -280,4 +280,4 @@ Do you think my effort put into open source is useful for you / others? Put star
 
 [![BuyMeACoffee](https://img.shields.io/badge/Buy%20to%20maintainer%20a%20coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/ldrahnik)
 
-![Buy me a coffee supporter](images/buymeacoffee_codeliger.png)
+[![Buy me a coffee supporter](images/buymeacoffee_codeliger.png)](https://www.buymeacoffee.com/ldrahnik)
