@@ -131,6 +131,19 @@ def config_get(key, key_default):
         return key_default
 
 
+def send_value_to_touchpad_via_i2c(value):
+    global device_id
+
+    cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
+            value + " 0xad"
+
+    try:
+        subprocess.call(cmd)
+    except (OSError):
+        log.error('Error during sending via i2c: \"%s\"', cmd)
+        pass
+
+
 def parse_value_from_config(value):
     if value == '0':
         return False
@@ -414,8 +427,6 @@ def set_none_to_current_mt_slot():
     abs_mt_slot_numpad_key[abs_mt_slot_value] = None
     abs_mt_slot_x_values[abs_mt_slot_value] = 0
     abs_mt_slot_y_values[abs_mt_slot_value] = 0
-    #abs_mt_slot_x_init_values[abs_mt_slot_value] = -1
-    #abs_mt_slot_y_init_values[abs_mt_slot_value] = -1
 
 
 def pressed_touchpad_top_left_icon(e):
@@ -442,13 +453,7 @@ def increase_brightness():
 
     config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
 
-    numpad_cmd = "i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + \
-            backlight_levels[brightness] + " 0xad"
-
-    try:
-        subprocess.call(numpad_cmd, shell=True)
-    except:
-        pass
+    send_value_to_touchpad_via_i2c(backlight_levels[brightness])
 
 
 def send_numlock_key(value):
@@ -485,23 +490,19 @@ def activate_numpad():
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         grab()
 
-    try:
-        subprocess.call("i2ctransfer -f -y " + device_id +
-            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x01 0xad", shell=True)
-        if default_backlight_level != "0x01":
-            subprocess.call("i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " +
-                default_backlight_level + " 0xad", shell=True)
+    send_value_to_touchpad_via_i2c("0x01")
+     
+    if default_backlight_level != "0x01":
+         send_value_to_touchpad_via_i2c(default_backlight_level)
 
-        try:
-            brightness = backlight_levels.index(default_backlight_level)
-        except ValueError:
-            # so after start and then click on icon for increasing brightness
-            # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
-            # (if exists)
-            # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
-            brightness = -1
-    except (OSError):
-        pass
+    try:
+        brightness = backlight_levels.index(default_backlight_level)
+    except ValueError:
+        # so after start and then click on icon for increasing brightness
+        # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
+        # (if exists)
+        # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
+        brightness = -1
 
 
 def deactivate_numpad():
@@ -509,17 +510,13 @@ def deactivate_numpad():
 
     config_set(CONFIG_ENABLED, False)
 
-    numpad_cmd = "i2ctransfer -f -y " + device_id + \
-            " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
-    try:
-        if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
-            ungrab()
-        elif enabled_touchpad_pointer == 1:
-            ungrab_current_slot()
-        subprocess.call(numpad_cmd, shell=True)
-        brightness = 0
-    except (OSError):
-        pass
+    if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
+        ungrab()
+    elif enabled_touchpad_pointer == 1:
+        ungrab_current_slot()
+
+    send_value_to_touchpad_via_i2c("0x00")
+    brightness = 0
 
 
 def get_system_numlock():
