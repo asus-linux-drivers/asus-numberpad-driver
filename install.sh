@@ -229,4 +229,63 @@ else
     echo "Asus touchpad service started"
 fi
 
+if [[ $(type gsettings 2>/dev/null) ]]; then
+    echo "gsettings is here"
+    read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
+    case "$response" in [yY][eE][sS]|[yY])
+
+        # credits (https://unix.stackexchange.com/questions/323160/gnome3-adding-keyboard-custom-shortcuts-using-dconf-without-need-of-logging)
+        existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+        #echo $existing_shortcut_string
+        exst_str_len=$((${#existing_shortcut_string}))
+        IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
+        existing_shortcut_count="${#existing_shortcut_array[@]}"
+        #echo $existing_shortcut_count
+        new_shortcut_index=$(("$existing_shortcut_count"))
+        #echo $new_shortcut_index
+        declaration_string=' ['
+        for (( i=0; i<="$existing_shortcut_count"; i++ )); do
+            if (( $i == 0 ))
+            then
+                declaration_string="$declaration_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$i/'"
+            else
+                declaration_string="$declaration_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$i/'"
+            fi
+        done
+        declaration_string="$declaration_string"']'
+
+        #echo $declaration_string
+
+        if [[ $(flatpak list | grep io.elementary.calculator 2>/dev/null) ]]; then
+            echo "io.elementary.calculator here"
+
+            mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
+            install -t /usr/share/asus_touchpad_numpad-driver/scripts scripts/calculator_toggle.sh
+            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts scripts/calculator_toggle.sh
+
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
+
+            existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+            #echo $existing_shortcut_string
+            read -r -p "Toggling script for calculator app io.elementary.calculator has been installed. For it is functionality is required reboot. Reboot now? [y/N]" response
+            case "$response" in [yY][eE][sS]|[yY])
+                reboot
+                ;;
+            *)
+                ;;
+            esac
+        fi
+        ;;
+    *)
+        ;;
+    esac
+else
+    echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+fi
+
+echo "Install finished"
+
 exit 0
