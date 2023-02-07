@@ -511,8 +511,6 @@ def deactivate_numpad():
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         ungrab()
-    elif enabled_touchpad_pointer == 1:
-        ungrab_current_slot()
 
     send_value_to_touchpad_via_i2c("0x00")
     brightness = 0
@@ -826,6 +824,7 @@ def is_grabbed_more_than_one_time():
         return True
     else:
         return False
+
 
 def ungrab():
     global d_t
