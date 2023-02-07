@@ -983,10 +983,12 @@ def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, numlock_touch_start_time, abs_mt_slot_numpad_key
 
     if value == 1:
+        log.info("Touched top_right_icon (numlock) in time: %s", time())
+
         # is used for slide (that is why duplicated location for saving time())
         top_right_icon_touch_start_time = time()
         numlock_touch_start_time = time()
-        log.info("Touched top_right_icon (numlock) in time: %s", time())
+
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
         log.info("Un-touched top_right_icon (numlock) in time: %s", time())
