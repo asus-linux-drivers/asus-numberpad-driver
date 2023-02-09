@@ -256,7 +256,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
         #echo $declaration_string
 
-        if [[ $(flatpak list | grep io.elementary.calculator 2>/dev/null) ]]; then
+        if [[ $(type flatpak 2>/dev/null && flatpak list | grep io.elementary.calculator 2>/dev/null) ]]; then
             echo "io.elementary.calculator here"
 
             mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
@@ -277,6 +277,8 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             *)
                 ;;
             esac
+        else
+           echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
         fi
         ;;
     *)
