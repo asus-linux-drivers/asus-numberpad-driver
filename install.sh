@@ -260,8 +260,8 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             echo "io.elementary.calculator here"
 
             mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
-            install -t /usr/share/asus_touchpad_numpad-driver/scripts scripts/calculator_toggle.sh
-            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts scripts/calculator_toggle.sh
+            cp scripts/io_elementary_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
+            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/io_elementary_calculator_toggle.sh
 
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
@@ -271,6 +271,27 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
             read -r -p "Toggling script for calculator app io.elementary.calculator has been installed. For it is functionality is required reboot. Reboot now? [y/N]" response
+            case "$response" in [yY][eE][sS]|[yY])
+                reboot
+                ;;
+            *)
+                ;;
+            esac
+        elif [[ $(type gnome-calculator 2>/dev/null) ]]; then
+            echo "gnome-calculator here"
+
+            mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
+            cp scripts/gnome_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
+            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
+
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
+
+            existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+            #echo $existing_shortcut_string
+            read -r -p "Toggling script for calculator app gnome-calculator has been installed. For it is functionality is required reboot. Reboot now? [y/N]" response
             case "$response" in [yY][eE][sS]|[yY])
                 reboot
                 ;;
