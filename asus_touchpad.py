@@ -662,9 +662,13 @@ def load_all_config_values():
 
     config_lock.release()
 
+
+    numlock_lock.acquire()
+
     if enabled and not numlock:
         local_numlock_pressed()
 
+    numlock_lock.release()
 
 
 abs_mt_slot_value: int = 0
