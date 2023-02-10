@@ -112,7 +112,7 @@ CONFIG_ACTIVATION_TIME_DEFAULT = True
 CONFIG_NUMLOCK_ENABLES_NUMPAD = "sys_numlock_enables_numpad"
 CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT = False
 CONFIG_ENABLED_TOUCHPAD_POINTER = "enabled_touchpad_pointer"
-CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 1
+CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 3
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = 1
 
@@ -481,6 +481,17 @@ def grab_current_slot():
         log.error("Error of grabbing, %s", e)
 
 
+def set_touchpad_prop_tap_to_click(value):
+    global touchpad_name
+
+    try:
+        cmd = "xinput set-prop '" + touchpad_name + "' 'libinput Tapping Enabled' " + str(value)
+        log.debug(cmd)
+        subprocess.check_output(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        log.error(e.output)
+
+
 def activate_numpad():
     global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t
 
@@ -488,6 +499,8 @@ def activate_numpad():
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         grab()
+    elif enabled_touchpad_pointer == 3:
+        set_touchpad_prop_tap_to_click(0)
 
     send_value_to_touchpad_via_i2c("0x01")
      
@@ -511,6 +524,8 @@ def deactivate_numpad():
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         ungrab()
+    elif enabled_touchpad_pointer == 3:
+        set_touchpad_prop_tap_to_click(1)
 
     send_value_to_touchpad_via_i2c("0x00")
     brightness = 0
@@ -662,13 +677,8 @@ def load_all_config_values():
 
     config_lock.release()
 
-
-    numlock_lock.acquire()
-
     if enabled and not numlock:
         local_numlock_pressed()
-
-    numlock_lock.release()
 
 
 abs_mt_slot_value: int = 0
