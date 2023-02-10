@@ -23,8 +23,8 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 numlock: bool = False
 
 # Setup logging
-# LOG=DEBUG sudo -E ./asus_touchpad.py  # all messages
-# LOG=ERROR sudo -E ./asus_touchpad.py  # only error messages
+# LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea"  # all messages
+# LOG=ERROR sudo -E ./asus_touchpad.py "up5401ea"  # only error messages
 logging.basicConfig()
 log = logging.getLogger('asus-touchpad-numpad-driver')
 log.setLevel(os.environ.get('LOG', 'INFO'))
@@ -975,12 +975,15 @@ def pressed_numlock_key(value):
         numlock_touch_start_time = time()
         log.info("Touched numlock key (not top_right_icon) in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
-    elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
-        log.info("Un-touched numlock key (not top_right_icon) in time: %s", time())
-
-        numlock_touch_start_time = 0
-
-        local_numlock_pressed()
+    else:
+        if press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
+            log.info("Un-touched with NumberPad activation numlock key (not top_right_icon) in time: %s", time())
+            numlock_touch_start_time = 0
+            local_numlock_pressed()
+        else:
+            log.info("Un-touched without NumberPad activation numlock key (not top_right_icon) in time: %s", time())
+            numlock_touch_start_time = 0
+            set_none_to_current_mt_slot()
 
 
 def pressed_touchpad_top_right_icon(value):
@@ -994,13 +997,21 @@ def pressed_touchpad_top_right_icon(value):
         numlock_touch_start_time = time()
 
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
-    elif press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
-        log.info("Un-touched top_right_icon (numlock) in time: %s", time())
+    else:        
+        if press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
+            log.info("Un-touched with NumberPad activation top_right_icon (numlock) in time: %s", time())
 
-        top_right_icon_touch_start_time = 0
-        numlock_touch_start_time = 0
+            top_right_icon_touch_start_time = 0
+            numlock_touch_start_time = 0
 
-        local_numlock_pressed()
+            local_numlock_pressed()
+        else:
+            log.info("Un-touched without NumberPad activation top_right_icon (numlock) in time: %s", time())
+            
+            top_right_icon_touch_start_time = 0
+            numlock_touch_start_time = 0
+            
+            set_none_to_current_mt_slot()
 
 
 def is_slided_from_top_right_icon(e):
