@@ -372,10 +372,10 @@ udev = dev.create_uinput_device()
 
 def use_slide_func_for_top_right_icon():
     global numlock
+    
+    log.info("Func for touchpad right_icon slide function")
 
     local_numlock_pressed()
-
-    log.info("Func for touchpad right_icon slide function")
 
 
 def use_bindings_for_touchpad_left_icon_slide_function():
@@ -535,13 +535,13 @@ def get_system_numlock():
 def local_numlock_pressed():
     global brightness, numlock
 
+    numlock_lock.acquire()
+
     is_touchpad_enabled = is_device_enabled(touchpad_name)                
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
         return
 
     sys_numlock = get_system_numlock()
-
-    numlock_lock.acquire()
 
     set_none_to_current_mt_slot()
 
