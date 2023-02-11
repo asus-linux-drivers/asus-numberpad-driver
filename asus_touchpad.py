@@ -134,13 +134,12 @@ def config_get(key, key_default):
 def send_value_to_touchpad_via_i2c(value):
     global device_id
 
-    cmd = ["i2ctransfer -f -y " + device_id + " w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + value + " 0xad"]
+    cmd = ["i2ctransfer", "-f", "-y", device_id, "w13@0x15", "0x05", "0x00", "0x3d", "0x03", "0x06", "0x00", "0x07", "0x00", "0x0d", "0x14", "0x03", value, "0xad"]
 
     try:
-        subprocess.call(cmd, shell=True)
-    except OSError as e:
-        log.error('Error during sending via i2c: \"%s\"', cmd)
-        pass
+        subprocess.call(cmd)
+    except subprocess.CalledProcessError as e:
+        log.error('Error during sending via i2c: \"%s\"', e.output)
 
 
 def parse_value_from_config(value):
@@ -341,7 +340,8 @@ def is_device_enabled(device_name):
     try:
         getting_device_status_failure_count = 0
 
-        propData = subprocess.check_output(['xinput', '--list-props', device_name])
+        cmd = ['xinput', '--list-props', device_name]
+        propData = subprocess.check_output(cmd)
         propData = propData.decode()
 
         for line in propData.splitlines():
@@ -485,9 +485,9 @@ def set_touchpad_prop_tap_to_click(value):
     global touchpad_name
 
     try:
-        cmd = "xinput set-prop '" + touchpad_name + "' 'libinput Tapping Enabled' " + str(value)
+        cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
         log.debug(cmd)
-        subprocess.check_output(cmd, shell=True)
+        subprocess.check_output(cmd)
     except subprocess.CalledProcessError as e:
         log.error(e.output)
 
