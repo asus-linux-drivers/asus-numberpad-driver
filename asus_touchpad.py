@@ -811,7 +811,8 @@ def pressed_numpad_key():
         ]
 
     try:
-        grab_current_slot()
+        if enabled_touchpad_pointer == 1:
+            grab_current_slot()
         udev.send_events(events)
     except OSError as e:
         log.warning("Cannot send press event, %s", e)
