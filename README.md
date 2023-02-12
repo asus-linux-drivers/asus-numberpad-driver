@@ -268,9 +268,13 @@ sudo systemctl stop asus_touchpad_numpad.service
 - [python service, configurable, the most up-to-date] **This project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
 - [c++] <https://github.com/haronaut/asus_numberpad>
 
-## Existing projects related to this one
+## Existing related projects
 
 - [WIP, package for arch based open rc systems] <https://codeberg.org/BenWestcott/asus-numpad-driver-openrc> prepare for this driver PKGBUILD and other infrastructure needed for Arch-based OpenRC systems
+
+## Existing related articles
+
+- [Numpad linux driver — implementation of multitouch] <https://medium.com/@ldrahnik/numpad-linux-driver-implementation-of-multitouch-bd8ae76a8d6c>
 
 **Why have been these projects created?** Because linux does not support NumberPad integration to touchpad ([reported issue for Ubuntu here](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1810183))
 
