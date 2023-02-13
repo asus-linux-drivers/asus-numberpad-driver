@@ -3,19 +3,13 @@ from libevdev import EV_KEY
 top_right_icon_width = 250
 top_right_icon_height = 250
 
+top_left_icon_width = 250
+top_left_icon_height = 250
+
 top_offset = 240
 right_offset = 200
 left_offset = 200
 bottom_offset = 40
-
-backlight_levels = [
-    "0x41",
-    "0x42",
-    "0x43",
-    "0x44",
-    "0x45",
-    "0x46"
-]
 
 keys = [
     [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_BACKSPACE],
