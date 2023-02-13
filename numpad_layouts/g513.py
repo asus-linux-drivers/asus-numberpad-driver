@@ -1,7 +1,7 @@
 from libevdev import EV_KEY
 
-top_left_icon_width = 0
-top_left_icon_height = 0
+top_left_icon_width = 250
+top_left_icon_height = 250
 
 top_right_icon_width = 1000
 top_right_icon_height = 600
@@ -10,8 +10,6 @@ top_offset = 80
 right_offset = 80
 left_offset = 80
 bottom_offset = 80
-
-touchpad_physical_buttons_are_inside_numpad = False
 
 backlight_levels = [
     "0x41",

@@ -493,7 +493,7 @@ def set_touchpad_prop_tap_to_click(value):
 
 
 def activate_numpad():
-    global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t
+    global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t, top_left_icon_brightness_func_disabled
 
     config_set(CONFIG_ENABLED, True)
 
@@ -504,7 +504,7 @@ def activate_numpad():
 
     send_value_to_touchpad_via_i2c("0x01")
      
-    if default_backlight_level != "0x01":
+    if default_backlight_level != "0x01" and not top_left_icon_brightness_func_disabled:
          send_value_to_touchpad_via_i2c(default_backlight_level)
 
     try:
@@ -665,7 +665,7 @@ def load_all_config_values():
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
 
     top_left_icon_brightness_func_disabled = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT)
-    if not backlight_levels:
+    if not backlight_levels or not top_left_icon_height or not top_left_icon_width:
         top_left_icon_brightness_func_disabled = True
 
     if multitouch:
