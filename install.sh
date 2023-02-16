@@ -29,7 +29,9 @@ elif [[ $(dnf install 2>/dev/null) ]]; then
         dnf -y install xinput
     fi
 fi
-python3 -m pip install -r requirements.txt
+
+# run as non sudo: WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager.
+runuser -u $SUDO_USER -- python3 -m pip install -r requirements.txt
 
 # Checking if the pip dependencies are successfuly loaded
 if [[ $? != 0 ]]; then
