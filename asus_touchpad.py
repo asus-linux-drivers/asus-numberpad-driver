@@ -1276,7 +1276,7 @@ def listen_touchpad_events():
             if is_pressed_touchpad_top_right_icon():
                 pressed_touchpad_top_right_icon(e.value)
                 continue
-            elif is_pressed_touchpad_top_left_icon():
+            elif numlock and is_pressed_touchpad_top_left_icon():
                 pressed_touchpad_top_left_icon(e)
                 continue
             elif numlock and is_slided_from_top_left_icon(e):
