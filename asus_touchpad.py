@@ -15,10 +15,9 @@ import libevdev.const
 import numpy as np
 from evdev import InputDevice, ecodes as ecodess
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
-
+from inotify import adapters
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
-
 
 numlock: bool = False
 
@@ -34,6 +33,7 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 try_times = 5
 try_sleep = 0.1
 
+getting_device_status_failure_count = 0
 
 # Numpad layout model
 model = None
@@ -49,7 +49,6 @@ except:
 config_file_dir = ""
 if len(sys.argv) > 2:
     config_file_dir = sys.argv[2]
-
 
 # Layout
 left_offset = getattr(model_layout, "left_offset", 0)
@@ -116,6 +115,10 @@ CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 3
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = 1
 
+config_file_path = config_file_dir + CONFIG_FILE_NAME
+inotify_adapters = adapters.Inotify()
+inotify_adapters.add_watch(config_file_path)
+
 config = configparser.ConfigParser()
 config_lock = threading.Lock()
 
@@ -161,12 +164,12 @@ def parse_value_to_config(value):
 
 
 def config_save():
-    global config_file_dir
+    global config_file_dir, config_file_path
 
-    config_file_path = config_file_dir + CONFIG_FILE_NAME
     try:
         with open(config_file_path, 'w') as configFile:
             config.write(configFile)
+            log.debug('Writting to config file: \"%s\"', configFile)
     except:
         log.error('Error during writting to config file: \"%s\"', config_file_path)
         pass
@@ -179,6 +182,7 @@ def config_set(key, value, no_save=False, already_has_lock=False):
         config_lock.acquire()
 
     config.set(CONFIG_SECTION, key, parse_value_to_config(value))
+    log.info('Setting up for config file key: \"%s\" with value: \"%s\"', key, value)
 
     if not no_save:
         config_save()
@@ -335,6 +339,7 @@ def isEvent(event):
     else:
         return False
 
+
 def is_device_enabled(device_name):
     global getting_device_status_failure_count
 
@@ -343,8 +348,6 @@ def is_device_enabled(device_name):
         return True
 
     try:
-        getting_device_status_failure_count = 0
-
         cmd = ['xinput', '--list-props', device_name]
         propData = subprocess.check_output(cmd)
         propData = propData.decode()
@@ -357,8 +360,10 @@ def is_device_enabled(device_name):
                 else:
                     return False
 
+        log.error('Getting Device Enabled via xinput failed because was not found Device Enabled for Touchpad.')
+
         getting_device_status_failure_count += 1
-        return False
+        return True
     except:
         getting_device_status_failure_count += 1
 
@@ -593,9 +598,7 @@ def local_numlock_pressed():
 
 
 def read_config_file():
-    global config, config_file_dir
-
-    config_file_path = config_file_dir + CONFIG_FILE_NAME
+    global config, config_file_path
 
     try:
         if not config.has_section(CONFIG_SECTION):
@@ -604,6 +607,7 @@ def read_config_file():
         config.read(config_file_path)
     except:
         pass
+
 
 def load_all_config_values():
     global config
@@ -647,8 +651,10 @@ def load_all_config_values():
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
     key_numlock_is_used = any(EV_KEY.KEY_NUMLOCK in x for x in keys)
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
-        sys_numlock_enables_numpad = True
-    config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad, True, True)
+        sys_numlock_enables_numpad_new = True
+        if sys_numlock_enables_numpad is not sys_numlock_enables_numpad_new:
+            config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad_new, True, True)        
+
     top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)
@@ -658,7 +664,7 @@ def load_all_config_values():
     top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
-
+    enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
@@ -667,18 +673,16 @@ def load_all_config_values():
         except:
             pass
 
-    enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
-
     top_left_icon_brightness_func_disabled = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT)
     if not backlight_levels or not top_left_icon_height or not top_left_icon_width:
-        top_left_icon_brightness_func_disabled = True
+        top_left_icon_brightness_func_disabled_new = True
+        if top_left_icon_brightness_func_disabled is not top_left_icon_brightness_func_disabled_new:
+            config_set(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, top_left_icon_brightness_func_disabled_new, True, True)
 
     if multitouch:
         support_for_maximum_abs_mt_slots = 5
     else:
         support_for_maximum_abs_mt_slots = 1
-
-    config_save()
 
     config_lock.release()
 
@@ -1413,9 +1417,14 @@ def check_numpad_automatical_disable_due_inactivity():
 
 
 def check_config_values_changes():
-    while True:
-        load_all_config_values()
-        sleep(1)
+    global inotify_adapters
+
+    for event in inotify_adapters.event_gen(yield_nones=False):
+
+        (_, type_names, path, filename) = event
+
+        if "IN_CLOSE_WRITE" in type_names:
+            load_all_config_values() 
 
 
 threads = []

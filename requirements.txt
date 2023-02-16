@@ -1,3 +1,4 @@
 libevdev
 evdev
 numpy
+inotify
