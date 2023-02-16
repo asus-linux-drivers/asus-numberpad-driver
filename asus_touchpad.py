@@ -337,6 +337,11 @@ def isEvent(event):
 
 def is_device_enabled(device_name):
     global getting_device_status_failure_count
+
+    if getting_device_status_failure_count > 9:
+        log.debug('Getting Device Enabled via xinput failed more then 9 times so is not try anymore, returned Touchpad enabled')
+        return True
+
     try:
         getting_device_status_failure_count = 0
 
