@@ -633,18 +633,18 @@ def load_all_config_values():
     read_config_file()
 
     numpad_disables_sys_numlock = config_get(CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK, CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT)
-    disable_due_inactivity_time = int(config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT))
+    disable_due_inactivity_time = float(config_get(CONFIG_DISABLE_DUE_INACTIVITY_TIME, CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT))
     touchpad_disables_numpad = config_get(CONFIG_TOUCHPAD_DISABLES_NUMPAD, CONFIG_TOUCHPAD_DISABLES_NUMPAD_DEFAULT)
     key_repetitions = config_get(CONFIG_KEY_REPETITIONS, CONFIG_KEY_REPETITIONS_DEFAULT)
     multitouch = config_get(CONFIG_MULTITOUCH, CONFIG_MULTITOUCH_DEFAULT)
     one_touch_key_rotation = config_get(CONFIG_ONE_TOUCH_KEY_ROTATION, CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT)
-    activation_time = int(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
+    activation_time = float(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
     key_numlock_is_used = any(EV_KEY.KEY_NUMLOCK in x for x in keys)
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad = True
     config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad, True, True)
-    top_left_icon_activation_time = int(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
+    top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
@@ -1390,7 +1390,7 @@ def check_numpad_automatical_disable_due_inactivity():
             disable_due_inactivity_time and\
             numlock and\
             last_event_time != 0 and\
-            time() > int(disable_due_inactivity_time) + last_event_time:
+            time() > disable_due_inactivity_time + last_event_time:
 
             numlock_lock.acquire()
 
