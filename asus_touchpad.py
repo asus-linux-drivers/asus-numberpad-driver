@@ -116,9 +116,6 @@ CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = 1
 
 config_file_path = config_file_dir + CONFIG_FILE_NAME
-inotify_adapters = adapters.Inotify()
-inotify_adapters.add_watch(config_file_path)
-
 config = configparser.ConfigParser()
 config_lock = threading.Lock()
 
@@ -707,6 +704,10 @@ last_event_time = 0
 
 config = configparser.ConfigParser()
 load_all_config_values()
+config_save()
+
+inotify_adapters = adapters.Inotify()
+inotify_adapters.add_watch(config_file_path)
 
 def set_tracking_id(value):
     try:
@@ -1419,12 +1420,15 @@ def check_numpad_automatical_disable_due_inactivity():
 def check_config_values_changes():
     global inotify_adapters
 
-    for event in inotify_adapters.event_gen(yield_nones=False):
+    try:
+        for event in inotify_adapters.event_gen(yield_nones=False):
 
-        (_, type_names, path, filename) = event
+            (_, type_names, path, filename) = event
 
-        if "IN_CLOSE_WRITE" in type_names:
-            load_all_config_values() 
+            if "IN_CLOSE_WRITE" in type_names:
+                load_all_config_values() 
+    except:
+        pass
 
 
 threads = []
