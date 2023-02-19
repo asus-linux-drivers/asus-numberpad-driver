@@ -19,7 +19,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 ## Features
 
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#keyboard-layout) (keys, sizes, paddings..)
-- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file) (when is run `sudo ./install` again changes done in config file are not ovewritten and when config file does not exist is created new one automatically and filled with default values)
+- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file) (when is run `sudo ./install.sh` changes done in config file may not be ovewritten, the same when is run `sudo ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
@@ -170,7 +170,7 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 
 ### Configuration file
 
-What is not depending on specific keyboard of Numpad is mentioned in table below and can be changed in config file `asus_touchpad_numpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev`. Example:
+What is not depending on specific keyboard of Numpad is mentioned in table below and can be changed in config file `asus_touchpad_numpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev`. Example default one:
 
 ```
 [main]
@@ -181,19 +181,19 @@ key_repetitions = 0
 multitouch = 0
 one_touch_key_rotation = 0
 activation_time = 1
-top_right_icon_slide_func_activation_x_ratio = 0.2
-top_right_icon_slide_func_activation_y_ratio = 0.2
 sys_numlock_enables_numpad = 0
 top_left_icon_activation_time = 1
 top_left_icon_slide_func_activates_numpad = 1
 top_left_icon_slide_func_deactivates_numpad = 1
-top_left_icon_slide_func_activation_x_ratio = 0.2
-top_left_icon_slide_func_activation_y_ratio = 0.2
+top_left_icon_slide_func_activation_x_ratio = 0.3
+top_left_icon_slide_func_activation_y_ratio = 0.3
+top_right_icon_slide_func_activation_x_ratio = 0.3
+top_right_icon_slide_func_activation_y_ratio = 0.3
+enabled_touchpad_pointer = 3
+press_key_when_is_done_untouch = 1
+enabled = 0
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
-enabled_touchpad_pointer = 3
-brightness = 0x46
-enabled = 1
 ```
 
 | Option                                        | Required | Default           | Description |

@@ -544,14 +544,17 @@ def get_system_numlock():
     if not dev_k:
         return None
 
-    leds_k = dev_k.leds(verbose=True)
+    for event in dev_k.read_loop():
+        if event.code == EV_KEY.KEY_CAPSLOCK:
+            log.info(event)
+    #leds_k = dev_k.leds(verbose=True)
 
-    led_numl_list = list(filter(lambda x: 'LED_NUML' in x, leds_k))
+    #led_numl_list = list(filter(lambda x: 'LED_NUML' in x, leds_k))
 
-    if len(led_numl_list):
-        return True
-    else:
-        return False
+    #if len(led_numl_list):
+    #    return True
+    #else:
+    #    return False
 
 
 def local_numlock_pressed():
