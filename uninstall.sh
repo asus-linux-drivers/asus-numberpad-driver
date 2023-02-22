@@ -27,11 +27,6 @@ then
 	exit 1
 fi
 
-
-if [[ -d /usr/share/asus_touchpad_numpad-driver/numpad_layouts/__pycache__ ]]; then
-    rm -rf /usr/share/asus_touchpad_numpad-driver/numpad_layouts/__pycache__
-fi
-
 # for `rm` exclude !(xy)
 shopt -s extglob
 
@@ -39,7 +34,7 @@ NUMPAD_LAYOUTS_DIR="/usr/share/asus_touchpad_numpad-driver/numpad_layouts/"
 
 NUMPAD_LAYOUTS_DIR_DIFF=""
 if test -d "$NUMPAD_LAYOUTS_DIR"; then
-    NUMPAD_LAYOUTS_DIR_DIFF=$(diff numpad_layouts $NUMPAD_LAYOUTS_DIR)
+    NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ numpad_layouts $NUMPAD_LAYOUTS_DIR)
 fi
 
 if [ "$NUMPAD_LAYOUTS_DIR_DIFF" != "" ]
