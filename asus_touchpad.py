@@ -176,7 +176,9 @@ def config_set(key, value, no_save=False, already_has_lock=False):
     global config, config_file_dir, config_lock
 
     if not already_has_lock:
+        log.debug("config_set: config_lock.acquire will be called")
         config_lock.acquire()
+        log.debug("config_set: config_lock.acquire called succesfully")
 
     config.set(CONFIG_SECTION, key, parse_value_to_config(value))
     log.info('Setting up for config file key: \"%s\" with value: \"%s\"', key, value)
@@ -557,7 +559,9 @@ def get_system_numlock():
 def local_numlock_pressed():
     global brightness, numlock
 
+    log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
     numlock_lock.acquire()
+    log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)                
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
@@ -634,7 +638,9 @@ def load_all_config_values():
     global enabled_touchpad_pointer
     global press_key_when_is_done_untouch
 
+    log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
+    log.debug("load_all_config_values: config_lock.acquire called succesfully")
 
     read_config_file()
 
@@ -973,7 +979,9 @@ def is_not_finger_moved_to_another_key():
 def check_system_numlock_vs_local():
     global brightness, numlock
 
+    log.debug("check_system_numlock_vs_local: numlock_lock.acquire will be called")
     numlock_lock.acquire()
+    log.debug("check_system_numlock_vs_local: numlock_lock.acquire called succesfully")
 
     sys_numlock = get_system_numlock()
 
@@ -1366,7 +1374,9 @@ getting_device_status_failure_count = 0
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
 
+    log.debug("check_touchpad_status: numlock_lock.acquire will be called")
     numlock_lock.acquire()
+    log.debug("check_touchpad_status: numlock_lock.acquire called succesfully")
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
@@ -1402,7 +1412,9 @@ def check_numpad_automatical_disable_due_inactivity():
             last_event_time != 0 and\
             time() > disable_due_inactivity_time + last_event_time:
 
+            log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
             numlock_lock.acquire()
+            log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
 
             sys_numlock = get_system_numlock()
             if sys_numlock and numpad_disables_sys_numlock:
