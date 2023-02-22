@@ -231,6 +231,35 @@ else
     echo "Asus touchpad service started"
 fi
 
+
+CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
+
+CONFIG_FILE_DIFF=""
+if test -f "$CONF_FILE"; then
+	CONFIG_FILE_DIFF=$(diff <(grep -v '^#' asus_touchpad_numpad_dev) <(grep -v '^#' $CONF_FILE))
+fi
+
+if [ "$CONFIG_FILE_DIFF" != "" ]
+then
+    read -r -p "In system remains config file from previous installation. Do you want replace this with default config file [y/N]" response
+    case "$response" in [yY][eE][sS]|[yY])
+        # default will be autocreated, so that is why remove
+		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+		if [[ $? != 0 ]]
+		then
+			echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
+			exit 1
+		fi
+        ;;
+    *)
+        ;;
+    esac
+else
+	echo "Installed default config which can be futher modified here:"
+    echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
+fi
+
+
 if [[ $(type gsettings 2>/dev/null) ]]; then
     echo "gsettings is here"
     read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
