@@ -9,7 +9,7 @@ fi
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 # this works because sudo sets the environment variable SUDO_USER to the original username
-session_id=$(loginctl | grep $SUDO_USER | awk '{print $1}')
+session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 if [[ $(apt install 2>/dev/null) ]]; then
