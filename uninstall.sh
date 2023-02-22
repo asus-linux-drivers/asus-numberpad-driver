@@ -82,7 +82,7 @@ fi
 
 if [ "$CONFIG_FILE_DIFF" != "" ]
 then
-    read -r -p "Config file contain modifications compared to the default one. Do you want remove config file [y/N]" response
+    read -r -p "Config file contains modifications compared to the default one. Do you want remove config file [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
 		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
 		if [[ $? != 0 ]]
