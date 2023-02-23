@@ -136,10 +136,10 @@ def send_value_to_touchpad_via_i2c(value):
 
     cmd = ["i2ctransfer", "-f", "-y", device_id, "w13@0x15", "0x05", "0x00", "0x3d", "0x03", "0x06", "0x00", "0x07", "0x00", "0x0d", "0x14", "0x03", value, "0xad"]
 
-    try:
-        subprocess.call(cmd)
-    except subprocess.CalledProcessError as e:
-        log.error('Error during sending via i2c: \"%s\"', e.output)
+    #try:
+        #subprocess.call(cmd)
+    #except subprocess.CalledProcessError as e:
+    #    log.error('Error during sending via i2c: \"%s\"', e.output)
 
 
 def parse_value_from_config(value):
@@ -210,7 +210,12 @@ while try_times > 0:
         lines = f.readlines()
         for line in lines:
             # Look for the touchpad #
-            if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
+
+            # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+            # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+            if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line) or \
+                ("Name=\"ELAN" in line and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
@@ -252,9 +257,12 @@ while try_times > 0:
                     dev_k = None
                     keyboard = None
 
-            # Stop looking if touchpad and keyboard have been found
-            if touchpad_detected == 2 and keyboard_detected == 2:
-                break
+            # Do not stop looking if touchpad and keyboard have been found 
+            # because more drivers can be installed
+            # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+            # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+            #if touchpad_detected == 2 and keyboard_detected == 2:
+            #    break
 
     if touchpad_detected != 2 or keyboard_detected != 2:
         try_times -= 1

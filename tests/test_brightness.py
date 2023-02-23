@@ -5,45 +5,46 @@ import os
 
 from time import sleep
 
-tries = 5
+keyboard_detected = 0
+touchpad_detected = 0
 
-# Look into the devices file #
-while tries > 0:
+with open('/proc/bus/input/devices', 'r') as f:
 
-	keyboard_detected = 0
-	touchpad_detected = 0
+	lines = f.readlines()
+	for line in lines:
 
-	with open('/proc/bus/input/devices', 'r') as f:
+		# Look for the touchpad #
+        # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+        # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line) or \
+			("Name=\"ELAN" in line and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+			touchpad_detected = 1
 
-		lines = f.readlines()
-		for line in lines:
-			# Look for the touchpad #
-			if touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line:
-				touchpad_detected = 1
+		if touchpad_detected == 1:
+			if "S: " in line:
+				# search device id
+				device_id=re.sub(r".*i2c-(\d+)/.*$", r'\1', line).replace("\n", "")
+			if "H: " in line:
+				touchpad = line.split("event")[1]
+				touchpad = touchpad.split(" ")[0]
+				touchpad_detected = 2
 
-			if touchpad_detected == 1:
-				if "S: " in line:
-					# search device id
-					device_id=re.sub(r".*i2c-(\d+)/.*$", r'\1', line).replace("\n", "")
-				if "H: " in line:
-					touchpad = line.split("event")[1]
-					touchpad = touchpad.split(" ")[0]
-					touchpad_detected = 2
+		# Look for the keyboard (numlock) # AT Translated Set OR Asus Keyboard
+		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or "Name=\"Asus Keyboard" in line):
+			keyboard_detected = 1
 
-			# Look for the keyboard (numlock) # AT Translated Set OR Asus Keyboard
-			if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or "Name=\"Asus Keyboard" in line):
-				keyboard_detected = 1
+		if keyboard_detected == 1:
+			if "H: " in line:
+				keyboard = line.split("event")[1]
+				keyboard = keyboard.split(" ")[0]
+				keyboard_detected = 2
 
-			if keyboard_detected == 1:
-				if "H: " in line:
-					keyboard = line.split("event")[1]
-					keyboard = keyboard.split(" ")[0]
-					keyboard_detected = 2
-
-			# Stop looking if both have been found #
-			if keyboard_detected == 2 and touchpad_detected == 2:
-				tries-=1
-				break
+        # Do not stop looking if touchpad and keyboard have been found 
+        # because more drivers can be installed
+        # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+        # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+		#if keyboard_detected == 2 and touchpad_detected == 2:
+		#	break
 
 s1 = [1, 11,  81, 131, 161, 181, 231, 241]
 s2 = [21, 41, 51, 61, 71, 91, 101, 111, 121, 141, 151, 171, 201]
