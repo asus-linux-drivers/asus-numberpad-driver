@@ -136,10 +136,10 @@ def send_value_to_touchpad_via_i2c(value):
 
     cmd = ["i2ctransfer", "-f", "-y", device_id, "w13@0x15", "0x05", "0x00", "0x3d", "0x03", "0x06", "0x00", "0x07", "0x00", "0x0d", "0x14", "0x03", value, "0xad"]
 
-    #try:
-        #subprocess.call(cmd)
-    #except subprocess.CalledProcessError as e:
-    #    log.error('Error during sending via i2c: \"%s\"', e.output)
+    try:
+        subprocess.call(cmd)
+    except subprocess.CalledProcessError as e:
+        log.error('Error during sending via i2c: \"%s\"', e.output)
 
 
 def parse_value_from_config(value):
