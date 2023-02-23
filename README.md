@@ -110,6 +110,12 @@ To see the exact commands for your package manager look [here](./install.sh) (fo
 
 ## Troubleshooting
 
+- **Before debugging make sure you have disabled the asus_touchpad_numpad.service service**
+
+```bash
+sudo systemctl stop asus_touchpad_numpad.service
+```
+
 To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
 
 ```bash
@@ -121,6 +127,8 @@ LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "" # now driver use root of repo
 cd asus-touchpad-numpad-driver
 LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad-driver/" # now driver use installed config
 ```
+
+- **Start point [x:0,y:0] of touchpad is on the left top!**
 
 ## Configuration
 
@@ -248,15 +256,6 @@ Thank you very much all the contributors of [asus-touchpad-numpad-driver](https:
 
 Thank you who-t for great post about multitouch [Understanding evdev](http://who-t.blogspot.com/2016/09/understanding-evdev.html).
 
-## Developing
-
-- **Before debugging make sure you have disabled the asus_touchpad_numpad.service service**
-
-```bash
-sudo systemctl stop asus_touchpad_numpad.service
-```
-
-- **Start point [x:0,y:0] of touchpad is on the left top!**
 
 ## Existing similar projects
 
