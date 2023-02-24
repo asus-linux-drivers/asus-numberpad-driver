@@ -13,18 +13,18 @@ session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 if [[ $(apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && apt -y install libevdev2 i2c-tools python3-dev python3-pip
+    echo 'apt is here' && apt -y install ibus libevdev2 i2c-tools python3-dev python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         apt -y install xinput
     fi
 elif [[ $(pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && pacman --noconfirm --needed -S libevdev i2c-tools python python-pip
+    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev i2c-tools python python-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         pacman --noconfirm --needed -S xorg-xinput
     fi
 elif [[ $(dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && dnf -y install libevdev i2c-tools python3-devel python3-pip
+    echo 'dnf is here' && dnf -y install ibus libevdev i2c-tools python3-devel python3-pip
     if [ "$wayland_or_x11" = "x11" ]; then
         dnf -y install xinput
     fi
