@@ -176,9 +176,9 @@ def config_set(key, value, no_save=False, already_has_lock=False):
     global config, config_file_dir, config_lock
 
     if not already_has_lock:
-        log.debug("config_set: config_lock.acquire will be called")
+        #log.debug("config_set: config_lock.acquire will be called")
         config_lock.acquire()
-        log.debug("config_set: config_lock.acquire called succesfully")
+        #log.debug("config_set: config_lock.acquire called succesfully")
 
     config.set(CONFIG_SECTION, key, parse_value_to_config(value))
     log.info('Setting up for config file key: \"%s\" with value: \"%s\"', key, value)
@@ -646,9 +646,9 @@ def load_all_config_values():
     global enabled_touchpad_pointer
     global press_key_when_is_done_untouch
 
-    log.debug("load_all_config_values: config_lock.acquire will be called")
+    #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
-    log.debug("load_all_config_values: config_lock.acquire called succesfully")
+    #log.debug("load_all_config_values: config_lock.acquire called succesfully")
 
     read_config_file()
 
@@ -987,9 +987,9 @@ def is_not_finger_moved_to_another_key():
 def check_system_numlock_vs_local():
     global brightness, numlock
 
-    log.debug("check_system_numlock_vs_local: numlock_lock.acquire will be called")
+    #log.debug("check_system_numlock_vs_local: numlock_lock.acquire will be called")
     numlock_lock.acquire()
-    log.debug("check_system_numlock_vs_local: numlock_lock.acquire called succesfully")
+    #log.debug("check_system_numlock_vs_local: numlock_lock.acquire called succesfully")
 
     sys_numlock = get_system_numlock()
 
