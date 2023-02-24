@@ -319,16 +319,16 @@ dev.enable(EV_KEY.KEY_NUMLOCK)
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_LEFTCTRL)
 dev.enable(EV_KEY.KEY_U)
-dev.enable(EV_KEY.KEY_0)
-dev.enable(EV_KEY.KEY_1)
-dev.enable(EV_KEY.KEY_2)
-dev.enable(EV_KEY.KEY_3)
-dev.enable(EV_KEY.KEY_4)
-dev.enable(EV_KEY.KEY_5)
-dev.enable(EV_KEY.KEY_6)
-dev.enable(EV_KEY.KEY_7)
-dev.enable(EV_KEY.KEY_8)
-dev.enable(EV_KEY.KEY_9)
+dev.enable(EV_KEY.KEY_KP0)
+dev.enable(EV_KEY.KEY_KP1)
+dev.enable(EV_KEY.KEY_KP2)
+dev.enable(EV_KEY.KEY_KP3)
+dev.enable(EV_KEY.KEY_KP4)
+dev.enable(EV_KEY.KEY_KP5)
+dev.enable(EV_KEY.KEY_KP6)
+dev.enable(EV_KEY.KEY_KP7)
+dev.enable(EV_KEY.KEY_KP8)
+dev.enable(EV_KEY.KEY_KP9)
 dev.enable(EV_KEY.KEY_A)
 dev.enable(EV_KEY.KEY_B)
 dev.enable(EV_KEY.KEY_C)
@@ -798,7 +798,10 @@ def get_events_for_unicode_string(string):
 
         for hex_digit in '%X' % ord(c):
 
-            key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+            if hex_digit.isnumeric():
+                key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
+            else:
+                key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
             key = EV_KEY.codes[int(key_code)]
             key_event_press = InputEvent(key, 1)
             key_event_unpress = InputEvent(key, 0)
