@@ -88,9 +88,17 @@ detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | h
 if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
     
     #VENDOR_ID="04f3"
-    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 1 -d ":")
+    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
+    #echo $VENDOR_ID
     #DEVICE_ID="31b9"
-    DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | cut -f 3 -d" " | cut -f 2 -d ":")
+
+    # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+    # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+    # Should return DEVICE_ID: 3101 of 'ELAN1406:00'
+    # N: Name="ELAN9009:00 04F3:2C23 Touchpad"
+    # N: Name="ELAN1406:00 04F3:3101 Touchpad"
+    DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 2 -d ":" | head -1)
+    #echo $DEVICE_ID
     USER_AGENT="user-agent-name-here"
     DEVICE_LIST_CURL_URL="https://linux-hardware.org/?view=search&vendorid=$VENDOR_ID&deviceid=$DEVICE_ID&typeid=input%2Fkeyboard"
     #echo $CURL_URL
