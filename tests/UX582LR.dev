@@ -1,0 +1,23 @@
+I: Bus=0018 Vendor=04f3 Product=2c23 Version=0100
+N: Name="ELAN9009:00 04F3:2C23 Touchpad"
+P: Phys=i2c-ELAN9009:00
+S: Sysfs=/devices/pci0000:00/0000:00:15.3/i2c_designware.3/i2c-4/i2c-ELAN9009:00/0018:04F3:2C23.0003/input/input48
+U: Uniq=
+H: Handlers=mouse4 event27 
+B: PROP=5
+B: EV=1b
+B: KEY=e520 10000 0 0 0 0
+B: ABS=2e0800000000003
+B: MSC=20
+
+I: Bus=0018 Vendor=04f3 Product=3101 Version=0100
+N: Name="ELAN1406:00 04F3:3101 Touchpad"
+P: Phys=i2c-ELAN1406:00
+S: Sysfs=/devices/pci0000:00/0000:00:15.1/i2c_designware.1/i2c-2/i2c-ELAN1406:00/0018:04F3:3101.0004/input/input51
+U: Uniq=
+H: Handlers=mouse6 event17 
+B: PROP=5
+B: EV=1b
+B: KEY=e420 10000 0 0 0 0
+B: ABS=2e0800000000003
+B: MSC=20
