@@ -319,6 +319,28 @@ def get_keycode_of_ascii_char(char):
     return keycode
 
 
+def get_keycode_which_reflects_current_layout(char, reset_udev=True):
+    global enabled_keys_for_unicode_shortcut, udev, dev
+
+    keycode = get_keycode_of_ascii_char(char)
+    key = EV_KEY.codes[int(keycode)]
+    if key not in enabled_keys_for_unicode_shortcut:
+        enabled_keys_for_unicode_shortcut.append(key)
+        dev.enable(key)
+        if reset_udev:
+            log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
+            udev = dev.create_uinput_device()
+            log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
+
+            # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
+            # a chance to see the device and initialize it. Otherwise the event
+            # will be sent by the kernel but nothing is ready to listen to the
+            # device yet
+            sleep(1)
+
+    return key
+
+
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = "Asus Touchpad/Numpad"
@@ -327,9 +349,6 @@ dev.enable(EV_KEY.BTN_RIGHT)
 dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 # predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
-# TODO: Wayland will stop working? 
-# Because python python-xlib - does support wayland?
-# 2 versions of requirements.txt file? And propagate here x11/wayland so import will be not called? Or does not matter will be called?
 
 # standart is U
 # for FR is S
@@ -354,12 +373,14 @@ enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_F
 ]
 # for currently used keyboard
-U_keycode = get_keycode_of_ascii_char("U")
-U_key = EV_KEY.codes[int(U_keycode)]
-if U_key not in enabled_keys_for_unicode_shortcut:
-    enabled_keys_for_unicode_shortcut.append(U_key)
+try:
+    U_keycode = get_keycode_which_reflects_current_layout("U", False)
+except:
+    pass
+
 for key in enabled_keys_for_unicode_shortcut:
     dev.enable(key)
+
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_LEFTCTRL)
 dev.enable(EV_KEY.KEY_SPACE)
@@ -793,27 +814,6 @@ def get_compose_key_end_events_for_unicode_string():
     return events
 
 
-def get_keycode_which_reflects_current_layout(char):
-    global enabled_keys_for_unicode_shortcut, udev, dev
-
-    keycode = get_keycode_of_ascii_char(char)
-    key = EV_KEY.codes[int(keycode)]
-    if key not in enabled_keys_for_unicode_shortcut:
-        enabled_keys_for_unicode_shortcut.append(key)
-        dev.enable(key)
-        log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
-        udev = dev.create_uinput_device()
-        log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
-
-        # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
-        # a chance to see the device and initialize it. Otherwise the event
-        # will be sent by the kernel but nothing is ready to listen to the
-        # device yet
-        sleep(1)
-        
-    return key
-
-
 def get_compose_key_start_events_for_unicode_string():
     global udev, dev
 
@@ -857,9 +857,12 @@ def get_events_for_unicode_char(char):
 
     for hex_digit in '%X' % ord(char):
 
-        key = get_keycode_which_reflects_current_layout(hex_digit)
-        #key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
-        #key = EV_KEY.codes[int(key_code)]
+        try:
+            key = get_keycode_which_reflects_current_layout(hex_digit)
+        except:
+            key = key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+            key = EV_KEY.codes[int(key_code)]
+
         key_event_press = InputEvent(key, 1)
         key_event_unpress = InputEvent(key, 0)
 

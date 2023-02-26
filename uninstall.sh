@@ -6,21 +6,31 @@ then
 	exit 1
 fi
 
-systemctl stop asus_touchpad_numpad
+# "root" by default or when is used --user it is "current user"
+RUN_UNDER_USER=$USER
+
+if [ "$1" = "--user" ]; then
+    RUN_UNDER_USER=$SUDO_USER
+fi
+
+echo "driver will be stopped and uninstalled for user"
+echo $RUN_UNDER_USER
+
+systemctl stop asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
 then
 	echo "asus_touchpad_numpad.service cannot be stopped correctly..."
 	exit 1
 fi
 
-systemctl disable asus_touchpad_numpad
+systemctl disable asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
 then
 	echo "asus_touchpad_numpad.service cannot be disabled correctly..."
 	exit 1
 fi
 
-rm -f /lib/systemd/system/asus_touchpad_numpad.service
+rm -f /etc/systemd/system/asus_touchpad_numpad@.service
 if [[ $? != 0 ]]
 then
 	echo "/lib/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
