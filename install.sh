@@ -6,6 +6,18 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
+# "root" by default or when is used --user it is "current user"
+RUN_UNDER_USER=$USER
+
+if [ "$1" = "--user" ]; then
+    groupadd "uinput"
+    echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules
+    RUN_UNDER_USER=$SUDO_USER
+    usermod -a -G "i2c,input,uinput" $RUN_UNDER_USER
+fi
+
+echo "driver will run under user $RUN_UNDER_USER"
+
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 # this works because sudo sets the environment variable SUDO_USER to the original username
@@ -30,8 +42,7 @@ elif [[ $(dnf install 2>/dev/null) ]]; then
     fi
 fi
 
-# TODO: run as non sudo: WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager.
-python3 -m pip install -r requirements.txt
+runuser -u $RUN_UNDER_USER -- python3 -m pip install -r requirements.txt
 
 # Checking if the pip dependencies are successfuly loaded
 if [[ $? != 0 ]]; then
@@ -189,16 +200,16 @@ if [ "$wayland_or_x11" = "x11" ]; then
     echo "X11 is detected"
 
     xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-    cat asus_touchpad.X11.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cat asus_touchpad.X11.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 
 elif [ "$wayland_or_x11" = "wayland" ]; then
     echo "Wayland is detected, unfortunatelly you will not be able use feature: `Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell`, at this moment is supported only X11"
 
-    cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cat asus_touchpad.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 else
     echo "Wayland or X11 is not detected"
 
-    cat asus_touchpad.service | LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad.service
+    cat asus_touchpad.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 fi
 
 
@@ -213,6 +224,12 @@ cp udev/90-numberpad-external-keyboard.rules /usr/lib/udev/rules.d/
 
 echo "Added 90-numberpad-external-keyboard.rules"
 mkdir -p /usr/share/asus_touchpad_numpad-driver/udev
+
+chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver
+# 700: only owner can do everything (write, read, execute)
+chmod -R 700 /usr/share/asus_touchpad_numpad-driver
+
+CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/"
 cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
 cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
 chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
@@ -222,7 +239,7 @@ udevadm control --reload-rules
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
-systemctl enable asus_touchpad_numpad
+systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when enabling the asus_touchpad_numpad.service"
@@ -231,14 +248,13 @@ else
     echo "Asus touchpad service enabled"
 fi
 
-systemctl restart asus_touchpad_numpad
+systemctl restart asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]; then
     echo "Something went wrong when enabling the asus_touchpad_numpad.service"
     exit 1
 else
     echo "Asus touchpad service started"
 fi
-
 
 CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
 
