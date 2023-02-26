@@ -16,6 +16,9 @@ import numpy as np
 from evdev import InputDevice, ecodes as ecodess
 from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
 from inotify import adapters
+import Xlib.display
+import Xlib.X
+import Xlib.XK
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -308,6 +311,14 @@ row_count = len(keys)
 col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
+
+def get_keycode_of_ascii_char(char):
+    display = Xlib.display.Display()
+    keysym = Xlib.XK.string_to_keysym(char)
+    keycode = display.keysym_to_keycode(keysym) - 8
+    return keycode
+
+
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = "Asus Touchpad/Numpad"
@@ -316,28 +327,46 @@ dev.enable(EV_KEY.BTN_RIGHT)
 dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 # predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
+# TODO: Wayland will stop working? 
+# Because python python-xlib - does support wayland?
+# 2 versions of requirements.txt file? And propagate here x11/wayland so import will be not called? Or does not matter will be called?
+
+# standart is U
+# for FR is S
+enabled_keys_for_unicode_shortcut = [
+    EV_KEY.KEY_U,
+    EV_KEY.KEY_S,
+    EV_KEY.KEY_0,
+    EV_KEY.KEY_1,
+    EV_KEY.KEY_2,
+    EV_KEY.KEY_3,
+    EV_KEY.KEY_4,
+    EV_KEY.KEY_5,
+    EV_KEY.KEY_6,
+    EV_KEY.KEY_7,
+    EV_KEY.KEY_8,
+    EV_KEY.KEY_9,
+    EV_KEY.KEY_A,
+    EV_KEY.KEY_B,
+    EV_KEY.KEY_C,
+    EV_KEY.KEY_D,
+    EV_KEY.KEY_E,
+    EV_KEY.KEY_F
+]
+# for currently used keyboard
+U_keycode = get_keycode_of_ascii_char("U")
+U_key = EV_KEY.codes[int(U_keycode)]
+if U_key not in enabled_keys_for_unicode_shortcut:
+    enabled_keys_for_unicode_shortcut.append(U_key)
+for key in enabled_keys_for_unicode_shortcut:
+    dev.enable(key)
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_LEFTCTRL)
-dev.enable(EV_KEY.KEY_U)
-dev.enable(EV_KEY.KEY_KP0)
-dev.enable(EV_KEY.KEY_KP1)
-dev.enable(EV_KEY.KEY_KP2)
-dev.enable(EV_KEY.KEY_KP3)
-dev.enable(EV_KEY.KEY_KP4)
-dev.enable(EV_KEY.KEY_KP5)
-dev.enable(EV_KEY.KEY_KP6)
-dev.enable(EV_KEY.KEY_KP7)
-dev.enable(EV_KEY.KEY_KP8)
-dev.enable(EV_KEY.KEY_KP9)
-dev.enable(EV_KEY.KEY_A)
-dev.enable(EV_KEY.KEY_B)
-dev.enable(EV_KEY.KEY_C)
-dev.enable(EV_KEY.KEY_D)
-dev.enable(EV_KEY.KEY_E)
-dev.enable(EV_KEY.KEY_F)
 dev.enable(EV_KEY.KEY_SPACE)
+
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
+
 
 def isEvent(event):
     if getattr(event, "name", None) is not None and\
@@ -384,7 +413,13 @@ for col in keys:
             getattr(ecodess, key.name):
             dev.enable(key)
 
+
+# Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
+# a chance to see the device and initialize it. Otherwise the event
+# will be sent by the kernel but nothing is ready to listen to the
+# device yet
 udev = dev.create_uinput_device()
+sleep(1)
 
 
 def use_slide_func_for_top_right_icon():
@@ -396,7 +431,7 @@ def use_slide_func_for_top_right_icon():
 
 
 def use_bindings_for_touchpad_left_icon_slide_function():
-    global numlock, top_left_icon_slide_func_deactivates_numpad, top_left_icon_slide_func_activates_numpad, top_left_icon_slide_func_keys
+    global udev, numlock, top_left_icon_slide_func_deactivates_numpad, top_left_icon_slide_func_activates_numpad, top_left_icon_slide_func_keys
 
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
@@ -473,6 +508,7 @@ def increase_brightness():
 
 
 def send_numlock_key(value):
+    global udev
 
     events = [
         InputEvent(EV_MSC.MSC_SCAN, 70053),
@@ -567,9 +603,9 @@ def get_system_numlock():
 def local_numlock_pressed():
     global brightness, numlock
 
-    log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
+    #log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
     numlock_lock.acquire()
-    log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
+    #log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)                
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
@@ -757,14 +793,39 @@ def get_compose_key_end_events_for_unicode_string():
     return events
 
 
+def get_keycode_which_reflects_current_layout(char):
+    global enabled_keys_for_unicode_shortcut, udev, dev
+
+    keycode = get_keycode_of_ascii_char(char)
+    key = EV_KEY.codes[int(keycode)]
+    if key not in enabled_keys_for_unicode_shortcut:
+        enabled_keys_for_unicode_shortcut.append(key)
+        dev.enable(key)
+        log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
+        udev = dev.create_uinput_device()
+        log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
+
+        # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
+        # a chance to see the device and initialize it. Otherwise the event
+        # will be sent by the kernel but nothing is ready to listen to the
+        # device yet
+        sleep(1)
+        
+    return key
+
+
 def get_compose_key_start_events_for_unicode_string():
+    global udev, dev
 
     left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
     left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
     left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
     left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
-    key_U_pressed = InputEvent(EV_KEY.KEY_U, 1)
-    key_U_unpressed = InputEvent(EV_KEY.KEY_U, 0)
+
+    U_key = get_keycode_which_reflects_current_layout("U")
+
+    key_U_pressed = InputEvent(U_key, 1)
+    key_U_unpressed = InputEvent(U_key, 0)
 
     events = [
         InputEvent(EV_MSC.MSC_SCAN, left_ctrl_pressed.code.value),
@@ -776,11 +837,11 @@ def get_compose_key_start_events_for_unicode_string():
         InputEvent(EV_MSC.MSC_SCAN, key_U_pressed.code.value),
         key_U_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_unpressed.code.value),
-        left_shift_unpressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
         InputEvent(EV_MSC.MSC_SCAN, key_U_unpressed.code.value),
         key_U_unpressed,
+        InputEvent(EV_SYN.SYN_REPORT, 0),
+        InputEvent(EV_MSC.MSC_SCAN, left_shift_unpressed.code.value),
+        left_shift_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
         InputEvent(EV_MSC.MSC_SCAN, left_ctrl_unpressed.code.value),
         left_ctrl_unpressed,
@@ -790,46 +851,45 @@ def get_compose_key_start_events_for_unicode_string():
     return events
 
 
-def get_events_for_unicode_string(string):
+def get_events_for_unicode_char(char):
 
-    for c in string:
+    key_events = []
 
-        key_events = []
+    for hex_digit in '%X' % ord(char):
 
-        for hex_digit in '%X' % ord(c):
+        key = get_keycode_which_reflects_current_layout(hex_digit)
+        #key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+        #key = EV_KEY.codes[int(key_code)]
+        key_event_press = InputEvent(key, 1)
+        key_event_unpress = InputEvent(key, 0)
 
-            if hex_digit.isnumeric():
-                key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
-            else:
-                key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
-            key = EV_KEY.codes[int(key_code)]
-            key_event_press = InputEvent(key, 1)
-            key_event_unpress = InputEvent(key, 0)
+        key_events = key_events + [
+            InputEvent(EV_MSC.MSC_SCAN, key_event_press.code.value),
+            key_event_press,
+            InputEvent(EV_SYN.SYN_REPORT, 0),
+            InputEvent(EV_MSC.MSC_SCAN, key_event_unpress.code.value),
+            key_event_unpress,
+            InputEvent(EV_SYN.SYN_REPORT, 0)
+        ]
 
-            key_events = key_events + [
-                InputEvent(EV_MSC.MSC_SCAN, key_event_press.code.value),
-                key_event_press,
-                InputEvent(EV_SYN.SYN_REPORT, 0),
-                InputEvent(EV_MSC.MSC_SCAN, key_event_unpress.code.value),
-                key_event_unpress,
-                InputEvent(EV_SYN.SYN_REPORT, 0)
-            ]
-
-        start_events = get_compose_key_start_events_for_unicode_string()
-        end_events = get_compose_key_end_events_for_unicode_string()
-        return start_events + key_events + end_events
+    start_events = get_compose_key_start_events_for_unicode_string()
+    end_events = get_compose_key_end_events_for_unicode_string()
+    return start_events + key_events + end_events
 
 
 def pressed_numpad_key():
-    global abs_mt_slot_grab_status, abs_mt_slot_numpad_key, abs_mt_slot_value
+    global udev, abs_mt_slot_grab_status, abs_mt_slot_numpad_key, abs_mt_slot_value
 
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
+    events = []
+
     if not isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
         unicode_string = abs_mt_slot_numpad_key[abs_mt_slot_value]
-        events = get_events_for_unicode_string(unicode_string)
+        for unicode_char in unicode_string:
+            events = events + get_events_for_unicode_char(unicode_char)
 
     else:
         events = [
@@ -906,6 +966,7 @@ def ungrab_current_slot():
 
 
 def unpressed_numpad_key(replaced_by_key=None):
+    global udev
 
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
@@ -918,7 +979,9 @@ def unpressed_numpad_key(replaced_by_key=None):
         ]
 
         try:
+
             udev.send_events(events)
+
             if enabled_touchpad_pointer == 1:
                 ungrab_current_slot()
 
@@ -1171,7 +1234,8 @@ def stop_top_left_right_icon_slide_gestures():
 
 
 def pressed_pointer_button(key, msc, value):
-    
+    global udev
+
     events = [
         InputEvent(EV_MSC.MSC_SCAN, msc),
         InputEvent(key, value),
@@ -1385,9 +1449,9 @@ getting_device_status_failure_count = 0
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
 
-    log.debug("check_touchpad_status: numlock_lock.acquire will be called")
+    #log.debug("check_touchpad_status: numlock_lock.acquire will be called")
     numlock_lock.acquire()
-    log.debug("check_touchpad_status: numlock_lock.acquire called succesfully")
+    #log.debug("check_touchpad_status: numlock_lock.acquire called succesfully")
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
@@ -1423,9 +1487,9 @@ def check_numpad_automatical_disable_due_inactivity():
             last_event_time != 0 and\
             time() > disable_due_inactivity_time + last_event_time:
 
-            log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
+            #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
             numlock_lock.acquire()
-            log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
+            #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
 
             sys_numlock = get_system_numlock()
             if sys_numlock and numpad_disables_sys_numlock:
@@ -1482,3 +1546,5 @@ try:
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
     sys.exit(1)
+finally:
+    fd_t.close()
