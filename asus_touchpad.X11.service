@@ -3,6 +3,7 @@ Description=Asus Touchpad to Numpad Handler
 BindsTo=graphical.target
 
 [Service]
+User=%i
 Type=idle
 ExecStart=/usr/bin/env python3 /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $CONFIG_FILE_DIR
 StandardInput=tty-force
