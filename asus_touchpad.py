@@ -335,7 +335,23 @@ dev.enable(EV_KEY.KEY_NUMLOCK)
 # for FR is S
 enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_U,
-    EV_KEY.KEY_S
+    EV_KEY.KEY_S,
+    EV_KEY.KEY_0,
+    EV_KEY.KEY_1,
+    EV_KEY.KEY_2,
+    EV_KEY.KEY_3,
+    EV_KEY.KEY_4,
+    EV_KEY.KEY_5,
+    EV_KEY.KEY_6,
+    EV_KEY.KEY_7,
+    EV_KEY.KEY_8,
+    EV_KEY.KEY_9,
+    EV_KEY.KEY_A,
+    EV_KEY.KEY_B,
+    EV_KEY.KEY_C,
+    EV_KEY.KEY_D,
+    EV_KEY.KEY_E,
+    EV_KEY.KEY_F
 ]
 # for currently used keyboard
 U_keycode = get_keycode_of_ascii_char("U")
@@ -346,22 +362,6 @@ for key in enabled_keys_for_unicode_shortcut:
     dev.enable(key)
 dev.enable(EV_KEY.KEY_LEFTSHIFT)
 dev.enable(EV_KEY.KEY_LEFTCTRL)
-dev.enable(EV_KEY.KEY_0)
-dev.enable(EV_KEY.KEY_1)
-dev.enable(EV_KEY.KEY_2)
-dev.enable(EV_KEY.KEY_3)
-dev.enable(EV_KEY.KEY_4)
-dev.enable(EV_KEY.KEY_5)
-dev.enable(EV_KEY.KEY_6)
-dev.enable(EV_KEY.KEY_7)
-dev.enable(EV_KEY.KEY_8)
-dev.enable(EV_KEY.KEY_9)
-dev.enable(EV_KEY.KEY_A)
-dev.enable(EV_KEY.KEY_B)
-dev.enable(EV_KEY.KEY_C)
-dev.enable(EV_KEY.KEY_D)
-dev.enable(EV_KEY.KEY_E)
-dev.enable(EV_KEY.KEY_F)
 dev.enable(EV_KEY.KEY_SPACE)
 
 for key_to_enable in top_left_icon_slide_func_keys:
@@ -793,19 +793,14 @@ def get_compose_key_end_events_for_unicode_string():
     return events
 
 
-def get_compose_key_start_events_for_unicode_string():
-    global udev, dev
+def get_keycode_which_reflects_current_layout(char):
+    global enabled_keys_for_unicode_shortcut, udev, dev
 
-    left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
-    left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
-    left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
-    left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
-
-    U_keycode = get_keycode_of_ascii_char("U")
-    U_key = EV_KEY.codes[int(U_keycode)]
-    if U_key not in enabled_keys_for_unicode_shortcut:
-        enabled_keys_for_unicode_shortcut.append(U_key)
-        dev.enable(U_key)
+    keycode = get_keycode_of_ascii_char(char)
+    key = EV_KEY.codes[int(keycode)]
+    if key not in enabled_keys_for_unicode_shortcut:
+        enabled_keys_for_unicode_shortcut.append(key)
+        dev.enable(key)
         log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
         udev = dev.create_uinput_device()
         log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
@@ -815,6 +810,19 @@ def get_compose_key_start_events_for_unicode_string():
         # will be sent by the kernel but nothing is ready to listen to the
         # device yet
         sleep(1)
+        
+    return key
+
+
+def get_compose_key_start_events_for_unicode_string():
+    global udev, dev
+
+    left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
+    left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
+    left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
+    left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
+
+    U_key = get_keycode_which_reflects_current_layout("U")
 
     key_U_pressed = InputEvent(U_key, 1)
     key_U_unpressed = InputEvent(U_key, 0)
@@ -849,8 +857,9 @@ def get_events_for_unicode_char(char):
 
     for hex_digit in '%X' % ord(char):
 
-        key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
-        key = EV_KEY.codes[int(key_code)]
+        key = get_keycode_which_reflects_current_layout(hex_digit)
+        #key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+        #key = EV_KEY.codes[int(key_code)]
         key_event_press = InputEvent(key, 1)
         key_event_unpress = InputEvent(key, 0)
 
