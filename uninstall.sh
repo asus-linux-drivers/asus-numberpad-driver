@@ -23,6 +23,13 @@ then
 	exit 1
 fi
 
+# for removing "old" variant of systemd service of this driver (when was not used user template with @)
+rm -f /lib/systemd/system/asus_touchpad_numpad.service
+if [[ $? != 0 ]]
+then
+	echo "/lib/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
+fi
+
 systemctl disable asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
 then
