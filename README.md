@@ -119,10 +119,13 @@ To see the exact commands for your package manager look [here](./install.sh) (fo
 
 ## Troubleshooting
 
-- **Before debugging make sure you have disabled the asus_touchpad_numpad.service service**
+- **Before debugging make sure you have disabled the asus_touchpad_numpad@.service service**
 
 ```bash
-sudo systemctl stop asus_touchpad_numpad.service
+# when installed for running under root (`sudo ./install.sh`)
+sudo systemctl stop asus_touchpad_numpad@root.service
+# when installed for running under current user (`sudo ./install.sh --user`)
+sudo systemctl stop asus_touchpad_numpad@<user>.service
 ```
 
 To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
