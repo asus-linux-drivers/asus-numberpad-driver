@@ -196,6 +196,13 @@ echo "Selected key layout $model"
 
 echo "Installing asus touchpad service to /etc/systemd/system/"
 
+# for removing "old" variant of systemd service of this driver (when was not used user template with @)
+rm -f /etc/systemd/system/asus_touchpad_numpad.service
+if [[ $? != 0 ]]
+then
+	echo "/etc/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
+fi
+
 if [ "$wayland_or_x11" = "x11" ]; then
     echo "X11 is detected"
 
