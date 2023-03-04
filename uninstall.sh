@@ -16,25 +16,7 @@ fi
 echo "driver will be stopped and uninstalled for user"
 echo $RUN_UNDER_USER
 
-# < for removing "old" variant of systemd service of this driver (when was not used user template with @)
-systemctl stop asus_touchpad_numpad.service
-if [[ $? != 0 ]]
-then
-	echo "asus_touchpad_numpad.service cannot be stopped correctly..."
-fi
-
-systemctl disable asus_touchpad_numpad.service
-if [[ $? != 0 ]]
-then
-	echo "asus_touchpad_numpad.service cannot be disabled correctly..."
-fi
-
-rm -f /etc/systemd/system/asus_touchpad_numpad.service
-if [[ $? != 0 ]]
-then
-	echo "/etc/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
-fi
-# />
+source remove_previous_implementation_of_service.sh
 
 systemctl stop asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
