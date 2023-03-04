@@ -355,16 +355,16 @@ dev.enable(EV_KEY.KEY_NUMLOCK)
 enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_U,
     EV_KEY.KEY_S,
-    EV_KEY.KEY_0,
-    EV_KEY.KEY_1,
-    EV_KEY.KEY_2,
-    EV_KEY.KEY_3,
-    EV_KEY.KEY_4,
-    EV_KEY.KEY_5,
-    EV_KEY.KEY_6,
-    EV_KEY.KEY_7,
-    EV_KEY.KEY_8,
-    EV_KEY.KEY_9,
+    EV_KEY.KEY_KP0,
+    EV_KEY.KEY_KP1,
+    EV_KEY.KEY_KP2,
+    EV_KEY.KEY_KP3,
+    EV_KEY.KEY_KP4,
+    EV_KEY.KEY_KP5,
+    EV_KEY.KEY_KP6,
+    EV_KEY.KEY_KP7,
+    EV_KEY.KEY_KP8,
+    EV_KEY.KEY_KP9,
     EV_KEY.KEY_A,
     EV_KEY.KEY_B,
     EV_KEY.KEY_C,
@@ -858,9 +858,13 @@ def get_events_for_unicode_char(char):
     for hex_digit in '%X' % ord(char):
 
         try:
-            key = get_keycode_which_reflects_current_layout(hex_digit)
+            if hex_digit.isnumeric():
+                key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
+                key = EV_KEY.codes[int(key_code)]
+            else:
+                key = get_keycode_which_reflects_current_layout(hex_digit)
         except:
-            key = key_code = getattr(ecodess, 'KEY_%s' % hex_digit)
+            key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
             key = EV_KEY.codes[int(key_code)]
 
         key_event_press = InputEvent(key, 1)
