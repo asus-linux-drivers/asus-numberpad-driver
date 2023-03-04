@@ -13,7 +13,7 @@ if [ "$1" = "--user" ]; then
     RUN_UNDER_USER=$SUDO_USER
 fi
 
-echo "driver will be stopped and uninstalled for user"
+echo "Driver will be stopped and uninstalled for user"
 echo $RUN_UNDER_USER
 
 source remove_previous_implementation_of_service.sh
