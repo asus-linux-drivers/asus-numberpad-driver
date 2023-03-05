@@ -318,7 +318,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
             mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
             cp scripts/io_elementary_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/io_elementary_calculator_toggle.sh
+            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
 
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
