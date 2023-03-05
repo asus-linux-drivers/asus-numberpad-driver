@@ -119,6 +119,7 @@ To see the exact commands for your package manager look [here](./install.sh) (fo
 
 ## Troubleshooting
 
+- **Start point [x:0,y:0] of touchpad is on the left top!**
 - **Before debugging make sure you have disabled the asus_touchpad_numpad@.service service**
 
 ```bash
@@ -128,7 +129,7 @@ sudo systemctl stop asus_touchpad_numpad@root.service
 sudo systemctl stop asus_touchpad_numpad@<user>.service
 ```
 
-To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
+- To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
 
 ```bash
 # LOG=DEBUG sudo -E ./asus_touchpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: asus_touchpad_numpad_dev, by default is taken CWD - current working directory, not existing config file is created and filled with default values>
@@ -140,7 +141,19 @@ cd asus-touchpad-numpad-driver
 LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad-driver/" # now driver use installed config
 ```
 
-- **Start point [x:0,y:0] of touchpad is on the left top!**
+- To show pressed keys:
+
+```
+sudo apt install libinput-tools
+sudo libinput debug-events
+```
+
+- To simulate key press:
+
+```
+sudo apt install xdotool
+xdotool key XF86Calculator
+```
 
 ## Configuration
 
