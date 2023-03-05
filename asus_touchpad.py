@@ -85,10 +85,6 @@ CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
 CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD = "top_left_icon_slide_func_activates_numpad"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT = True
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD = "top_left_icon_slide_func_deactivates_numpad"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_activation_x_ratio"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.3
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
@@ -444,16 +440,22 @@ sleep(1)
 
 
 def use_slide_func_for_top_right_icon():
-    global numlock
+    global numlock, top_right_icon_touch_start_time, numlock_touch_start_time
     
     log.info("Func for touchpad right_icon slide function")
+
+    top_right_icon_touch_start_time = 0
+    numlock_touch_start_time = 0
 
     local_numlock_pressed()
 
 
 def use_bindings_for_touchpad_left_icon_slide_function():
-    global udev, numlock, top_left_icon_slide_func_deactivates_numpad, top_left_icon_slide_func_activates_numpad, top_left_icon_slide_func_keys
+    global udev, numlock, top_left_icon_slide_func_keys, top_left_icon_touch_start_time
 
+    top_left_icon_touch_start_time = 0
+    set_none_to_current_mt_slot()
+    
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
         key_events.append(InputEvent(custom_key, 1))
@@ -689,8 +691,6 @@ def load_all_config_values():
     global activation_time
     global sys_numlock_enables_numpad
     global top_left_icon_activation_time
-    global top_left_icon_slide_func_activates_numpad
-    global top_left_icon_slide_func_deactivates_numpad
     global top_left_icon_slide_func_activation_x_ratio
     global top_left_icon_slide_func_activation_y_ratio
     global top_right_icon_slide_func_activation_x_ratio
@@ -724,8 +724,6 @@ def load_all_config_values():
             config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad_new, True, True)        
 
     top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
-    top_left_icon_slide_func_activates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATE_NUMPAD_DEFAULT)
-    top_left_icon_slide_func_deactivates_numpad = config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DEACTIVATE_NUMPAD_DEFAULT)
     top_left_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
     top_left_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
     top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
@@ -1125,7 +1123,7 @@ def pressed_touchpad_top_right_icon(value):
 
 
 def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
 
     if e.value != 0:
         return
@@ -1146,9 +1144,6 @@ def is_slided_from_top_right_icon(e):
         log.info("Required is min x, y:")
         log.info(activation_min_x)
         log.info(activation_min_y)
-
-        top_right_icon_touch_start_time = 0
-        numlock_touch_start_time = 0
 
         return True
     else:
@@ -1178,14 +1173,8 @@ def is_slided_from_top_left_icon(e):
         log.info(activation_min_x)
         log.info(activation_min_y)
 
-        top_left_icon_touch_start_time = 0
-        set_none_to_current_mt_slot()
-
         return True
     else:
-        top_left_icon_touch_start_time = 0
-        set_none_to_current_mt_slot()
-
         return False
 
 
