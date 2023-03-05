@@ -241,23 +241,6 @@ udevadm control --reload-rules
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
-systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
-
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
-    exit 1
-else
-    echo "Asus touchpad service enabled"
-fi
-
-systemctl restart asus_touchpad_numpad@$RUN_UNDER_USER.service
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
-    exit 1
-else
-    echo "Asus touchpad service started"
-fi
-
 CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
 
 CONFIG_FILE_DIFF=""
@@ -327,13 +310,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
-            read -r -p "Toggling script for calculator app io.elementary.calculator has been installed. For it is functionality is required reboot. Reboot now? [y/N]" response
-            case "$response" in [yY][eE][sS]|[yY])
-                reboot
-                ;;
-            *)
-                ;;
-            esac
+            echo "Toggling script for calculator app gnome-calculator has been installed."
         elif [[ $(type gnome-calculator 2>/dev/null) ]]; then
             echo "gnome-calculator here"
 
@@ -348,13 +325,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
-            read -r -p "Toggling script for calculator app gnome-calculator has been installed. For it is functionality is required reboot. Reboot now? [y/N]" response
-            case "$response" in [yY][eE][sS]|[yY])
-                reboot
-                ;;
-            *)
-                ;;
-            esac
+            echo "Toggling script for calculator app gnome-calculator has been installed."
         else
            echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
         fi
@@ -364,6 +335,23 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
     esac
 else
     echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+fi
+
+systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
+
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
+    exit 1
+else
+    echo "Asus touchpad numpad service enabled"
+fi
+
+systemctl restart asus_touchpad_numpad@$RUN_UNDER_USER.service
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
+    exit 1
+else
+    echo "Asus touchpad numpad service started"
 fi
 
 echo "Install finished"
