@@ -12,9 +12,7 @@ import threading
 from time import sleep, time
 from typing import Optional
 import numpy as np
-# for getting keyboard numlock status (otherwise is used libevdev)
-from evdev import InputDevice
-from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent, const, device
+from libevdev import EV_ABS, EV_KEY, EV_LED, EV_MSC, EV_SYN, Device, InputEvent, const, device
 from inotify import adapters
 import Xlib.display
 import Xlib.X
@@ -195,7 +193,8 @@ def config_set(key, value, no_save=False, already_has_lock=False):
 touchpad: Optional[str] = None
 touchpad_name: Optional[str] = None
 keyboard: Optional[str] = None
-dev_k = None
+d_k = None
+fd_k = None
 numlock_lock = threading.Lock()
 device_id: Optional[str] = None
 
@@ -245,15 +244,17 @@ while try_times > 0:
                 keyboard = line.split("event")[1]
                 keyboard = keyboard.split(" ")[0]
 
-                dev_k = InputDevice('/dev/input/event' + str(keyboard))
-                k_capabilities = dev_k.capabilities(verbose=True)
+                # Start monitoring the keyboard
+                fd_k = open('/dev/input/event' + str(keyboard), 'rb')
+                d_k = Device(fd_k)
 
-                if "LED_NUML" in k_capabilities.values().__str__():
+                if d_k.has(EV_LED.LED_NUML):
                     keyboard_detected = 2
                     log.info('Set keyboard %s from %s', keyboard, line.strip())
                 else:
                     keyboard_detected = 0
-                    dev_k = None
+                    d_k = None
+                    fd_k.close()
                     keyboard = None
 
             # Do not stop looking if touchpad and keyboard have been found 
@@ -608,19 +609,16 @@ def deactivate_numpad():
 
 
 def get_system_numlock():
-    global dev_k
+    global d_k
 
-    if not dev_k:
+    if not d_k:
         return None
 
-    leds_k = dev_k.leds(verbose=True)
-
-    led_numl_list = list(filter(lambda x: 'LED_NUML' in x, leds_k))
-
-    if len(led_numl_list):
-        return True
+    if d_k.has(EV_LED.LED_NUML):
+        state = d_k.value[EV_LED.LED_NUML]
+        return bool(state)
     else:
-        return False
+        return None
 
 
 def local_numlock_pressed():
@@ -1066,7 +1064,7 @@ def check_system_numlock_vs_local():
 
     if not sys_numlock and numlock:
         numlock = False
-        deactivate_numpad()
+        #deactivate_numpad()
         log.info("Numpad deactivated")
     elif sys_numlock and sys_numlock_enables_numpad and not numlock:
         numlock = True
@@ -1517,7 +1515,7 @@ def check_config_values_changes():
 threads = []
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
-if dev_k:
+if d_k:
     t = threading.Thread(target=check_system_numlock_status)
     threads.append(t)
     t.start()
@@ -1543,6 +1541,6 @@ except:
     logging.exception("Listening touchpad events unexpectedly failed")
     sys.exit(1)
 finally:
-    if dev_k:
-        dev_k.close()
+    if fd_k:
+        fd_k.close()
     fd_t.close()
