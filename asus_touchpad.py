@@ -253,6 +253,7 @@ while try_times > 0:
                     log.info('Set keyboard %s from %s', keyboard, line.strip())
                 else:
                     keyboard_detected = 0
+                    dev_k.close()
                     dev_k = None
                     keyboard = None
 
