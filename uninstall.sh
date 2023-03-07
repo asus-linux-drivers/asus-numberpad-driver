@@ -6,10 +6,15 @@ then
 	exit 1
 fi
 
+# for `rm` exclude !(xy)
+shopt -s extglob
+
+
 # "root" by default or when is used --user it is "current user"
 RUN_UNDER_USER=$USER
 
-if [ "$1" = "--user" ]; then
+if [ "$1" = "--user" ]
+then
     RUN_UNDER_USER=$SUDO_USER
 fi
 
@@ -23,7 +28,7 @@ if [[ $? != 0 ]]
 then
 	echo "asus_touchpad_numpad.service cannot be stopped correctly..."
 	exit 1
-
+fi
 
 systemctl disable asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
@@ -39,13 +44,12 @@ then
 	exit 1
 fi
 
-# for `rm` exclude !(xy)
-shopt -s extglob
 
 NUMPAD_LAYOUTS_DIR="/usr/share/asus_touchpad_numpad-driver/numpad_layouts/"
 
 NUMPAD_LAYOUTS_DIR_DIFF=""
-if test -d "$NUMPAD_LAYOUTS_DIR"; then
+if test -d "$NUMPAD_LAYOUTS_DIR"
+then
     NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ numpad_layouts $NUMPAD_LAYOUTS_DIR)
 fi
 
@@ -53,7 +57,7 @@ if [ "$NUMPAD_LAYOUTS_DIR_DIFF" != "" ]
 then
     read -r -p "Installed numpad layouts contain modifications compared to the default ones. Do you want remove them [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
-		rm -rf /usr/share/asus_touchpad_numpad-driver/!(asus_touchpad_numpad_dev)
+		rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(asus_touchpad_numpad_dev)
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
@@ -61,7 +65,7 @@ then
 		fi
         ;;
     *)
-		rm -rf /usr/share/asus_touchpad_numpad-driver/!(numpad_layouts|asus_touchpad_numpad_dev)
+		rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(numpad_layouts|asus_touchpad_numpad_dev)
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
@@ -72,7 +76,7 @@ then
         ;;
     esac
 else
-	rm -rf /usr/share/asus_touchpad_numpad-driver/!(asus_touchpad_numpad_dev)
+	rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(asus_touchpad_numpad_dev)
 	if [[ $? != 0 ]]
 	then
 		echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
@@ -83,7 +87,8 @@ fi
 CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
 
 CONFIG_FILE_DIFF=""
-if test -f "$CONF_FILE"; then
+if test -f "$CONF_FILE"
+then
 	CONFIG_FILE_DIFF=$(diff <(grep -v '^#' asus_touchpad_numpad_dev) <(grep -v '^#' $CONF_FILE))
 fi
 
