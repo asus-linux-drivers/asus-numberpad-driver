@@ -20,7 +20,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 ## Features
 
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#keyboard-layout) (keys, sizes, paddings..)
-- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file) (when is run `sudo ./install.sh` changes done in config file may not be overwritten, the same when is run `sudo ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
+- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file) (when is run `sudo bash ./install.sh` changes done in config file may not be overwritten, the same when is run `sudo bash ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
@@ -63,9 +63,9 @@ Install latest dev version using `git`
 git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
 cd asus-touchpad-numpad-driver
 # install under current user (highly recommended)
-sudo ./install.sh --user
+sudo bash ./install.sh --user
 # install as root
-sudo ./install.sh
+sudo bash ./install.sh
 ```
 
 or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases), extract and run:
@@ -95,7 +95,7 @@ sudo bash ./uninstall.sh --user
 
 ### Dependencies
 
-**Everything is included in install script `sudo ./install.sh`**
+**Everything is included in install script `sudo bash ./install.sh`**
 
 - libevdev
 - i2c-tools
@@ -123,9 +123,9 @@ To see the exact commands for your package manager look [here](./install.sh) (fo
 - **Before debugging make sure you have disabled the asus_touchpad_numpad@.service service**
 
 ```bash
-# when installed for running under root (`sudo ./install.sh`)
+# when installed for running under root (`sudo bash ./install.sh`)
 sudo systemctl stop asus_touchpad_numpad@root.service
-# when installed for running under current user (`sudo ./install.sh --user`)
+# when installed for running under current user (`sudo bash ./install.sh --user`)
 sudo systemctl stop asus_touchpad_numpad@<user>.service
 ```
 
@@ -159,7 +159,7 @@ xdotool key XF86Calculator
 
 ### Keyboard layout
 
-During the install process `sudo ./install.sh`, you're required to select your keyboard layout:
+During the install process `sudo bash ./install.sh`, you're required to select your keyboard layout:
 
 ```
 Select models keypad layout:
