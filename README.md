@@ -88,9 +88,9 @@ paru -S asus-touchpad-numpad-driver-${model}-git
 And to uninstall, just run:
 
 ```bash
-sudo ./install.sh
+sudo ./uninstall.sh
 # stop driver and uninstall for current user
-sudo ./install.sh --user
+sudo ./uninstall.sh --user
 ```
 
 ### Dependencies
