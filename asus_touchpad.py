@@ -11,10 +11,10 @@ import sys
 import threading
 from time import sleep, time
 from typing import Optional
-import libevdev.const
 import numpy as np
-from evdev import InputDevice, ecodes as ecodess
-from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent
+# for getting keyboard numlock status (otherwise is used libevdev)
+from evdev import InputDevice
+from libevdev import EV_ABS, EV_KEY, EV_MSC, EV_SYN, Device, InputEvent, const, device
 from inotify import adapters
 import Xlib.display
 import Xlib.X
@@ -387,7 +387,7 @@ for key_to_enable in top_left_icon_slide_func_keys:
 
 def isEvent(event):
     if getattr(event, "name", None) is not None and\
-            getattr(ecodess, event.name):
+            getattr(EV_KEY, event.name):
         return True
     else:
         return False
@@ -427,7 +427,7 @@ def is_device_enabled(device_name):
 for col in keys:
     for key in col:
         if getattr(key, "name", None) is not None and\
-            getattr(ecodess, key.name):
+            getattr(EV_KEY, key.name):
             dev.enable(key)
 
 
@@ -553,7 +553,7 @@ def grab_current_slot():
         d_t.grab()
         abs_mt_slot_grab_status[abs_mt_slot_value] = 1
 
-    except libevdev.device.DeviceGrabError as e:
+    except device.DeviceGrabError as e:
         log.error("Error of grabbing, %s", e)
 
 
@@ -759,7 +759,7 @@ def load_all_config_values():
 abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
 abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
-abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=libevdev.const.EventCode)
+abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=const.EventCode)
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_grab_status = np.array([-1, -1, -1, -1, -1], int)
@@ -857,12 +857,12 @@ def get_events_for_unicode_char(char):
 
         try:
             if hex_digit.isnumeric():
-                key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
+                key_code = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
                 key = EV_KEY.codes[int(key_code)]
             else:
                 key = get_keycode_which_reflects_current_layout(hex_digit)
         except:
-            key_code = getattr(ecodess, 'KEY_KP%s' % hex_digit)
+            key_code = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
             key = EV_KEY.codes[int(key_code)]
 
         key_event_press = InputEvent(key, 1)
@@ -940,7 +940,7 @@ def ungrab():
         log.info("un-grab")
         d_t.ungrab()
 
-    except libevdev.device.DeviceGrabError as e:
+    except device.DeviceGrabError as e:
         log.error("Error of un-grabbing, %s", e)
 
 
@@ -951,7 +951,7 @@ def grab():
         log.info("grab")
         d_t.grab()
 
-    except libevdev.device.DeviceGrabError as e:
+    except device.DeviceGrabError as e:
         log.error("Error of grabbing, %s", e)
 
 
@@ -966,7 +966,7 @@ def ungrab_current_slot():
             try:
                 log.info("un-grab current slot")
                 d_t.ungrab()
-            except libevdev.device.DeviceGrabError as e:
+            except device.DeviceGrabError as e:
                 log.error("Error of un-grabbing current slot during pressed key, %s", e)
 
 
@@ -1543,4 +1543,6 @@ except:
     logging.exception("Listening touchpad events unexpectedly failed")
     sys.exit(1)
 finally:
+    if dev_k:
+        dev_k.close()
     fd_t.close()
