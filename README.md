@@ -72,9 +72,9 @@ or download latest release (stable version) from [release page](https://github.c
 
 ```bash
 # install as root
-sudo ./install.sh
+sudo bash ./install.sh
 # install under current user (highly recommended)
-sudo ./install.sh --user
+sudo bash ./install.sh --user
 ```
 
 or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-touchpad-numpad-driver-ux433fa-git`)
@@ -88,9 +88,9 @@ paru -S asus-touchpad-numpad-driver-${model}-git
 And to uninstall, just run:
 
 ```bash
-sudo ./uninstall.sh
+sudo bash ./uninstall.sh
 # stop driver and uninstall for current user
-sudo ./uninstall.sh --user
+sudo bash ./uninstall.sh --user
 ```
 
 ### Dependencies
