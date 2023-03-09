@@ -821,7 +821,10 @@ def get_compose_key_start_events_for_unicode_string():
     left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
     left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
 
-    U_key = get_keycode_which_reflects_current_layout("U")
+    try:
+        U_key = get_keycode_which_reflects_current_layout("U")
+    except:
+        U_key = EV_KEY.KEY_U
 
     key_U_pressed = InputEvent(U_key, 1)
     key_U_unpressed = InputEvent(U_key, 0)
