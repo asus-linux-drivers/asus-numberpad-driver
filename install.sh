@@ -104,7 +104,7 @@ if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_t
     #DEVICE_ID="31b9"
 
     # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-    # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
     # Should return DEVICE_ID: 3101 of 'ELAN1406:00'
     # N: Name="ELAN9009:00 04F3:2C23 Touchpad"
     # N: Name="ELAN1406:00 04F3:3101 Touchpad"
@@ -151,13 +151,13 @@ if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_t
     done
 
     if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
-        echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+        echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 fi
 
 for option in $(ls numpad_layouts); do
     if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
+        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
         case "$response" in [yY][eE][sS]|[yY])
             model=$detected_layout_via_offline_table
             ;;
@@ -327,14 +327,14 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             #echo $existing_shortcut_string
             echo "Toggling script for calculator app gnome-calculator has been installed."
         else
-           echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+           echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
         fi
         ;;
     *)
         ;;
     esac
 else
-    echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues)."
+    echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
 fi
 
 systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service

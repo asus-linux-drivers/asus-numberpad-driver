@@ -3,25 +3,25 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 ![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
 ![Contributor](https://img.shields.io/badge/contributor-kamack33-blue)
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/graphs/contributors)
-[![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=flat)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases)
-[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-touchpad-numpad-driver/v2.5.4.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/commit/)
-[![Arch package](https://repology.org/badge/version-for-repo/arch/asus-touchpad-numpad-driver-ux433fa-git.svg)](https://aur.archlinux.org/pkgbase/asus-touchpad-numpad-driver-git)
-[![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues?q=is%3Aissue+is%3Aclosed)
-[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/compare)
-[![Ask Me Anything !](https://img.shields.io/badge/Ask%20about-anything-1abc9c.svg)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/new/choose)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-numberpad-driver/graphs/contributors)
+[![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-numberpad-driver.svg?style=flat)](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases)
+[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-numberpad-driver/v2.5.4.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/commit/)
+[![Arch package](https://repology.org/badge/version-for-repo/arch/asus-numberpad-driver-ux433fa-git.svg)](https://aur.archlinux.org/pkgbase/asus-numberpad-driver-git)
+[![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/compare)
+[![Ask Me Anything !](https://img.shields.io/badge/Ask%20about-anything-1abc9c.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/new/choose)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fasus-linux-drivers%2Fasus-touchpad-numpad-driver&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)                    
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fasus-linux-drivers%2Fasus-numberpad-driver&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)                    
 
 The driver is written in python and runs as a systemctl service. Driver contains basic key layouts, you can pick up right one during install process. Default settings try to be most comfortable for the majority. All possible customizations can be found [here](#configuration).
 
-If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-touchpad-numpad-driver.svg?style=social&label=Star&maxAge=2592000)](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/stargazers) People already did!
+If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-numberpad-driver.svg?style=social&label=Star&maxAge=2592000)](https://github.com/asus-linux-drivers/asus-numberpad-driver/stargazers) People already did!
 
 ## Features
 
-- Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#keyboard-layout) (keys, sizes, paddings..)
-- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#configuration-file) (when is run `sudo bash ./install.sh` changes done in config file may not be overwritten, the same when is run `sudo bash ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
-- Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
+- Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout) (keys, sizes, paddings..)
+- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when is run `sudo bash ./install.sh` changes done in config file may not be overwritten, the same when is run `sudo bash ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
+- Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
 - When is NumberPad activated can be used customizable slide gesture beginning on top left (by default is send key `XF86Calculator` so it is prepared for bounding script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_calculator.sh) (`XF86Calculator` key press can be tested via `xdotool key XF86Calculator`), so first slide gesture activates calculator app and next closes calculator app, by default is also required end each slide after at least 30% of width and height)
@@ -38,8 +38,8 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Multitouch up to 5 fingers (disabled by default)
 - Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
 - Driver supports laptop suspend
-- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/54)
-- Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver#external-keyboard-configuration)
+- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/54)
+- Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
 
 ## Layouts
 
@@ -60,15 +60,15 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 Install latest dev version using `git`
 
 ```bash
-git clone https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver
-cd asus-touchpad-numpad-driver
+git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
+cd asus-numberpad-driver
 # install under current user (highly recommended)
 sudo bash ./install.sh --user
 # install as root
 sudo bash ./install.sh
 ```
 
-or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/releases), extract and run:
+or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and run:
 
 ```bash
 # install as root
@@ -77,10 +77,10 @@ sudo bash ./install.sh
 sudo bash ./install.sh --user
 ```
 
-or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-touchpad-numpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-touchpad-numpad-driver-ux433fa-git`)
+or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-numberpad-driver-ux433fa-git`)
 
 ```bash
-paru -S asus-touchpad-numpad-driver-${model}-git
+paru -S asus-numberpad-driver-${model}-git
 ```
 
 ## Uninstallation
@@ -96,24 +96,6 @@ sudo bash ./uninstall.sh --user
 ### Dependencies
 
 **Everything is included in install script `sudo bash ./install.sh`**
-
-- libevdev
-- i2c-tools
-- git
-- xinput
-
-#### Python dependencies
-
-- libevdev
-- numpy
-- evdev
-
-Then enable i2c
-
-```bash
-sudo modprobe i2c-dev
-sudo i2cdetect -l
-```
 
 To see the exact commands for your package manager look [here](./install.sh) (for python dependencies take a look at [requirements.txt](./requirements.txt))
 
@@ -134,10 +116,10 @@ sudo systemctl stop asus_touchpad_numpad@<user>.service
 ```bash
 # LOG=DEBUG sudo -E ./asus_touchpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: asus_touchpad_numpad_dev, by default is taken CWD - current working directory, not existing config file is created and filled with default values>
 
-cd asus-touchpad-numpad-driver
+cd asus-numberpad-driver
 LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "" # now driver use root of repository as directory for config file named asus_touchpad_numpad_dev
 
-cd asus-touchpad-numpad-driver
+cd asus-numberpad-driver
 LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad-driver/" # now driver use installed config
 ```
 
@@ -157,7 +139,7 @@ xdotool key XF86Calculator
 
 ### FAQ ###
 
-**The driver works, I can press keys but backlight is not enabled**: reason may be registr used for enabling NumberPad backlight via I2C is blocked and you have to via command line try find value which can registr unblock (example of automation of testing all possible values `0-255` of registr is located in file `/tests/test_brightness.py`) (in [this issue](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/108) were found values `0x60` as equivalent for activating, `0x61` as equivalent for deactivating). Used command:
+**The driver works, I can press keys but backlight is not enabled**: reason may be registr used for enabling NumberPad backlight via I2C is blocked and you have to via command line try find value which can registr unblock (example of automation of testing all possible values `0-255` of registr is located in file `/tests/test_brightness.py`) (in [this issue](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/108) were found values `0x60` as equivalent for activating, `0x61` as equivalent for deactivating). Used command:
 
 ```
 $ i2ctransfer -f -y <touchpad_i2c_number> w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 <testing value in hex format 0x01 from 0 to 255> 0xad
@@ -205,7 +187,7 @@ Please enter your choice
 
 Each key layout (`g533.py`, `gx701.py`, ..) chosen during the install process corresponds to the specific file. To change any layout depending settings you need to locally edit the selected layout file and change the value of the corresponding variable from the first table below.
 
-Example: If you want to set the size of top right icon to bigger and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variables (`top_right_icon_width = 400`,`top_right_icon_height = 400`) in the layout file (`asus-touchpad-numpad-driver/numpad_layouts/up5401ea.py`) and install the layout again.
+Example: If you want to set the size of top right icon to bigger and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variables (`top_right_icon_width = 400`,`top_right_icon_height = 400`) in the layout file (`asus-numberpad-driver/numpad_layouts/up5401ea.py`) and install the layout again.
 
 | Option                                        | Required | Default           | Description |
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -301,7 +283,7 @@ disabling_numpad_disable_sys_numlock=1
 
 ## Credits
 
-Thank you very much all the contributors of [asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
+Thank you very much all the contributors of [asus-numberpad-driver](https://github.com/mohamed-badaoui/asus-numberpad-driver) for your work.
 
 Thank you who-t for great post about multitouch [Understanding evdev](http://who-t.blogspot.com/2016/09/understanding-evdev.html).
 
@@ -310,10 +292,10 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 - [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
 - [python service] <https://github.com/danahynes/Asus_L410M_Numpad> inspired by [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
-- [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver> inspired by [python service] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
-- [c++ and meson] <https://github.com/xytovl/asus-numpad> inspired by/rewritten version of [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
-- [rust] <https://github.com/iamkroot/asus-numpad> rewritten in rust the same python project which was starting point for this repository  <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
-- [python service, configurable, the most up-to-date] **This project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
+- [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver> inspired by [python service] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
+- [c++ and meson] <https://github.com/xytovl/asus-numpad> inspired by/rewritten version of [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver>
+- [rust] <https://github.com/iamkroot/asus-numpad> rewritten in rust the same python project which was starting point for this repository  <https://github.com/mohamed-badaoui/asus-numberpad-driver>
+- [python service, configurable, the most up-to-date] **This project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver>
 - [c++] <https://github.com/haronaut/asus_numberpad>
 
 ## Existing related projects
@@ -330,7 +312,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 **Stargazers project history?**
 
-[![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-touchpad-numpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-touchpad-numpad-driver)
+[![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver)
 
 **Buy me a coffee**
 
