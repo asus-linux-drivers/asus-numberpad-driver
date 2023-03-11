@@ -155,6 +155,34 @@ sudo apt install xdotool
 xdotool key XF86Calculator
 ```
 
+### FAQ ###
+
+**The driver works, I can press keys but backlight is not enabled**: reason may be registr used for enabling NumberPad backlight via I2C is blocked and you have to via command line try find value which can registr unblock (example of automation of testing all possible values `0-255` of registr is located in file `/tests/test_brightness.py`) (in [this issue](https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/108) were found values `0x60` as equivalent for activating, `0x61` as equivalent for deactivating). Used command:
+
+```
+$ i2ctransfer -f -y <touchpad_i2c_number> w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 <testing value in hex format 0x01 from 0 to 255> 0xad
+```
+
+<touchpad_i2c_number> can be found with `cat /proc/bus/input/devices` in line started with letter `S: `. So in this case is <touchpad_i2c_number> number **2** because of *S: Sysfs=/devices/pci0000:00/0000:00:15.1/i2c_designware.1/**i2c-2**/..*).
+
+```
+$ cat /proc/bus/input/devices
+...
+I: Bus=0018 Vendor=04f3 Product=31b9 Version=0100
+N: Name="ASUE140D:00 04F3:31B9 Touchpad"
+P: Phys=i2c-ASUE140D:00
+S: Sysfs=/devices/pci0000:00/0000:00:15.1/i2c_designware.1/i2c-2/i2c-ASUE140D:00/0018:04F3:31B9.0002/input/input29
+U: Uniq=
+H: Handlers=mouse3 event12 
+B: PROP=5
+B: EV=1b
+B: KEY=e520 10000 0 0 0 0
+B: ABS=2e0800000000003
+B: MSC=20
+...
+```
+
+
 ## Configuration
 
 ### Keyboard layout
