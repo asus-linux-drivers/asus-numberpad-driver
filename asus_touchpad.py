@@ -211,7 +211,7 @@ while try_times > 0:
             # Look for the touchpad #
 
             # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-            # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
             if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line) or \
                 ("Name=\"ELAN" in line and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
 
@@ -260,7 +260,7 @@ while try_times > 0:
             # Do not stop looking if touchpad and keyboard have been found 
             # because more drivers can be installed
             # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-            # https://github.com/asus-linux-drivers/asus-touchpad-numpad-driver/issues/95
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
             #if touchpad_detected == 2 and keyboard_detected == 2:
             #    break
 
