@@ -57,7 +57,9 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 ## Touchpad models
 
-All unique Asus touchpad models from repository [Dmesg](https://github.com/linuxhw/Dmesg) (repository contains uploaded probes = scanned laptops via [https://linux-hardware.org/](https://linux-hardware.org/)). Used command:
+**Do you own Touchpad for which is row in table below empty? Please, create an issue or make PR**
+
+Table of all unique Asus touchpad models from repository [Dmesg](https://github.com/linuxhw/Dmesg) (repository contains uploaded probes = scanned laptops via [https://linux-hardware.org/](https://linux-hardware.org/)). Table may contains touchpads without NumberPad. Used command:
 
 ```
 $ git clone https://github.com/linuxhw/Dmesg
@@ -65,11 +67,9 @@ $ cd Dmesg
 $ grep -hRP "(^|\s)(ELAN|ASUE).*04F3:.*Touchpad(?=\s|$)" Convertible/ASUSTek\ Computer/ Notebook/ASUSTek\ Computer/ | cut -b 23-43 | sort -u
 ```
 
-**Do you own Touchpad for which is row empty? Please, create an issue or make PR**
-
 - touchpad(s) - from file `/proc/bus/input/devices` (e.g. via command `egrep -B1 -A5 "ASUE|ELAN" /proc/bus/input/devices | grep -B1 -A5 Touchpad`)
 - has NumberPad - select fit layout name from table above or use No - table may contains touchpads without NumberPad
-- I2C values - for testing which value can control brightness of touchpad backlight can be used script `tests/test_brightness.py` which write in cycle gradually all possible values to reverse engineered i2c registr which is used for control of NumberPad (also mentioned in [FAQ](https://github.com/asus-linux-drivers/asus-numberpad-driver/edit/master/README.md#faq)), activation via `0x01` (by default) automatically set last used brightness (do not be confused)
+- I2C values - for testing which value can control brightness of touchpad backlight can be used script `tests/test_brightness.py` which write in cycle gradually all possible values to reverse engineered i2c registr which is used for control of NumberPad (also mentioned in [FAQ](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/README.md#faq)), activation via `0x01` (by default) automatically set last used brightness (do not be confused)
 - laptop model - series of laptop including specific model name from vendor/seller
 
 **when column contains **?** is information not known*
@@ -77,7 +77,7 @@ $ grep -hRP "(^|\s)(ELAN|ASUE).*04F3:.*Touchpad(?=\s|$)" Convertible/ASUSTek\ Co
 **when is column empty is used default*
 
 
-| touchpad | has NumberPad \[value=layout name from repository\|no\] | I2C values \[default\_backlight\_levels_ascendant=\["0x41", "0x42", "0x43", "0x44", "0x45", "0x46", "0x47", "0x48"\], default_activation=0x01, default_deactivation=0x00 | laptop model | information source
+| touchpad | has NumberPad <br><br>\[value=layout name from repository\|no\] | I2C control values <br><br>default\_backlight\_levels_ascendant=\["0x41", "0x42", "0x43", "0x44", "0x45", "0x46", "0x47", "0x48"\] <br><br>default_activation=0x01 <br><br>default_deactivation=0x00 | laptop model | information source
 | --- | --- | --- |--- | --- |
 | ASUE1200:00 04F3:3087 |     |     |
 | ASUE1200:00 04F3:3132 |     |     |
