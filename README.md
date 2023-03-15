@@ -55,6 +55,143 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 | gx701        | With # symbol<br><br>With NumLock key outside of touchpad<br><br>With left, right key outside of NumberPad   | ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)                                              |
 | gx551        | Without % = symbols<br><br>With NumLock key on the top left<br><br>With left, right key outside of NumberPad | ![model gx551](images/Asus-GX551.jpg)                                                               |
 
+## Touchpad models
+
+All unique Asus touchpad models from repository [Dmesg](https://github.com/linuxhw/Dmesg) (repository contains uploaded probes = scanned laptops via [https://linux-hardware.org/](https://linux-hardware.org/)). Used command:
+
+```
+$ git clone https://github.com/linuxhw/Dmesg
+$ cd Dmesg
+$ grep -hRP "(^|\s)(ELAN|ASUE).*04F3:.*Touchpad(?=\s|$)" Convertible/ASUSTek\ Computer/ Notebook/ASUSTek\ Computer/ | cut -b 23-43 | sort -u
+```
+
+**Do you own Touchpad for which is row empty? Please, create an issue or make PR**
+
+- touchpad(s) - from file `/proc/bus/input/devices` (e.g. via command `egrep -B1 -A5 "ASUE|ELAN" /proc/bus/input/devices | grep -B1 -A5 Touchpad`)
+- has NumberPad - select fit layout name from table above or use No - table may contains touchpads without NumberPad
+- I2C values - for testing which value can control brightness of touchpad backlight can be used script `tests/test_brightness.py` which write in cycle gradually all possible values to reverse engineered i2c registr which is used for control of NumberPad (also mentioned in [FAQ](https://github.com/asus-linux-drivers/asus-numberpad-driver/edit/master/README.md#faq)), activation via `0x01` (by default) automatically set last used brightness (do not be confused)
+- laptop model - series of laptop including specific model name from vendor/seller
+
+**when column contains **?** is information not known*
+
+**when is column empty is used default*
+
+
+| touchpad | has NumberPad \[value=layout name from repository\|no\] | I2C values \[default\_backlight\_levels_ascendant=\["0x41", "0x42", "0x43", "0x44", "0x45", "0x46", "0x47", "0x48"\], default_activation=0x01, default_deactivation=0x00 | laptop model | information source
+| --- | --- | --- |--- | --- |
+| ASUE1200:00 04F3:3087 |     |     |
+| ASUE1200:00 04F3:3132 |     |     |
+| ASUE1201:00 04F3:3125 |     |     |
+| ASUE1201:00 04F3:3148 |     |     |
+| ASUE1209:00 04F3:319F |     |     |
+| ASUE120A:00 04F3:319B |     |     |
+| ASUE120B:00 04F3:31C0 |     |     |
+| ASUE120B:00 04F3:3257 |     |     |
+| ASUE120C:00 04F3:31C1 |     |     |
+| ASUE120D:00 04F3:31FB |     |     |
+| ASUE1210:00 04F3:31FA |     |     |
+| ASUE1211:00 04F3:3211 |     |     |
+| ASUE1212:00 04F3:3233 |     |     |
+| ASUE1300:00 04F3:3104 |     |     |
+| ASUE1301:00 04F3:3128 |     |     |
+| ASUE1304:00 04F3:3201 |     |     |
+| ASUE1305:00 04F3:3212 |     |     |
+| ASUE1403:00 04F3:319A | g533 |    | ASUS ROG Strix Scar 15 G533QS | [@kamack38](https://github.com/kamack38)
+| ASUE1406:00 04F3:3101 |     |     |
+| ASUE1407:00 04F3:310D |     |     |
+| ASUE1408:00 04F3:3137 |     |     |
+| ASUE1409:00 04F3:3157 |     |     |
+| ASUE140A:00 04F3:3134 |     |     |
+| ASUE140C:00 04F3:3145 | up5401ea | backlight\_levels_ascendant = ["0x2f", "0x2e", "0x2d", "0x2c", "0x2b", "0x2a", "0x29", "0x28", "0x27", "0x26", "0x25", "0x24", "0x23", "0x22", "0x21", "0x20"] | ASUS EXPERTBOOK B3302FEA_B5302FEA 1.0 | [@tasmirz](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/109)
+| ASUE140D:00 04F3:31B9 | up5401ea |     | Asus ZenBook Flip OLED UP5401EA OLED024T Pine Grey | [@ldrahnik](https://github.com/ldrahnik)
+| ASUE140D:00 04F3:31BC |     |     |
+| ASUE1410:00 04F3:322D |     |     |
+| ASUE1900:00 04F3:31AF |     |     |
+| ASUE1A00:00 04F3:31DE |     |     |
+| ASUE1A01:00 04F3:31D4 |     |     |
+| ELAN1200:00 04F3:301A |     |     |
+| ELAN1200:00 04F3:3022 |     |     |
+| ELAN1200:00 04F3:303C |     |     |
+| ELAN1200:00 04F3:303E |     |     |
+| ELAN1200:00 04F3:3044 |     |     |
+| ELAN1200:00 04F3:3045 |     |     |
+| ELAN1200:00 04F3:3049 |     |     |
+| ELAN1200:00 04F3:304A |     |     |
+| ELAN1200:00 04F3:304E |     |     |
+| ELAN1200:00 04F3:3054 |     |     |
+| ELAN1200:00 04F3:3058 |     |     |
+| ELAN1200:00 04F3:3059 |     |     |
+| ELAN1200:00 04F3:3066 |     |     |
+| ELAN1200:00 04F3:3067 |     |     |
+| ELAN1200:00 04F3:306F |     |     |
+| ELAN1200:00 04F3:307A |     |     |
+| ELAN1200:00 04F3:3086 |     |     |
+| ELAN1200:00 04F3:3087 |     |     |
+| ELAN1200:00 04F3:3090 |     |     |
+| ELAN1200:00 04F3:309C |     |     |
+| ELAN1200:00 04F3:309F |     |     |
+| ELAN1200:00 04F3:30B9 |     |     |
+| ELAN1200:00 04F3:30BA |     |     |
+| ELAN1200:00 04F3:30C0 |     |     |
+| ELAN1200:00 04F3:30C6 |     |     |
+| ELAN1200:00 04F3:30CE |     |     |
+| ELAN1200:00 04F3:30D4 |     |     |
+| ELAN1200:00 04F3:30E9 |     |     |
+| ELAN1200:00 04F3:30EF |     |     |
+| ELAN1200:00 04F3:30F7 |     |     |
+| ELAN1200:00 04F3:3104 |     |     |
+| ELAN1200:00 04F3:3107 |     |     |
+| ELAN1200:00 04F3:3168 |     |     |
+| ELAN1201:00 04F3:301B |     |     |
+| ELAN1201:00 04F3:3054 |     |     |
+| ELAN1201:00 04F3:3098 |     |     |
+| ELAN1201:00 04F3:30B8 |     |     |
+| ELAN1201:00 04F3:30C6 |     |     |
+| ELAN1201:00 04F3:30CE |     |     |
+| ELAN1201:00 04F3:313F |     |     |
+| ELAN1201:01 04F3:30CE |     |     |
+| ELAN1203:00 04F3:3043 |     |     |
+| ELAN1203:00 04F3:304E |     |     |
+| ELAN1203:00 04F3:307A |     |     |
+| ELAN1204:00 04F3:30B2 |     |     |
+| ELAN1205:00 04F3:30E9 |     |     |
+| ELAN1206:00 04F3:30F1 |     |     |
+| ELAN1207:00 04F3:310E |     |     |
+| ELAN1300:00 04F3:3028 |     |     |
+| ELAN1300:00 04F3:3032 |     |     |
+| ELAN1300:00 04F3:3057 |     |     |
+| ELAN1300:00 04F3:3059 |     |     |
+| ELAN1300:00 04F3:3087 |     |     |
+| ELAN1300:00 04F3:30BE |     |     |
+| ELAN1300:00 04F3:3104 |     |     |
+| ELAN1300:00 04F3:310C |     |     |
+| ELAN1301:00 04F3:3034 |     |     |
+| ELAN1301:00 04F3:3035 |     |     |
+| ELAN1301:00 04F3:30C6 |     |     |
+| ELAN1301:00 04F3:30EF |     |     |
+| ELAN1301:00 04F3:3115 |     |     |
+| ELAN1301:00 04F3:3128 |     |     |
+| ELAN1400:00 04F3:30AD |     |     |
+| ELAN1400:00 04F3:30E2 |     |     |
+| ELAN1400:00 04F3:30E5 |     |     |
+| ELAN1401:00 04F3:30BB |     |     |
+| ELAN1401:00 04F3:30DC |     |     |
+| ELAN1401:00 04F3:30F2 |     |     |
+| ELAN1401:00 04F3:30F4 |     |     |
+| ELAN1402:00 04F3:30BF |     |     |
+| ELAN1404:00 04F3:3048 |     |     |
+| ELAN1404:00 04F3:30A7 |     |     |
+| ELAN1404:00 04F3:30C2 |     |     |
+| ELAN1405:00 04F3:30DF |     |     |
+| ELAN1405:00 04F3:315E |     |     |
+| ELAN1406:00 04F3:3101 |     |     |
+| ELAN2301:00 04F3:309F |     |     |
+| ELAN9009:00 04F3:2C1B |     |     |
+| ELAN9009:00 04F3:2C23 |     |     |
+| ELAN9009:00 04F3:2F2A |     |     |
+| ELAN9009:00 04F3:406 |     |     |
+
+
 ## Installation
 
 Install latest dev version using `git`
