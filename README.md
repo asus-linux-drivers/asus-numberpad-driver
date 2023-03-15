@@ -55,17 +55,21 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 | gx701        | With # symbol<br><br>With NumLock key outside of touchpad<br><br>With left, right key outside of NumberPad   | ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)                                              |
 | gx551        | Without % = symbols<br><br>With NumLock key on the top left<br><br>With left, right key outside of NumberPad | ![model gx551](images/Asus-GX551.jpg)                                                               |
 
-## Touchpad models
+## Touchpad models 
 
-**Do you own Touchpad for which is row in table below empty? Please, create an issue or make PR**
+**Do you own Touchpad for which is row in table below empty/wrong? Please, create an issue or make PR**
 
-Table of all unique Asus touchpad models from repository [Dmesg](https://github.com/linuxhw/Dmesg) (repository contains uploaded probes = scanned laptops via [https://linux-hardware.org/](https://linux-hardware.org/)). Table may contains touchpads without NumberPad. Used command:
+### Table data
+
+Table is based on all unique Asus touchpad models from repository [Dmesg](https://github.com/linuxhw/Dmesg) (repository contains uploaded probes = scanned laptops via [https://linux-hardware.org/](https://linux-hardware.org/)). Table may contains touchpads without NumberPad. Used command:
 
 ```
 $ git clone https://github.com/linuxhw/Dmesg
 $ cd Dmesg
 $ grep -hRP "(^|\s)(ELAN|ASUE).*04F3:.*Touchpad(?=\s|$)" Convertible/ASUSTek\ Computer/ Notebook/ASUSTek\ Computer/ | cut -b 23-43 | sort -u
 ```
+
+### Table columns
 
 - touchpad(s) - from file `/proc/bus/input/devices` (e.g. via command `egrep -B1 -A5 "ASUE|ELAN" /proc/bus/input/devices | grep -B1 -A5 Touchpad`)
 - has NumberPad - select fit layout name from table above or use No - table may contains touchpads without NumberPad
