@@ -127,7 +127,7 @@ B: MSC=20
 | ASUE1304:00 04F3:3201 ||     |     |
 | ASUE1305:00 04F3:3212 ||     |     |
 | ASUE1403:00 04F3:319A || g533 |    | ASUS ROG Strix Scar 15 G533QS | [@kamack38](https://github.com/kamack38)
-| ASUE1406:00 04F3:3101 || ELAN9009:00 04F3:2C23 | ux581l | default_backlight_levels_ascendant=? | ZenBook Pro Duo UX582LR_UX582LR | [@mbrouillet](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95)
+| ASUE1406:00 04F3:3101 | ELAN9009:00 04F3:2C23 | ux581l | default_backlight_levels_ascendant=? | ZenBook Pro Duo UX582LR_UX582LR | [@mbrouillet](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95)
 | ASUE1407:00 04F3:310D ||     |     |
 | ASUE1408:00 04F3:3137 ||     |     |
 | ASUE1409:00 04F3:3157 ||     |     |
