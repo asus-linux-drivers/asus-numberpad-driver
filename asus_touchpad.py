@@ -1456,7 +1456,7 @@ def check_touchpad_status():
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
-    if not is_touchpad_enabled and touchpad_disables_numpad and numlock:
+    if not is_touchpad_enabled:
         numlock = False        
         deactivate_numpad()
         log.info("Numpad deactivated")
@@ -1472,7 +1472,8 @@ def check_system_numlock_status():
 
 def check_touchpad_status_endless_cycle():
     while True and getting_device_status_failure_count < 9:
-        check_touchpad_status()
+        if touchpad_disables_numpad and numlock:
+            check_touchpad_status()
         sleep(0.5)
 
     log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_status_failure_count)
