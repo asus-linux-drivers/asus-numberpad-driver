@@ -16,8 +16,9 @@ with open('/proc/bus/input/devices', 'r') as f:
 		# Look for the touchpad #
         # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
+		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
 		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line) and "Touchpad" in line) or \
-			("Name=\"ELAN" in line and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+			(("Name=\"ASUE" in line or "Name=\"ELAN" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
 			touchpad_detected = 1
 
 		if touchpad_detected == 1:
@@ -43,6 +44,7 @@ with open('/proc/bus/input/devices', 'r') as f:
         # because more drivers can be installed
         # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
+		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
 		#if keyboard_detected == 2 and touchpad_detected == 2:
 		#	break
  
