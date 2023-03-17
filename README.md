@@ -38,7 +38,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Multitouch up to 5 fingers (disabled by default)
 - Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
 - Driver supports laptop suspend
-- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/54)
+- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg`, no `wayland` support https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/104)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
 
 ## Layouts
