@@ -24,6 +24,8 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
 
+gsettings_is_here = True
+
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea"  # all messages
 # LOG=ERROR sudo -E ./asus_touchpad.py "up5401ea"  # only error messages
@@ -36,7 +38,8 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 try_times = 5
 try_sleep = 0.1
 
-getting_device_status_failure_count = 0
+getting_device_via_xinput_status_failure_count = 0
+getting_device_via_xinput_status_max_failure_count = 3
 
 # Numpad layout model
 model = None
@@ -401,23 +404,24 @@ def isEvent(event):
 
 
 def is_device_enabled(device_name):
-    global getting_device_status_failure_count
+    global getting_device_via_xinput_status_failure_count, gsettings_is_here
 
-    try:
-        cmd = ['gsettings', 'get', 'org.gnome.desktop.peripherals.touchpad', 'send-events']
-        propData = subprocess.check_output(cmd)
-        propData = propData.decode()
-        if 'enabled' in propData:
+    if gsettings_is_here:
+        try:
+            cmd = ['gsettings', 'get', 'org.gnome.desktop.peripherals.touchpad', 'send-events']
+            propData = subprocess.check_output(cmd)
+            propData = propData.decode()
+            if 'enabled' in propData:
+                return True
+            elif 'disabled' in propData:
+                return False
+        except:
+            log.exception('Getting gnome touchpad send-events via gsettings failed')
+            gsettings_is_here=False
             return True
-        elif 'disabled' in propData:
-            return False
-    except:
-        log.exception('Getting gnome touchpad send-events via gsettings failed')
-        return True
 
-
-    if getting_device_status_failure_count > 9:
-        log.debug('Getting Device Enabled via xinput failed more then 9 times so is not try anymore, returned Touchpad enabled')
+    if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
+        log.info('Getting Device Enabled via xinput failed more then: \"%s\" so is not try anymore, returned Touchpad enabled', getting_device_via_xinput_status_max_failure_count)
         return True
 
     try:
@@ -435,10 +439,10 @@ def is_device_enabled(device_name):
 
         log.error('Getting Device Enabled via xinput failed because was not found Device Enabled for Touchpad.')
 
-        getting_device_status_failure_count += 1
+        getting_device_via_xinput_status_failure_count += 1
         return True
     except:
-        getting_device_status_failure_count += 1
+        getting_device_via_xinput_status_failure_count += 1
 
         log.exception('Getting Device Enabled via xinput failed')
         return True
@@ -578,22 +582,29 @@ def grab_current_slot():
 
 
 def set_touchpad_prop_tap_to_click(value):
-    global touchpad_name
+    global touchpad_name, gsettings_is_here, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
 
-    try:
-        cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
-        log.debug(cmd)
-        subprocess.check_output(cmd)
+    if gsettings_is_here:
+        try:
+            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'ggsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
+            log.debug(cmd)
+            subprocess.check_output(cmd)
 
-        return
-    except (subprocess.CalledProcessError, KeyError) as e:
-        log.exception('Getting gnome touchpad tap-to-click via gsettings failed')
+            return
+        except (subprocess.CalledProcessError, KeyError) as e:
+            gsettings_is_here=False
+            log.exception('Getting gnome touchpad tap-to-click via gsettings failed')
+
+    if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
+        log.info('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
+        return True
 
     try:
         cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
         log.debug(cmd)
         subprocess.check_output(cmd)
     except subprocess.CalledProcessError as e:
+        getting_device_via_xinput_status_failure_count+=1
         log.error(e.output)
 
 
@@ -1474,10 +1485,6 @@ def listen_touchpad_events():
                 unpressed_numpad_key()
 
 
-# auto ended thread for checking touchpad status (activated/deactivated)
-# via xinput when is for example used wayland
-getting_device_status_failure_count = 0
-
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
 
@@ -1502,12 +1509,14 @@ def check_system_numlock_status():
 
 
 def check_touchpad_status_endless_cycle():
-    while True and getting_device_status_failure_count < 9:
+    global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+
+    while True and getting_device_via_xinput_status_failure_count < getting_device_via_xinput_status_max_failure_count:
         if touchpad_disables_numpad and numlock:
             check_touchpad_status()
         sleep(0.5)
 
-    log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_status_failure_count)
+    log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_via_xinput_status_failure_count)
 
 
 def check_numpad_automatical_disable_due_inactivity():
