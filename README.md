@@ -331,6 +331,20 @@ B: MSC=20
 ...
 ```
 
+**How can be activated NumberPad via CLI?**
+
+- enable in config `sys_numlock_enables_numpad = 1` and `numpad_disables_sys_numlock = 1` (disabled both by default), then will be NumberPad activated/disabled according to status of system numlock, source for pressing system numlock can be numlock physical key on the same laptop or external keyboard or simulated key via `xdotool key Num_Lock`
+
+- directly just change `enabled` in appropriate config file:
+
+```
+# enabling NumberPad via command line
+sudo sed -i "s/enabled = 0/enabled = 1/g" asus_touchpad_numpad_dev
+sudo sed -i "s/enabled = 0/enabled = 1/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+# disabling
+sudo sed -i "s/enabled = 1/enabled = 0/g" asus_touchpad_numpad_dev
+sudo sed -i "s/enabled = 1/enabled = 0/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+```
 
 ## Configuration
 
