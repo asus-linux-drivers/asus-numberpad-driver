@@ -33,12 +33,12 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
 - Activated NumberPad allowes pointer moves (enabled by default)
-- Activated NumberPad disables pointer clicks (can be enabled)
+- Activated NumberPad disables pointer taps (can be enabled, *this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
 - Driver supports laptop suspend
-- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, this functionality supports atm only `xinput` from `xorg` and gnome via `gsettings`)
+- Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (can be disabled, *this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
 
 ## Layouts
