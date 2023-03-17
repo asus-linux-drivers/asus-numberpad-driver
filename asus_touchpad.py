@@ -403,6 +403,19 @@ def isEvent(event):
 def is_device_enabled(device_name):
     global getting_device_status_failure_count
 
+    try:
+        cmd = ['gsettings', 'get', 'org.gnome.desktop.peripherals.touchpad', 'send-events']
+        propData = subprocess.check_output(cmd)
+        propData = propData.decode()
+        if 'enabled' in propData:
+            return True
+        elif 'disabled' in propData:
+            return False
+    except:
+        log.exception('Getting gnome touchpad send-events via gsettings failed')
+        return True
+
+
     if getting_device_status_failure_count > 9:
         log.debug('Getting Device Enabled via xinput failed more then 9 times so is not try anymore, returned Touchpad enabled')
         return True
@@ -568,6 +581,15 @@ def set_touchpad_prop_tap_to_click(value):
     global touchpad_name
 
     try:
+        cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
+        log.debug(cmd)
+        subprocess.check_output(cmd)
+
+        return
+    except (subprocess.CalledProcessError, KeyError) as e:
+        log.exception('Getting gnome touchpad tap-to-click via gsettings failed')
+
+    try:
         cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
         log.debug(cmd)
         subprocess.check_output(cmd)
@@ -577,8 +599,6 @@ def set_touchpad_prop_tap_to_click(value):
 
 def activate_numpad():
     global brightness, default_backlight_level, enabled_touchpad_pointer, top_left_icon_brightness_func_disabled
-
-    config_set(CONFIG_ENABLED, True)
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         grab()
@@ -599,11 +619,11 @@ def activate_numpad():
         # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
         brightness = -1
 
+    config_set(CONFIG_ENABLED, True)
+
 
 def deactivate_numpad():
     global brightness, enabled_touchpad_pointer
-
-    config_set(CONFIG_ENABLED, False)
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         ungrab()
@@ -612,6 +632,8 @@ def deactivate_numpad():
 
     send_value_to_touchpad_via_i2c("0x00")
     brightness = 0
+
+    config_set(CONFIG_ENABLED, False)
 
 
 def get_system_numlock():
