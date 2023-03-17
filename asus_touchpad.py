@@ -52,6 +52,9 @@ except:
 config_file_dir = ""
 if len(sys.argv) > 2:
     config_file_dir = sys.argv[2]
+# When is given config dir empty or is used default -> to ./ because inotify needs check folder (nor nothing = "")
+if config_file_dir == "":
+     config_file_dir = "./"
 
 # Layout
 left_offset = getattr(model_layout, "left_offset", 0)
@@ -186,6 +189,8 @@ def config_set(key, value, no_save=False, already_has_lock=False):
         config_save()
 
     if not already_has_lock:
+        # because inotify (deadlock)
+        sleep(0.1)
         config_lock.release()
 
     return value
@@ -571,7 +576,7 @@ def set_touchpad_prop_tap_to_click(value):
 
 
 def activate_numpad():
-    global brightness, device_id, default_backlight_level, enabled_touchpad_pointer, d_t, top_left_icon_brightness_func_disabled
+    global brightness, default_backlight_level, enabled_touchpad_pointer, top_left_icon_brightness_func_disabled
 
     config_set(CONFIG_ENABLED, True)
 
@@ -596,7 +601,7 @@ def activate_numpad():
 
 
 def deactivate_numpad():
-    global brightness, device_id, enabled_touchpad_pointer, d_t
+    global brightness, enabled_touchpad_pointer
 
     config_set(CONFIG_ENABLED, False)
 
@@ -754,7 +759,7 @@ def load_all_config_values():
 
     config_lock.release()
 
-    if enabled and not numlock:
+    if enabled is not numlock:
         local_numlock_pressed()
 
 
@@ -775,10 +780,14 @@ last_event_time = 0
 
 config = configparser.ConfigParser()
 load_all_config_values()
+config_lock.acquire()
 config_save()
+config_lock.release()
+# because inotify (deadlock)
+sleep(0.1)
 
 inotify_adapters = adapters.Inotify()
-inotify_adapters.add_watch(config_file_path)
+inotify_adapters.add_watch(config_file_dir)
 
 def set_tracking_id(value):
     try:
@@ -1507,15 +1516,26 @@ def check_numpad_automatical_disable_due_inactivity():
 
 
 def check_config_values_changes():
-    global inotify_adapters
+    global inotify_adapters, config_lock
 
     try:
         for event in inotify_adapters.event_gen(yield_nones=False):
 
             (_, type_names, path, filename) = event
 
-            if "IN_CLOSE_WRITE" in type_names:
-                load_all_config_values() 
+            if filename != CONFIG_FILE_NAME or path != config_file_dir:
+                continue
+
+            if "IN_CLOSE_WRITE" in type_names or "IN_IGNORED" in type_names or "IN_MOVED_TO" in type_names:
+
+                if not config_lock.locked():
+                    log.info("check_config_values_changes: detected external change of config file -> loading changes")
+                    # because file might be read so fast that changes will not be there yet
+                    sleep(0.1)
+                    load_all_config_values()
+                else:
+                    log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+
     except:
         pass
 
@@ -1552,3 +1572,4 @@ finally:
     if dev_k:
         dev_k.close()
     fd_t.close()
+    inotify_adapters.remove_watch(config_file_dir)
