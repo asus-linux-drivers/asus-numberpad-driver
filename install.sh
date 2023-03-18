@@ -278,6 +278,7 @@ else
 fi
 
 
+logout_requested=false
 if [[ $(type gsettings 2>/dev/null) ]]; then
     echo "gsettings is here"
     read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
@@ -312,7 +313,12 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             cp scripts/io_elementary_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
             chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
 
+            # this has to be empty (no doubled XF86Calculator)
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
+
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings calculator-static ['']
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
@@ -320,6 +326,8 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
             echo "Toggling script for calculator app gnome-calculator has been installed."
+
+            logout_requested=true
         elif [[ $(type gnome-calculator 2>/dev/null) ]]; then
             echo "gnome-calculator here"
 
@@ -327,6 +335,10 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             cp scripts/gnome_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
             chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
 
+            # this has to be empty (no doubled XF86Calculator)
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
+
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
@@ -335,6 +347,8 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
             echo "Toggling script for calculator app gnome-calculator has been installed."
+
+            logout_requested=true
         else
            echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
         fi
@@ -361,6 +375,21 @@ if [[ $? != 0 ]]; then
     exit 1
 else
     echo "Asus touchpad numpad service started"
+fi
+
+if [[ "$logout_requested" = true ]]
+then
+
+    echo "Install process requested to succesfull finish atleast log out or reboot"
+    echo "Without that driver might not work properly"
+
+    read -r -p "Do you want automatically reboot? [y/N]" response
+    case "$response" in [yY][eE][sS]|[yY])
+        reboot
+        ;;
+    *)
+        ;;
+    esac
 fi
 
 echo "Install finished"
