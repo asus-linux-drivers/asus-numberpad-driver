@@ -199,6 +199,45 @@ def config_set(key, value, no_save=False, already_has_lock=False):
     return value
 
 
+def gsettingsSet(path, name, value):
+    global gsettings_is_here
+
+    if gsettings_is_here:
+        try:
+            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', path, name, str(value)]
+            log.debug(cmd)
+            subprocess.check_output(cmd)
+            return True
+        except:
+            log.exception('gsettings set failed')
+            gsettings_is_here=False
+            return False
+
+
+def gsettingsGet(path, name):
+    global gsettings_is_here
+
+    if gsettings_is_here:
+        try:
+            cmd = ['gsettings', 'get', path, name]
+            log.debug(cmd)
+            propData = subprocess.check_output(cmd)
+            propDataDecoded = propData.decode()
+            return propDataDecoded
+        except:
+            log.exception('gsettings set failed')
+            gsettings_is_here=False
+            return None
+
+
+def gsettingsGetTouchpadSendEvents():
+    return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events')
+
+
+def gsettingsSetTouchpadTapToClick(value):
+    return gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
+
+
 # Figure out devices from devices file
 touchpad: Optional[str] = None
 touchpad_name: Optional[str] = None
@@ -406,22 +445,15 @@ def isEvent(event):
 def is_device_enabled(device_name):
     global getting_device_via_xinput_status_failure_count, gsettings_is_here
 
-    if gsettings_is_here:
-        try:
-            cmd = ['gsettings', 'get', 'org.gnome.desktop.peripherals.touchpad', 'send-events']
-            propData = subprocess.check_output(cmd)
-            propData = propData.decode()
-            if 'enabled' in propData:
-                return True
-            elif 'disabled' in propData:
-                return False
-        except:
-            log.exception('Getting gnome touchpad send-events via gsettings failed')
-            gsettings_is_here=False
+    value = gsettingsGetTouchpadSendEvents()
+    if value:
+        if 'enabled' in value:
             return True
+        elif 'disabled' in value:
+            return False
 
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
-        log.info('Getting Device Enabled via xinput failed more then: \"%s\" so is not try anymore, returned Touchpad enabled', getting_device_via_xinput_status_max_failure_count)
+        log.debug('Getting Device Enabled via xinput failed more then: \"%s\" so is not try anymore, returned Touchpad enabled', getting_device_via_xinput_status_max_failure_count)
         return True
 
     try:
@@ -584,19 +616,10 @@ def grab_current_slot():
 def set_touchpad_prop_tap_to_click(value):
     global touchpad_name, gsettings_is_here, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
 
-    if gsettings_is_here:
-        try:
-            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
-            log.debug(cmd)
-            subprocess.check_output(cmd)
-
-            return
-        except (subprocess.CalledProcessError, KeyError) as e:
-            gsettings_is_here=False
-            log.exception('Getting gnome touchpad tap-to-click via gsettings failed')
+    gsettingsSetTouchpadTapToClick(value)
 
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
-        log.info('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
+        log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
         return True
 
     try:
