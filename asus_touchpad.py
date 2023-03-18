@@ -586,7 +586,7 @@ def set_touchpad_prop_tap_to_click(value):
 
     if gsettings_is_here:
         try:
-            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'ggsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
+            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', 'org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower()]
             log.debug(cmd)
             subprocess.check_output(cmd)
 
