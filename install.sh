@@ -238,9 +238,7 @@ cp udev/90-numberpad-external-keyboard.rules /usr/lib/udev/rules.d/
 echo "Added 90-numberpad-external-keyboard.rules"
 mkdir -p /usr/share/asus_touchpad_numpad-driver/udev
 
-chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver
-# 700: only owner can do everything (write, read, execute)
-chmod -R 700 /usr/share/asus_touchpad_numpad-driver
+chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py
 
 CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/"
 cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
