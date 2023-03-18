@@ -24,7 +24,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
-- When is NumberPad activated can be used customizable slide gesture beginning on top left (by default is send key `XF86Calculator` so it is prepared for bounding script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh) (`XF86Calculator` key press can be tested via `xdotool key XF86Calculator`), so first slide gesture activates calculator app and next closes calculator app, by default is also required end each slide after at least 30% of width and height)
+- When is NumberPad activated can be used customizable slide gesture beginning on top left (by default is send key `EV_KEY.KEY_CALC` translated to `XF86Calculator` so it is prepared for bounding script with toggle functionality of preferred calculator app in your system keyboard shortcuts, [example of mine toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh), so first slide gesture activates calculator app and next closes calculator app, by default is also required end each slide after at least 30% of width and height)
 - Support for various keyboard layouts (unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`) are sent via `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (by default is default level last used level - works even between reboots)
@@ -405,6 +405,22 @@ Event: time 1679133719.799252, -------------- SYN_REPORT ------------
 Event: time 1679133719.799295, type 1 (EV_KEY), code 140 (KEY_CALC), value 0
 Event: time 1679133719.799295, -------------- SYN_REPORT ------------
 ```
+
+**Toggling calculator app does not work**
+
+- When is new keybindings added to list `custom-keybinings`, is necessary every time atleast log out. Otherwise newly added shortcut will not work.
+
+- When using custom keybinding via `custom-keybindings` values `calculator` and `calculator-static` has to be empty:
+
+```
+$ sudo install dconf-editor
+$ gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
+$ gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
+```
+- Whether script works can be tested via `bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh`
+
+- Whether keybinding works can be tested via slide gesture from NumberPad or via simulating `XF86Calculator` key `xdotool key XF86Calculator`
+
 
 ## Configuration
 
