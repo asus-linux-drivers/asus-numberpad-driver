@@ -96,7 +96,14 @@ if [ "$CONFIG_FILE_DIFF" != "" ]
 then
     read -r -p "Config file contains modifications compared to the default one. Do you want remove config file [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
-		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+
+		if test -d "$NUMPAD_LAYOUTS_DIR"
+		then
+			rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+		else
+			rm -rf /usr/share/asus_touchpad_numpad-driver
+		fi
+
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
@@ -109,7 +116,14 @@ then
         ;;
     esac
 else
-	rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+
+	if test -d "$NUMPAD_LAYOUTS_DIR"
+	then
+		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+	else
+		rm -rf /usr/share/asus_touchpad_numpad-driver
+	fi
+
 	if [[ $? != 0 ]]
 	then
 		echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
