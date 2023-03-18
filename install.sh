@@ -287,9 +287,14 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
         # credits (https://unix.stackexchange.com/questions/323160/gnome3-adding-keyboard-custom-shortcuts-using-dconf-without-need-of-logging)
         existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
         #echo $existing_shortcut_string
-        exst_str_len=$((${#existing_shortcut_string}))
-        IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
-        existing_shortcut_count="${#existing_shortcut_array[@]}"
+
+        if [[ "$existing_shortcut_string" == "@as []" ]]
+        then
+            existing_shortcut_count=0
+        else
+            IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
+            existing_shortcut_count="${#existing_shortcut_array[@]}"    
+        fi
         #echo $existing_shortcut_count
         new_shortcut_index=$(("$existing_shortcut_count"))
         #echo $new_shortcut_index
