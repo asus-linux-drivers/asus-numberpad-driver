@@ -346,6 +346,66 @@ sudo sed -i "s/enabled = 1/enabled = 0/g" asus_touchpad_numpad_dev
 sudo sed -i "s/enabled = 1/enabled = 0/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
 ```
 
+**Is any key from NumberPad not send properly?**
+
+```
+$ sudo evtest
+No device specified, trying to scan all of /dev/input/event*
+Available devices:
+...
+/dev/input/event12:	ASUE140D:00 04F3:31B9 Touchpad
+/dev/input/event13:	ASUE140D:00 04F3:31B9 Keyboard
+...
+/dev/input/event22:	Asus Touchpad/Numpad
+Select the device event number [0-22]: 22
+Input driver version is 1.0.1
+Input device ID: bus 0x0 vendor 0x0 product 0x0 version 0x0
+Input device name: "Asus Touchpad/Numpad"
+Supported events:
+  Event type 0 (EV_SYN)
+  Event type 1 (EV_KEY)
+    Event code 14 (KEY_BACKSPACE)
+    Event code 18 (KEY_E)
+    Event code 22 (KEY_U)
+    Event code 29 (KEY_LEFTCTRL)
+    Event code 30 (KEY_A)
+    Event code 31 (KEY_S)
+    Event code 32 (KEY_D)
+    Event code 33 (KEY_F)
+    Event code 42 (KEY_LEFTSHIFT)
+    Event code 46 (KEY_C)
+    Event code 48 (KEY_B)
+    Event code 55 (KEY_KPASTERISK)
+    Event code 57 (KEY_SPACE)
+    Event code 69 (KEY_NUMLOCK)
+    Event code 71 (KEY_KP7)
+    Event code 72 (KEY_KP8)
+    Event code 73 (KEY_KP9)
+    Event code 74 (KEY_KPMINUS)
+    Event code 75 (KEY_KP4)
+    Event code 76 (KEY_KP5)
+    Event code 77 (KEY_KP6)
+    Event code 78 (KEY_KPPLUS)
+    Event code 79 (KEY_KP1)
+    Event code 80 (KEY_KP2)
+    Event code 81 (KEY_KP3)
+    Event code 82 (KEY_KP0)
+    Event code 83 (KEY_KPDOT)
+    Event code 96 (KEY_KPENTER)
+    Event code 98 (KEY_KPSLASH)
+    Event code 117 (KEY_KPEQUAL)
+    Event code 140 (KEY_CALC)
+    Event code 272 (BTN_LEFT)
+    Event code 273 (BTN_RIGHT)
+    Event code 274 (BTN_MIDDLE)
+Properties:
+Testing ... (interrupt to exit)
+Event: time 1679133719.799252, type 1 (EV_KEY), code 140 (KEY_CALC), value 1
+Event: time 1679133719.799252, -------------- SYN_REPORT ------------
+Event: time 1679133719.799295, type 1 (EV_KEY), code 140 (KEY_CALC), value 0
+Event: time 1679133719.799295, -------------- SYN_REPORT ------------
+```
+
 ## Configuration
 
 ### Keyboard layout
