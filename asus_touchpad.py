@@ -204,7 +204,12 @@ def gsettingsSet(path, name, value):
 
     if gsettings_is_here:
         try:
-            cmd = ['runuser', '-u', os.environ['SUDO_USER'], 'gsettings', 'set', path, name, str(value)]
+            try:
+                sudo_user = os.environ['SUDO_USER']
+                cmd = ['runuser', '-u', sudo_user, 'gsettings', 'set', path, name, str(value)]
+            except KeyError:
+                cmd = ['gsettings', 'set', path, name, str(value)]
+
             log.debug(cmd)
             subprocess.check_output(cmd)
             return True
