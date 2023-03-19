@@ -330,11 +330,13 @@ B: MSC=20
 
 **How can be activated NumberPad via CLI?**
 
-- enable in config `sys_numlock_enables_numpad = 1` and `numpad_disables_sys_numlock = 1` (disabled both by default), then will be NumberPad activated/disabled according to status of system numlock, source for pressing system numlock can be numlock physical key on the same laptop or external keyboard or simulated key via `xdotool key Num_Lock` or `numlockx on` and `numlockx off`
+- is required have enabled in config `sys_numlock_enables_numpad = 1` (enabled by default), then will be NumberPad activated/disabled according to status of system numlock, source for pressing system numlock can be numlock physical key on the same laptop or external keyboard or simulated key via `xdotool key Num_Lock` or `numlockx on` and `numlockx off`
 
 - directly just change `enabled` in appropriate config file:
 
 ```
+# when is installed under current user (--user) sudo is not required
+
 # enabling NumberPad via command line
 sudo sed -i "s/enabled = 0/enabled = 1/g" asus_touchpad_numpad_dev
 sudo sed -i "s/enabled = 0/enabled = 1/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
@@ -478,7 +480,7 @@ key_repetitions = 0
 multitouch = 0
 one_touch_key_rotation = 0
 activation_time = 1
-sys_numlock_enables_numpad = 0
+sys_numlock_enables_numpad = 1
 top_left_icon_activation_time = 1
 top_left_icon_slide_func_activation_x_ratio = 0.3
 top_left_icon_slide_func_activation_y_ratio = 0.3
@@ -498,7 +500,7 @@ distance_to_move_only_pointer = 250
 | `enabled`                                     |          | `0`               | NumberPad running status (enabled/disabled)
 | `disable_due_inactivity_time`                 |          | `60.0` [s]            | NumberPad is automatically disabled when have not received any event for this interval<br><br>decimal places allowed
 | `touchpad_disables_numpad`                    |          | `1`            | when is touchpad disabled is disabled NumberPad aswell, valid value is `1` or `0` (e.g. via Fn+special key)<br><br>status is being attempted for the first time from `gsettings get org.gnome.desktop.peripherals.touchpad send-events`, tested can be via direct change `gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'` or simulation of Touchpad toggling via CLI `xdotool key XF86TouchpadToggle` or `xdotool key XF86TouchpadOn` and `xdotool key XF86TouchpadOff`, secondary is taken result of `xinput` - in this case can be for get this work used [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh) which has to be binded to Touchpad special key
-| `sys_numlock_enables_numpad`                  |          | `0`           | obtained via active `LED_NUML` of keyboard device<br><br>enable with `1`, by default NumberPad reflects only disabling system numlock (then is disabled)<br><br>System numlock can be simulated `xdotool key Num_Lock`
+| `sys_numlock_enables_numpad`                  |          | `1`           | obtained via active `LED_NUML` of keyboard device<br><br>enabled with `1`, by default NumberPad reflects both: disabling system numlock even activating system numlock (then is disabled)<br><br>System numlock can be simulated `xdotool key Num_Lock`<br><br>`sys_numlock_enables_numpad` is set up to `1` automatically even when is in config file  read value `0` (overwritten) in case when is not defined in key layout on any position key `EV_KEY.KEY_NUMLOCK` and top right icon is not defined (size values `top_right_icon_width` and `top_right_icon_height`)
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` is every time during inactivation of NumberPad sent `KEY_NUMLOCK`. Is useful do not send NumLock when is to laptop connected external keyboard and goal is only disable NumberPad on laptop but keep NumLock on external keyboard enabled    
 | `enabled_touchpad_pointer`                  |          | `3`           | valid values are `0`, `1`, `2`, `3` <br><br>when is set to `1` touchpad pointer can be used to moving and for clicking and can be clicked pointer buttons left, right and middle when is NumberPad activated, `0` disable this usage and `2` allowes only pointer button clicks, `3` allowes only touchpad pointer moving without clicks (touchpad tap-to-click is disabled/enabled using `gnome` via `gsettings` and for `xinput` for `X11` with this order priority)
 | **Key layout**                                |          |
