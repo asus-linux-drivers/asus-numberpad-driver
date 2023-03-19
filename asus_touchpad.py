@@ -1443,9 +1443,10 @@ def listen_touchpad_events():
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
-            if distance_to_move_only_pointer and abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY.KEY_NUMLOCK and \
-                abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY_TOP_LEFT_ICON:
-                
+            if distance_to_move_only_pointer and \
+                top_right_icon_touch_start_time == 0 and \
+                top_left_icon_touch_start_time == 0:
+
                 if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
                     abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
                 if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
@@ -1460,8 +1461,9 @@ def listen_touchpad_events():
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
-            if distance_to_move_only_pointer and abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY.KEY_NUMLOCK and \
-                abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY_TOP_LEFT_ICON:
+            if distance_to_move_only_pointer and \
+                top_right_icon_touch_start_time == 0 and \
+                top_left_icon_touch_start_time == 0:
 
                 if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
                     abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
