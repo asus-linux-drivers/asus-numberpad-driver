@@ -209,24 +209,29 @@ echo "Installing asus touchpad service to /etc/systemd/system/"
 
 source remove_previous_implementation_of_service.sh
 
+CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver"
+CONFIG_FILE_NAME="asus_touchpad_numpad_dev"
+CONF_FILE="$CONFIG_FILE_DIR/$CONFIG_FILE_NAME"
+
 if [ "$wayland_or_x11" = "x11" ]; then
     echo "X11 is detected"
 
     xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-    cat asus_touchpad.X11.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
+    cat asus_touchpad.X11.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" USER=$RUN_UNDER_USER LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 
 elif [ "$wayland_or_x11" = "wayland" ]; then
     echo "Wayland is detected, unfortunatelly you will not be able use feature: `Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell`, at this moment is supported only X11"
 
-    cat asus_touchpad.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
+    cat asus_touchpad.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" USER=$RUN_UNDER_USER LAYOUT=$model envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 else
     echo "Wayland or X11 is not detected"
 
-    cat asus_touchpad.service | USER=$RUN_UNDER_USER LAYOUT=$model CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
+    cat asus_touchpad.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" USER=$RUN_UNDER_USER LAYOUT=$model envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 fi
 
 
 mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
+chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver
 mkdir -p /var/log/asus_touchpad_numpad-driver
 install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
 install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
@@ -238,11 +243,8 @@ cp udev/90-numberpad-external-keyboard.rules /usr/lib/udev/rules.d/
 echo "Added 90-numberpad-external-keyboard.rules"
 mkdir -p /usr/share/asus_touchpad_numpad-driver/udev
 
-chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py
-
-CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/"
-cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
-cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver/" envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
+cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR=$CONFIG_FILE_DIR envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
+cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR=$CONFIG_FILE_DIR envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
 chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
 chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
 
@@ -250,11 +252,10 @@ udevadm control --reload-rules
 
 echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
-CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
 
 CONFIG_FILE_DIFF=""
 if test -f "$CONF_FILE"; then
-	CONFIG_FILE_DIFF=$(diff <(grep -v '^#' asus_touchpad_numpad_dev) <(grep -v '^#' $CONF_FILE))
+	CONFIG_FILE_DIFF=$(diff <(grep -v '^#' $CONFIG_FILE_NAME) <(grep -v '^#' $CONF_FILE))
 fi
 
 if [ "$CONFIG_FILE_DIFF" != "" ]
@@ -262,10 +263,10 @@ then
     read -r -p "In system remains config file from previous installation. Do you want replace this with default config file [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
         # default will be autocreated, so that is why remove
-		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+		rm -f $CONF_FILE
 		if [[ $? != 0 ]]
 		then
-			echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
+			echo "$CONF_FILE cannot be removed correctly..."
 			exit 1
 		fi
         ;;
@@ -274,7 +275,7 @@ then
     esac
 else
 	echo "Installed default config which can be futher modified here:"
-    echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
+    echo "$CONF_FILE"
 fi
 
 
