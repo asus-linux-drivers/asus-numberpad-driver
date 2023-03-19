@@ -117,6 +117,8 @@ CONFIG_ENABLED_TOUCHPAD_POINTER = "enabled_touchpad_pointer"
 CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT = 3
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = 1
+CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER = "distance_to_move_only_pointer"
+CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER_DEFAULT = 0
 
 config_file_path = config_file_dir + CONFIG_FILE_NAME
 config = configparser.ConfigParser()
@@ -554,8 +556,10 @@ def set_none_to_current_mt_slot():
         abs_mt_slot_x_values, abs_mt_slot_y_values
 
     abs_mt_slot_numpad_key[abs_mt_slot_value] = None
-    abs_mt_slot_x_values[abs_mt_slot_value] = 0
-    abs_mt_slot_y_values[abs_mt_slot_value] = 0
+    abs_mt_slot_x_init_values[abs_mt_slot_value] = -1
+    abs_mt_slot_x_values[abs_mt_slot_value] = -1
+    abs_mt_slot_y_init_values[abs_mt_slot_value] = -1
+    abs_mt_slot_y_values[abs_mt_slot_value] = -166666
 
 
 def pressed_touchpad_top_left_icon(e):
@@ -762,6 +766,7 @@ def load_all_config_values():
     global config_lock
     global enabled_touchpad_pointer
     global press_key_when_is_done_untouch
+    global distance_to_move_only_pointer
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -810,6 +815,8 @@ def load_all_config_values():
     else:
         support_for_maximum_abs_mt_slots = 1
 
+    distance_to_move_only_pointer = float(config_get(CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER, CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER_DEFAULT))
+
     config_lock.release()
 
     if enabled is not numlock:
@@ -820,7 +827,9 @@ abs_mt_slot_value: int = 0
 # -1 inactive, > 0 active
 abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=const.EventCode)
+abs_mt_slot_x_init_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_y_init_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_grab_status = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
@@ -1321,11 +1330,34 @@ def is_key_pointer_button(key):
     return result
 
 
+def current_position_is_more_distant_than_distance_to_move_only_pointer():
+    global abs_mt_slot_value, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, distance_to_move_only_pointer
+
+    if abs_mt_slot_x_values[abs_mt_slot_value] == -1 or \
+        abs_mt_slot_y_values[abs_mt_slot_value] == -1 or \
+        abs_mt_slot_x_init_values[abs_mt_slot_value] == -1 or \
+        abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+
+        return False
+
+    distance = math.dist([
+        abs_mt_slot_x_init_values[abs_mt_slot_value], abs_mt_slot_y_init_values[abs_mt_slot_value]
+    ],
+    [
+        abs_mt_slot_x_values[abs_mt_slot_value], abs_mt_slot_y_values[abs_mt_slot_value]
+    ])
+
+    if distance > distance_to_move_only_pointer:
+        return True
+    else:
+        return False
+
+
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
-        keys_ignore_offset, enabled_touchpad_pointer
+        keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values
 
     for e in d_t.events():
 
@@ -1411,10 +1443,36 @@ def listen_touchpad_events():
 
         if e.matches(EV_ABS.ABS_MT_POSITION_X):
             abs_mt_slot_x_values[abs_mt_slot_value] = e.value
+            if distance_to_move_only_pointer and abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY.KEY_NUMLOCK and \
+                abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY_TOP_LEFT_ICON:
+                
+                if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
+                    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
+                if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
+                    current_position_is_more_distant_than_distance_to_move_only_pointer():
+
+                    set_none_to_current_mt_slot()
+
+                    # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                    continue
+
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+            if distance_to_move_only_pointer and abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY.KEY_NUMLOCK and \
+                abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY_TOP_LEFT_ICON:
+
+                if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+                    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
+                if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
+                    current_position_is_more_distant_than_distance_to_move_only_pointer():
+
+                    set_none_to_current_mt_slot()
+
+                    # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                    continue
+
             is_not_finger_moved_to_another_key()
 
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):

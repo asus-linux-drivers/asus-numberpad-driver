@@ -32,7 +32,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
 - Enabling sys NumLock do not activate NumberPad (can be enabled)
 - Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
-- Activated NumberPad allowes pointer moves (enabled by default)
+- Activated NumberPad allowes pointer moves and is configurable distance when do not use key during press and move only with pointer
 - Activated NumberPad disables pointer taps (*this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*, can be configured)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
@@ -492,6 +492,7 @@ press_key_when_is_done_untouch = 1
 enabled = 0
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
+distance_to_move_only_pointer = 250
 ```
 
 | Option                                        | Required | Default           | Description |
@@ -508,6 +509,8 @@ top_left_icon_brightness_func_disabled = 0
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled NumberPad when second finger is touched on touchpad somewhere as well;<br><br>Example 2: brightness can be changed during using NumberPad for calculating)
 | `one_touch_key_rotation`                      |          | `0`           | possibility of altering multiple keys during one-touch
 | `key_repetitions`                             |          | `0`           | possible to enable with value `1` hold key for repeated pressing key like on a physical keyboard
+| `distance_to_move_only_pointer`                             |          | `0` [px]           | when is set up `press_key_when_is_done_untouch = 1` (by default) and disabled `one_touch_key_rotation = 0` (by default) and is crossed with finger line of bordering key is implemented reset of current key so will not be printed, this option allows specify the same behaviour but inside key area with distance in px 
+crossed to another key and is set up  to enable with value `1` hold key for repeated pressing key like on a physical keyboard
 | **Top left icon**                             |          |                   | custom function is used when is NumberPad on/off and is first touched `top_left_icon` and finger is slid to center and untouched atleast after ratio of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and array `top_left_icon_custom_keys` is not empty<br><br>brightness function is used only when is NumberPad activated, `top_left_icon_brightness_function_disabled` is not `1`, array `backlight_levels` is not empty and works like endless loop of incrementing brightness in interval `top_left_icon_activation_time`
 | `top_left_icon_activation_time`               |          | `1.0` [s]             | amount of time for touch `top_left_icon`<br><br>decimal places allowed
 | `top_left_icon_slide_func_activation_x_ratio` |          | `0.3` (30%)         | ratio of touchpad width of slide
