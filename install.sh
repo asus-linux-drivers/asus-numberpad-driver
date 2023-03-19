@@ -323,14 +323,13 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
 
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings calculator-static ['']
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
 
             existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
             #echo $existing_shortcut_string
-            echo "Toggling script for calculator app gnome-calculator has been installed."
+            echo "Toggling script for calculator app io.elementary.calculator has been installed."
 
             logout_requested=true
         elif [[ $(type gnome-calculator 2>/dev/null) ]]; then
