@@ -29,15 +29,12 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (by default is default level last used level - works even between reboots)
 - NumberPad is automatically disabled due inactivity (default 1 min)
-- Disabling sys NumLock from e.g. external keyboard disables NumberPad as well
-- Enabling sys NumLock do not activate NumberPad (can be enabled)
-- Disabling NumberPad by default disable sys Numlock as well (can be disabled which is useful when is connected external keyboard)
+- NumberPad cooperation with system NumLock is configurable (activation/deactivation of NumberPad may also enable/disable system NumLock vice versa as well)
 - Activated NumberPad allowes pointer moves and is configurable distance when do not use key during press and move only with pointer
 - Activated NumberPad disables pointer taps (*this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*, can be configured)
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
-- Driver supports laptop suspend
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (*this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*, can be disabled)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
 
