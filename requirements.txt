@@ -1,5 +1,4 @@
 libevdev
-evdev
 numpy
 inotify
 python-xlib
