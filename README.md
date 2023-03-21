@@ -473,7 +473,7 @@ What is not depending on specific keyboard of Numpad is mentioned in table below
 
 ```
 [main]
-numpad_disables_sys_numlock = 0
+numpad_disables_sys_numlock = 1
 disable_due_inactivity_time = 60
 touchpad_disables_numpad = 1
 key_repetitions = 0
