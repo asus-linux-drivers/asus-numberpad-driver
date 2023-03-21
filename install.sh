@@ -285,20 +285,37 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
     read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
 
-        # credits (https://unix.stackexchange.com/questions/323160/gnome3-adding-keyboard-custom-shortcuts-using-dconf-without-need-of-logging)
         existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-        #echo $existing_shortcut_string
+        echo $existing_shortcut_string
 
-        if [[ "$existing_shortcut_string" == "@as []" ]]
+        existing_shortcut_count=0
+        if [[ "$existing_shortcut_string" != "@as []" ]]
         then
-            existing_shortcut_count=0
-        else
             IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
             existing_shortcut_count="${#existing_shortcut_array[@]}"    
         fi
-        #echo $existing_shortcut_count
-        new_shortcut_index=$(("$existing_shortcut_count"))
+
+        new_shortcut_index=0
+        if [[ $existing_shortcut_count != 0 ]]
+        then
+            for shortcut_index in "${!existing_shortcut_array[@]}"; do
+                shortcut="${existing_shortcut_array[$shortcut_index]}"
+                shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
+                if [[ "$shortcut_index" -gt "$new_shortcut_index" ]]; then
+                    new_shortcut_index=$shortcut_index
+                    #echo $shortcut_index
+                fi
+            done
+            ((new_shortcut_index=new_shortcut_index+1))
+            #echo $new_shortcut_index
+            new_shortcut_string=${existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index']"
+        else
+          new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"  
+        fi
+
         #echo $new_shortcut_index
+        #echo $new_shortcut_string
+
         declaration_string=' ['
         for (( i=0; i<="$existing_shortcut_count"; i++ )); do
             if (( $i == 0 ))
@@ -309,8 +326,6 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             fi
         done
         declaration_string="$declaration_string"']'
-
-        #echo $declaration_string
 
         if [[ $(type flatpak 2>/dev/null && flatpak list | grep io.elementary.calculator 2>/dev/null) ]]; then
             echo "io.elementary.calculator here"
@@ -323,7 +338,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
 
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${new_shortcut_string}"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
@@ -344,7 +359,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
 
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${declaration_string}"
+            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${new_shortcut_string}"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
             runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
