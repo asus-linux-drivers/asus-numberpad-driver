@@ -1683,7 +1683,7 @@ try:
     listen_touchpad_events()
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
-    sys.exit(1)
 finally:
     fd_t.close()
     inotify_adapters.remove_watch(config_file_dir)
+    sys.exit(1)
