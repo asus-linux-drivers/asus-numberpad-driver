@@ -128,7 +128,7 @@ B: MSC=20
 | ASUE1407:00 04F3:310D ||     |     |
 | ASUE1408:00 04F3:3137 ||     |     |
 | ASUE1409:00 04F3:3157 ||     |     |
-| ASUE140A:00 04F3:3134 ||     |     |
+| ASUE140A:00 04F3:3134 || up5401ea |     | UX363EA | [@Crylia](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/113)
 | ASUE140C:00 04F3:3145 || up5401ea | backlight\_levels_ascendant = ["0x2f", "0x2e", "0x2d", "0x2c", "0x2b", "0x2a", "0x29", "0x28", "0x27", "0x26", "0x25", "0x24", "0x23", "0x22", "0x21", "0x20"] | ASUS EXPERTBOOK B3302FEA_B5302FEA 1.0 | [@tasmirz](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/109)
 | ASUE140D:00 04F3:31B9 || up5401ea |     | Asus ZenBook Flip OLED UP5401EA OLED024T Pine Grey | [@ldrahnik](https://github.com/ldrahnik)
 | ASUE140D:00 04F3:31BC ||     |     |
