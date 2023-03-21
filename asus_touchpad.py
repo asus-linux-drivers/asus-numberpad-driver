@@ -1588,26 +1588,29 @@ def check_touchpad_status():
 
 
 def check_system_numlock_status():
-    while True:
+    global stop_threads
+
+    while not stop_threads and True:
         check_system_numlock_vs_local()
         sleep(0.5)
 
 
 def check_touchpad_status_endless_cycle():
-    global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+    global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, stop_threads
 
-    while True and getting_device_via_xinput_status_failure_count < getting_device_via_xinput_status_max_failure_count:
+    while not stop_threads and True and getting_device_via_xinput_status_failure_count < getting_device_via_xinput_status_max_failure_count:
         if touchpad_disables_numpad and numlock:
             check_touchpad_status()
         sleep(0.5)
 
-    log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_via_xinput_status_failure_count)
+    if not stop_threads:
+        log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_via_xinput_status_failure_count)
 
 
 def check_numpad_automatical_disable_due_inactivity():
-    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock
+    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads
 
-    while True:
+    while not stop_threads and True:
 
         #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
         numlock_lock.acquire()
@@ -1658,27 +1661,30 @@ def check_config_values_changes():
     except:
         pass
 
+    log.info("check_config_values_changes: inotify watching config file ended")
+
 
 threads = []
+stop_threads = False
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
 if keyboard:
-    t = threading.Thread(target=check_system_numlock_status)
+    t = threading.Thread(target=check_system_numlock_status, args=(lambda: stop_threads))
     threads.append(t)
     t.start()
 
 # if disabling touchpad disables numpad aswell
 if d_t and touchpad_name:
-    t = threading.Thread(target=check_touchpad_status_endless_cycle)
+    t = threading.Thread(target=check_touchpad_status_endless_cycle, args=(lambda: stop_threads))
     threads.append(t)
     t.start()
 
-t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
+t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity, args=(lambda: stop_threads))
 threads.append(t)
 t.start()
 
 # check changes in config values
-t = threading.Thread(target=check_config_values_changes)
+t = threading.Thread(target=check_config_values_changes, args=(lambda: stop_threads))
 threads.append(t)
 t.start()
 
@@ -1687,6 +1693,10 @@ try:
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
 finally:
-    fd_t.close()
+    stop_threads=True
     inotify_adapters.remove_watch(config_file_dir)
+    for thread in threads:
+        thread.join()
+    fd_t.close()
+    logging.exception("Exiting with code 1")
     sys.exit(1)
