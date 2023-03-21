@@ -1608,15 +1608,16 @@ def check_numpad_automatical_disable_due_inactivity():
     global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock
 
     while True:
+
+        #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
+        numlock_lock.acquire()
+        #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
+
         if\
             disable_due_inactivity_time and\
             numlock and\
             last_event_time != 0 and\
             time() > disable_due_inactivity_time + last_event_time:
-
-            #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
-            numlock_lock.acquire()
-            #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
 
             sys_numlock = get_system_numlock()
             if sys_numlock and numpad_disables_sys_numlock:
@@ -1627,7 +1628,9 @@ def check_numpad_automatical_disable_due_inactivity():
             numlock = False
             deactivate_numpad()
             log.info("Numpad deactivated")
-            numlock_lock.release()
+
+        numlock_lock.release()
+
         sleep(1)
 
 
