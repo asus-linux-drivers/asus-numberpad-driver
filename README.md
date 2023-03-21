@@ -529,14 +529,14 @@ State connected external keyboard / adding external keyboard means these changes
 
 ```
 sys_numlock_enables_numpad=0
-disabling_numpad_disable_sys_numlock=0
+numpad_disables_sys_numlock=0
 ```
 
 State without external keyboard / removing external keyboard means these changes:
 
 ```
 sys_numlock_enables_numpad=1
-disabling_numpad_disable_sys_numlock=1
+numpad_disables_sys_numlock=1
 ```
 
 ## Credits
