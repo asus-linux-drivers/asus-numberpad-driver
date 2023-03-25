@@ -286,7 +286,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
     case "$response" in [yY][eE][sS]|[yY])
 
         existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-        echo $existing_shortcut_string
+        #echo $existing_shortcut_string
 
         existing_shortcut_count=0
         if [[ "$existing_shortcut_string" != "@as []" ]]
