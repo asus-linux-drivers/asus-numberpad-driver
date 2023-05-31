@@ -1669,22 +1669,22 @@ stop_threads = False
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
 if keyboard:
-    t = threading.Thread(target=check_system_numlock_status, args=(lambda: stop_threads))
+    t = threading.Thread(target=check_system_numlock_status)
     threads.append(t)
     t.start()
 
 # if disabling touchpad disables numpad aswell
 if d_t and touchpad_name:
-    t = threading.Thread(target=check_touchpad_status_endless_cycle, args=(lambda: stop_threads))
+    t = threading.Thread(target=check_touchpad_status_endless_cycle)
     threads.append(t)
     t.start()
 
-t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity, args=(lambda: stop_threads))
+t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
 threads.append(t)
 t.start()
 
 # check changes in config values
-t = threading.Thread(target=check_config_values_changes, args=(lambda: stop_threads))
+t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 t.start()
 
@@ -1695,8 +1695,8 @@ except:
 finally:
     stop_threads=True
     inotify_adapters.remove_watch(config_file_dir)
+    fd_t.close()
     for thread in threads:
         thread.join()
-    fd_t.close()
     logging.exception("Exiting with code 1")
     sys.exit(1)
