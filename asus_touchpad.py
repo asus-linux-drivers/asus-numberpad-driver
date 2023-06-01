@@ -639,6 +639,17 @@ def set_touchpad_prop_tap_to_click(value):
         log.error(e.output)
 
 
+def grab():
+    global d_t
+
+    try:
+        log.info("grab")
+        d_t.grab()
+
+    except device.DeviceGrabError as e:
+        log.error("Error of grabbing, %s", e)
+
+
 def activate_numpad():
     global brightness, default_backlight_level, enabled_touchpad_pointer, top_left_icon_brightness_func_disabled
 
@@ -1023,17 +1034,6 @@ def ungrab():
 
     except device.DeviceGrabError as e:
         log.error("Error of un-grabbing, %s", e)
-
-
-def grab():
-    global d_t
-
-    try:
-        log.info("grab")
-        d_t.grab()
-
-    except device.DeviceGrabError as e:
-        log.error("Error of grabbing, %s", e)
 
 
 def ungrab_current_slot():
