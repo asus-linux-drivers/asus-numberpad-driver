@@ -1694,6 +1694,22 @@ try:
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
 finally:
+
+    # try deactivate first
+    numlock_lock.acquire()
+    if numlock:
+        sys_numlock = get_system_numlock()
+        if sys_numlock and numpad_disables_sys_numlock:
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock deactivated")
+
+        numlock = False
+        deactivate_numpad()
+        log.info("Numpad deactivated")
+    numlock_lock.release()
+
+    # then clean up
     stop_threads=True
     inotify_adapters.remove_watch(config_file_dir)
     fd_t.close()
