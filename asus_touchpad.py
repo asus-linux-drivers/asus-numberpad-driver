@@ -1590,7 +1590,7 @@ def check_touchpad_status():
 def check_system_numlock_status():
     global stop_threads
 
-    while not stop_threads and True:
+    while not stop_threads:
         check_system_numlock_vs_local()
         sleep(0.5)
 
@@ -1598,7 +1598,7 @@ def check_system_numlock_status():
 def check_touchpad_status_endless_cycle():
     global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, stop_threads
 
-    while not stop_threads and True and getting_device_via_xinput_status_failure_count < getting_device_via_xinput_status_max_failure_count:
+    while not stop_threads and getting_device_via_xinput_status_failure_count < getting_device_via_xinput_status_max_failure_count:
         if touchpad_disables_numpad and numlock:
             check_touchpad_status()
         sleep(0.5)
@@ -1610,7 +1610,7 @@ def check_touchpad_status_endless_cycle():
 def check_numpad_automatical_disable_due_inactivity():
     global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads
 
-    while not stop_threads and True:
+    while not stop_threads:
 
         #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
         numlock_lock.acquire()
@@ -1641,22 +1641,23 @@ def check_config_values_changes():
     global inotify_adapters, config_lock
 
     try:
-        for event in inotify_adapters.event_gen(yield_nones=False):
+        while not stop_threads:
+            for event in inotify_adapters.event_gen(yield_nones=False, timeout_s=1):
 
-            (_, type_names, path, filename) = event
+                (_, type_names, path, filename) = event
 
-            if filename != CONFIG_FILE_NAME or path != config_file_dir:
-                continue
+                if filename != CONFIG_FILE_NAME or path != config_file_dir:
+                    continue
 
-            if "IN_CLOSE_WRITE" in type_names or "IN_IGNORED" in type_names or "IN_MOVED_TO" in type_names:
+                if "IN_CLOSE_WRITE" in type_names or "IN_IGNORED" in type_names or "IN_MOVED_TO" in type_names:
 
-                if not config_lock.locked():
-                    log.info("check_config_values_changes: detected external change of config file -> loading changes")
-                    # because file might be read so fast that changes will not be there yet
-                    sleep(0.1)
-                    load_all_config_values()
-                else:
-                    log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+                    if not config_lock.locked():
+                        log.info("check_config_values_changes: detected external change of config file -> loading changes")
+                        # because file might be read so fast that changes will not be there yet
+                        sleep(0.1)
+                        load_all_config_values()
+                    else:
+                        log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
 
     except:
         pass
@@ -1671,22 +1672,22 @@ stop_threads = False
 if keyboard:
     t = threading.Thread(target=check_system_numlock_status)
     threads.append(t)
-    t.start()
 
 # if disabling touchpad disables numpad aswell
 if d_t and touchpad_name:
     t = threading.Thread(target=check_touchpad_status_endless_cycle)
     threads.append(t)
-    t.start()
 
 t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
 threads.append(t)
-t.start()
 
 # check changes in config values
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
-t.start()
+
+# start all threads
+for thread in threads:
+    thread.start()
 
 try:
     listen_touchpad_events()
