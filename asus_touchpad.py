@@ -423,9 +423,9 @@ enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_E,
     EV_KEY.KEY_F
 ]
-# for currently used keyboard
+# enable equivalent key of "U" for currently used keyboard layout
 try:
-    U_keycode = get_keycode_which_reflects_current_layout("U", False)
+    get_keycode_which_reflects_current_layout("U", False)
 except:
     pass
 
