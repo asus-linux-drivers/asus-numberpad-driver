@@ -217,7 +217,8 @@ if [ "$wayland_or_x11" = "x11" ]; then
     echo "X11 is detected"
 
     xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-    cat asus_touchpad.X11.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" USER=$RUN_UNDER_USER LAYOUT=$model XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
+    xdisplay=$(echo $DISPLAY)
+    cat asus_touchpad.X11.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" USER=$RUN_UNDER_USER LAYOUT=$model XDISPLAY=$display XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
 
 elif [ "$wayland_or_x11" = "wayland" ]; then
     echo "Wayland is detected, unfortunatelly you will not be able use feature: `Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell`, at this moment is supported only X11"
