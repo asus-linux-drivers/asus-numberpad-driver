@@ -364,7 +364,8 @@ row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 def get_keycode_of_ascii_char(char):
-    display = Xlib.display.Display()
+    display_var = os.environ.get('DISPLAY')
+    display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
     keycode = display.keysym_to_keycode(keysym) - 8
     return keycode
