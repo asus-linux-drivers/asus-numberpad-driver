@@ -309,6 +309,43 @@ $ gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [
 - Whether keybinding works can be tested via slide gesture from NumberPad or via simulating `XF86Calculator` key `xdotool key XF86Calculator`
 
 
+**Dconf permissions problem**
+
+When is the driver installed under current user and this error occurs:
+
+```
+(process:393177): dconf-CRITICAL **: 14:12:44.964: unable to create file '/run/user/1000/dconf/user': Permission denied.  dconf will not work properly.
+```
+
+way how fix it is change owner and group to current user
+
+```
+ldrahnik@Zenbook-UP5401EA:/run/user/1000/dconf$ ls -la
+total 4
+drwx------  2 ldrahnik ldrahnik  60 Jun  3 21:57 .
+drwx------ 16 ldrahnik ldrahnik 520 Jun  4 14:04 ..
+-rw-------  1 root     root       2 Jun  3 22:52 user
+```
+
+to 
+
+```
+ldrahnik@Zenbook-UP5401EA:/run/user/1000/dconf$ ls -la
+total 4
+drwx------  2 ldrahnik ldrahnik  60 Jun  3 21:57 .
+drwx------ 16 ldrahnik ldrahnik 520 Jun  4 14:04 ..
+-rw-------  1 ldrahnik ldrahnik   2 Jun  4 14:14 user
+```
+
+using these commands:
+
+```
+# owner
+sudo chown ldrahnik user
+# group
+sudo chown :ldrahnik user
+```
+
 ## Configuration
 
 ### Keyboard layout
