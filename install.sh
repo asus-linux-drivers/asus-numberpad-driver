@@ -6,6 +6,8 @@ if [[ $(id -u) != 0 ]]; then
     exit 1
 fi
 
+logout_requested=false
+
 # "root" by default or when is used --user it is "current user"
 RUN_UNDER_USER=$USER
 
@@ -14,6 +16,7 @@ if [ "$1" = "--user" ]; then
     echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules
     RUN_UNDER_USER=$SUDO_USER
     usermod -a -G "i2c,input,uinput" $RUN_UNDER_USER
+    logout_requested=true
 fi
 
 echo "driver will run under user $RUN_UNDER_USER"
@@ -280,7 +283,6 @@ else
 fi
 
 
-logout_requested=false
 if [[ $(type gsettings 2>/dev/null) ]]; then
     echo "gsettings is here"
     read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
