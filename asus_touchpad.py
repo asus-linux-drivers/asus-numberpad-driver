@@ -225,7 +225,6 @@ def gsettingsGet(path, name):
     if gsettings_is_here:
         try:
             cmd = ['gsettings', 'get', path, name]
-            log.debug(cmd)
             propData = subprocess.check_output(cmd)
             propDataDecoded = propData.decode()
             return propDataDecoded
