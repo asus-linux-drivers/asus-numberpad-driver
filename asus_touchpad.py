@@ -13,7 +13,7 @@ from time import sleep, time
 from typing import Optional
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_LED, EV_MSC, EV_SYN, Device, InputEvent, const, device
-from inotify import adapters
+from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, AsyncNotifier
 import Xlib.display
 import Xlib.X
 import Xlib.XK
@@ -864,9 +864,6 @@ config_lock.release()
 # because inotify (deadlock)
 sleep(0.1)
 
-inotify_adapters = adapters.Inotify()
-inotify_adapters.add_watch(config_file_dir)
-
 def set_tracking_id(value):
     try:
 
@@ -1638,29 +1635,35 @@ def check_numpad_automatical_disable_due_inactivity():
 
 
 def check_config_values_changes():
-    global inotify_adapters, config_lock
+    global config_lock, stop_threads
 
-    try:
-        while not stop_threads:
-            for event in inotify_adapters.event_gen(yield_nones=False, timeout_s=1):
+    watch_manager = WatchManager()
 
-                (_, type_names, path, filename) = event
+    path = os.path.abspath(config_file_dir)
+    mask = IN_CLOSE_WRITE | IN_IGNORED | IN_MOVED_TO
+    watch_manager.add_watch(path, mask)
 
-                if filename != CONFIG_FILE_NAME or path != config_file_dir:
-                    continue
+    event_notifier = AsyncNotifier(watch_manager)
 
-                if "IN_CLOSE_WRITE" in type_names or "IN_IGNORED" in type_names or "IN_MOVED_TO" in type_names:
+    while not stop_threads:
+        try:
+            event_notifier.process_events()
+            if event_notifier.check_events():
+                event_notifier.read_events()
 
-                    if not config_lock.locked():
-                        log.info("check_config_values_changes: detected external change of config file -> loading changes")
-                        # because file might be read so fast that changes will not be there yet
-                        sleep(0.1)
-                        load_all_config_values()
-                    else:
-                        log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+                if not config_lock.locked():
+                    log.info("check_config_values_changes: detected external change of config file -> loading changes")
+                    # because file might be read so fast that changes will not be there yet
+                    sleep(0.1)
+                    load_all_config_values()
+                else:
+                    log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+    
+        except KeyboardInterrupt:
+            break
 
-    except:
-        pass
+    event_notifier.stop()
+    watch_manager.del_watch(path)
 
     log.info("check_config_values_changes: inotify watching config file ended")
 
@@ -1711,7 +1714,6 @@ finally:
 
     # then clean up
     stop_threads=True
-    inotify_adapters.remove_watch(config_file_dir)
     fd_t.close()
     for thread in threads:
         thread.join()
