@@ -145,5 +145,14 @@ then
 	exit 1
 fi
 
+systemctl daemon-reload
+
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when was called systemctl daemon reload"
+    exit 1
+else
+    echo "Systemctl daemon realod called succesfully"
+fi
+
 echo "Uninstall finished"
 exit 0
