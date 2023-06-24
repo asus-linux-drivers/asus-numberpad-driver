@@ -389,6 +389,15 @@ else
     echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
 fi
 
+systemctl daemon-reload
+
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when was called systemctl daemon reload"
+    exit 1
+else
+    echo "Systemctl daemon realod called succesfully"
+fi
+
 systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
 
 if [[ $? != 0 ]]; then
