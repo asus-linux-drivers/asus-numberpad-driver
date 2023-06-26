@@ -946,13 +946,11 @@ def get_events_for_unicode_char(char):
 
         try:
             if hex_digit.isnumeric():
-                key_code = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
-                key = EV_KEY.codes[int(key_code)]
+                key = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
             else:
                 key = get_keycode_which_reflects_current_layout(hex_digit)
         except:
-            key_code = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
-            key = EV_KEY.codes[int(key_code)]
+            key = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
 
         key_event_press = InputEvent(key, 1)
         key_event_unpress = InputEvent(key, 0)
