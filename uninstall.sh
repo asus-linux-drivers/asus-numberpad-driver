@@ -27,21 +27,18 @@ systemctl stop asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
 then
 	echo "asus_touchpad_numpad.service cannot be stopped correctly..."
-	exit 1
 fi
 
 systemctl disable asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]
 then
 	echo "asus_touchpad_numpad.service cannot be disabled correctly..."
-	exit 1
 fi
 
 rm -f /etc/systemd/system/asus_touchpad_numpad@.service
 if [[ $? != 0 ]]
 then
 	echo "/etc/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
-	exit 1
 fi
 
 
@@ -61,7 +58,6 @@ then
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-			exit 1
 		fi
         ;;
     *)
@@ -69,7 +65,6 @@ then
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-			exit 1
 		fi
 		echo "Numpad layouts in /usr/share/asus_touchpad_numpad-driver/conf/ have not been removed and remain in system:"
         ls /usr/share/asus_touchpad_numpad-driver/numpad_layouts
@@ -80,7 +75,6 @@ else
 	if [[ $? != 0 ]]
 	then
 		echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-		exit 1
 	fi
 fi
 
@@ -107,7 +101,6 @@ then
 		if [[ $? != 0 ]]
 		then
 			echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
-			exit 1
 		fi
         ;;
     *)
@@ -127,7 +120,6 @@ else
 	if [[ $? != 0 ]]
 	then
 		echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
-		exit 1
 	fi
 fi
 
@@ -135,21 +127,18 @@ rm -rf /var/log/asus_touchpad_numpad-driver
 if [[ $? != 0 ]]
 then
 	echo "/var/log/asus_touchpad_numpad-driver cannot be removed correctly..."
-	exit 1
 fi
 
 rm -f /usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules
 if [[ $? != 0 ]]
 then
 	echo "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules cannot be removed correctly..."
-	exit 1
 fi
 
 systemctl daemon-reload
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when was called systemctl daemon reload"
-    exit 1
 else
     echo "Systemctl daemon realod called succesfully"
 fi
