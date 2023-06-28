@@ -634,9 +634,9 @@ def set_touchpad_prop_tap_to_click(value):
         cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
         log.debug(cmd)
         subprocess.check_output(cmd)
-    except subprocess.CalledProcessError as e:
+    except:
         getting_device_via_xinput_status_failure_count+=1
-        log.error(e.output)
+        log.error('Setting libinput Tapping EnabledDevice via xinput failed')
 
 
 def grab():
