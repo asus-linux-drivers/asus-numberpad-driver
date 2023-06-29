@@ -27,6 +27,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
+echo "$wayland_or_x11 is DETECTED"
 if [[ $(apt install 2>/dev/null) ]]; then
     echo 'apt is here' && apt -y install ibus libevdev2 i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
     if [ "$wayland_or_x11" = "x11" ]; then
@@ -34,28 +35,14 @@ if [[ $(apt install 2>/dev/null) ]]; then
     fi
 elif [[ $(pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev i2c-tools python python-pip
+    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
     if [ "$wayland_or_x11" = "x11" ]; then
         pacman --noconfirm --needed -S xorg-xinput
     fi
-
-    runuser -u $RUN_UNDER_USER -- python3 -m pip install -r requirements.txt
-
-    if [[ $? != 0 ]]; then
-        echo "pip dependencies via file requirements.txt cannot be loaded correctly."
-        exit 1
-    fi
-elif [[ $(dnf install 2>/dev/null) ]]; then
-    echo 'dnf is here' && dnf -y install ibus libevdev i2c-tools python3-devel python3-pip
+elif [[ $(dnf help 2>/dev/null) ]]; then
+    echo 'dnf is here' && dnf -y install ibus libevdev i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
     if [ "$wayland_or_x11" = "x11" ]; then
         dnf -y install xinput
-    fi
-
-    runuser -u $RUN_UNDER_USER -- python3 -m pip install -r requirements.txt
-
-    if [[ $? != 0 ]]; then
-        echo "pip dependencies via file requirements.txt cannot be loaded correctly."
-        exit 1
     fi
 fi
 
