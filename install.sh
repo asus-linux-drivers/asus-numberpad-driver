@@ -23,7 +23,11 @@ echo "driver will run under user $RUN_UNDER_USER"
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-wayland_or_x11=$XDG_SESSION_TYPE
+# this works because sudo sets the environment variable SUDO_USER to the original username
+session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
+wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
+
+echo "$wayland_or_x11 is DETECTED"
 if [[ $(apt install 2>/dev/null) ]]; then
     echo 'apt is here' && apt -y install ibus libevdev2 i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
     if [ "$wayland_or_x11" = "x11" ]; then
