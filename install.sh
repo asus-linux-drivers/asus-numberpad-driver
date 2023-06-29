@@ -39,7 +39,7 @@ elif [[ $(pacman -h 2>/dev/null) ]]; then
     if [ "$wayland_or_x11" = "x11" ]; then
         pacman --noconfirm --needed -S xorg-xinput
     fi
-elif [[ $(dnf install 2>/dev/null) ]]; then
+elif [[ $(dnf help 2>/dev/null) ]]; then
     echo 'dnf is here' && dnf -y install ibus libevdev i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
     if [ "$wayland_or_x11" = "x11" ]; then
         dnf -y install xinput
