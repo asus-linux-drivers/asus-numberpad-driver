@@ -500,6 +500,6 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 Do you think my effort put into open source is useful for you / others? Put star on the GitHub repository. Every star makes me proud. The same as any contribution. Would you like to reward me more? Now exists the way. You can invite me for a coffee! I really appreciate that!
 
-[![BuyMeACoffee](https://img.shields.io/badge/Buy%20to%20maintainer%20a%20coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/ldrahnik)
+[![BuyMeACoffee](https://img.shields.io/badge/Buy%20to%20maintainer%20a%20coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/ldrahnik)
 
-[![Buy me a coffee supporter](images/buymeacoffee.png)](https://www.buymeacoffee.com/ldrahnik)
+[![Buy me a coffee supporter](images/buymeacoffee.png)](https://www.ko-fi.com/ldrahnik)
