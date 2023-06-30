@@ -17,6 +17,10 @@ The driver is written in python and runs as a systemctl service. Driver contains
 
 If you find this project useful, do not forget to give it a [![GitHub stars](https://img.shields.io/github/stars/asus-linux-drivers/asus-numberpad-driver.svg?style=social&label=Star&maxAge=2592000)](https://github.com/asus-linux-drivers/asus-numberpad-driver/stargazers) People already did!
 
+## Changelog
+
+[CHANGELOG.md](CHANGELOG.md)
+
 ## Features
 
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout) (keys, sizes, paddings..)
