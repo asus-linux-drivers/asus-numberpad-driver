@@ -406,6 +406,16 @@ dev.enable(EV_KEY.KEY_NUMLOCK)
 enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_U,
     EV_KEY.KEY_S,
+    EV_KEY.KEY_0,
+    EV_KEY.KEY_1,
+    EV_KEY.KEY_2,
+    EV_KEY.KEY_3,
+    EV_KEY.KEY_4,
+    EV_KEY.KEY_5,
+    EV_KEY.KEY_6,
+    EV_KEY.KEY_7,
+    EV_KEY.KEY_8,
+    EV_KEY.KEY_9,
     EV_KEY.KEY_KP0,
     EV_KEY.KEY_KP1,
     EV_KEY.KEY_KP2,
@@ -945,12 +955,14 @@ def get_events_for_unicode_char(char):
     for hex_digit in '%X' % ord(char):
 
         try:
+            # try x11
+            key = get_keycode_which_reflects_current_layout(hex_digit)
+        except:
+            # x11 not here - not found DISPLAY or another exception from lib X11 was thrown - probably Wayland here
             if hex_digit.isnumeric():
                 key = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
             else:
-                key = get_keycode_which_reflects_current_layout(hex_digit)
-        except:
-            key = getattr(EV_KEY, 'KEY_KP%s' % hex_digit)
+                key = getattr(EV_KEY, 'KEY_%s' % hex_digit)
 
         key_event_press = InputEvent(key, 1)
         key_event_unpress = InputEvent(key, 0)
