@@ -496,10 +496,12 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 [![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver)
 
-**Buy me a coffee**
+**Buy me a coffee** 
 
 Do you think my effort put into open source is useful for you / others? Put star on the GitHub repository. Every star makes me proud. The same as any contribution. Would you like to reward me more? Now exists the way. You can invite me for a coffee! I really appreciate that!
 
+Is preferred [ko-fi.com/ldrahnik](https://ko-fi.com/ldrahnik) instead of [buymeacoffee.com/ldrahnik](https://buymeacoffee.com/ldrahnik) because of zero commissions.
+
 [![BuyMeACoffee](https://img.shields.io/badge/Buy%20to%20maintainer%20a%20coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/ldrahnik)
 
-[![Buy me a coffee supporter](images/buymeacoffee.png)](https://www.ko-fi.com/ldrahnik)
+[![Buy me a coffee supporter](images/buymeacoffee.png)](https://buymeacoffee.com/ldrahnik)
