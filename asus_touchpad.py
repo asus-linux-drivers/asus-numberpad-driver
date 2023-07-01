@@ -459,7 +459,7 @@ def isEvent(event):
 
 
 def is_device_enabled(device_name):
-    global getting_device_via_xinput_status_failure_count, gsettings_is_here
+    global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
 
     value = gsettingsGetTouchpadSendEvents()
     if value:
