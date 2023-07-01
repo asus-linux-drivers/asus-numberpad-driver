@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.8.0 (1.7.2023)
+
+### Fixed
+
+- Fixed bug when was on wayland send any key with unicode code including A-F
+- Preset 0-9 number keys without KP so drivers's device has not to be reinitialized when using first time (avoiding 1s sleep)
+
+## Refactored
+
+- On X11 is every time used X11 library to get key reflecting current layout (not used anymore even 0-9 KP keys for numbers)
+
 ## v2.7.9 (30.6.2023)
 
 ### Fixed
