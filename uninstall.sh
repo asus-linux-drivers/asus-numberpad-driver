@@ -9,6 +9,7 @@ fi
 # for `rm` exclude !(xy)
 shopt -s extglob
 
+logout_requested=false
 
 # "root" by default or when is used --user it is "current user"
 RUN_UNDER_USER=$USER
@@ -141,6 +142,61 @@ if [[ $? != 0 ]]; then
     echo "Something went wrong when was called systemctl daemon reload"
 else
     echo "Systemctl daemon realod called succesfully"
+fi
+
+# remove shortcuts for toggling calculator added by driver
+
+existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+#echo $existing_shortcut_string
+
+filtered_existing_shortcut_string="["
+filtered_existing_shortcut_count=0
+
+if [[ "$existing_shortcut_string" != "@as []" ]]; then
+	IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
+    for shortcut_index in "${!existing_shortcut_array[@]}"; do
+        shortcut="${existing_shortcut_array[$shortcut_index]}"
+        shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
+
+        command=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
+        #echo $command
+        if [[ "$command" = "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
+			((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
+            echo "Removed shortcut added by installation of this driver for toggling calculator"
+            runuser -u $SUDO_USER gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
+        else
+			#echo "Found something else on index $shortcut_index"
+			if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
+            	filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
+            else
+                filtered_existing_shortcut_string="$filtered_existing_shortcut_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
+            fi
+		fi
+    done
+
+    filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
+    #echo $filtered_existing_shortcut_string
+    #echo $filtered_existing_shortcut_count
+
+	if [[ $filtered_existing_shortcut_count != 0 ]]; then
+		runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${filtered_existing_shortcut_string}"
+		logout_requested=true
+	fi
+fi
+
+if [[ "$logout_requested" = true ]]
+then
+
+    echo "Uninstall process requested to succesfull finish atleast log out or reboot"
+    echo "Without that reverted changes might not be done"
+
+    read -r -p "Do you want reboot now? [y/N]" response
+    case "$response" in [yY][eE][sS]|[yY])
+        reboot
+        ;;
+    *)
+        ;;
+    esac
 fi
 
 echo "Uninstall finished"
