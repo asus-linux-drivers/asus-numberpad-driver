@@ -283,44 +283,55 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
         existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
         #echo $existing_shortcut_string
 
-        existing_shortcut_count=0
-        if [[ "$existing_shortcut_string" != "@as []" ]]
-        then
-            IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
-            existing_shortcut_count="${#existing_shortcut_array[@]}"    
-        fi
-
         new_shortcut_index=0
-        if [[ $existing_shortcut_count != 0 ]]
-        then
+        filtered_existing_shortcut_string="["
+        filtered_existing_shortcut_count=0
+
+        if [[ "$existing_shortcut_string" != "@as []" ]]; then
+            IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
             for shortcut_index in "${!existing_shortcut_array[@]}"; do
                 shortcut="${existing_shortcut_array[$shortcut_index]}"
                 shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
+
+                # looking for first free highest index (gaps will not be used for sure)
                 if [[ "$shortcut_index" -gt "$new_shortcut_index" ]]; then
                     new_shortcut_index=$shortcut_index
                     #echo $shortcut_index
                 fi
+
+                # filter out already added the same shortcuts by this driver (can be caused by running install script multiple times so clean and then add only 1 new - we want no duplicates)
+                command=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
+                #echo $command
+                if [[ "$command" != "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
+                    #echo "Found something else on index $shortcut_index"
+                    if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
+                        filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
+                    else
+                        filtered_existing_shortcut_string="$filtered_existing_shortcut_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
+                    fi
+                else
+                    echo "Found already existing ducplicated shortcut for toggling calculator, will be removed"
+                    ((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
+                    runuser -u $SUDO_USER gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
+                fi
             done
             ((new_shortcut_index=new_shortcut_index+1))
             #echo $new_shortcut_index
-            new_shortcut_string=${existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index']"
-        else
-          new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"  
-        fi
+            filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
+            #echo $filtered_existing_shortcut_string
+            #echo $filtered_existing_shortcut_count
 
-        #echo $new_shortcut_index
-        #echo $new_shortcut_string
-
-        declaration_string=' ['
-        for (( i=0; i<="$existing_shortcut_count"; i++ )); do
-            if (( $i == 0 ))
-            then
-                declaration_string="$declaration_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$i/'"
+            if [[ $filtered_existing_shortcut_count != 0 ]]; then
+                new_shortcut_string=${filtered_existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index']"
             else
-                declaration_string="$declaration_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$i/'"
+                # after filtering duplicated shortcuts array of shortcuts is completely empty
+                new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
             fi
-        done
-        declaration_string="$declaration_string"']'
+            #echo $new_shortcut_string
+        else
+            # array of shortcuts is completely empty
+            new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
+        fi
 
         if [[ $(type flatpak 2>/dev/null && flatpak list | grep io.elementary.calculator 2>/dev/null) ]]; then
             echo "io.elementary.calculator here"
@@ -407,7 +418,7 @@ then
     echo "Install process requested to succesfull finish atleast log out or reboot"
     echo "Without that driver might not work properly"
 
-    read -r -p "Do you want automatically reboot? [y/N]" response
+    read -r -p "Do you want reboot now? [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
         reboot
         ;;
