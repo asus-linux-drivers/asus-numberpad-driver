@@ -1,6 +1,6 @@
 [Unit]
 Description=Asus Touchpad to Numpad Handler
-BindsTo=graphical.target
+After=display-manager.service
 
 [Service]
 User=%i
