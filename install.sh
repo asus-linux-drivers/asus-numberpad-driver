@@ -397,20 +397,30 @@ else
     echo "Systemctl daemon realod called succesfully"
 fi
 
-read -r -p "Do you want start the driver automatically at boot using systemd service? [y/N] (result might be black screen which will prevent login, systemd service is not designed to be started at boot with using X11, is recommended start driver on every startup by other way)" response
-case "$response" in [yY][eE][sS]|[yY])
-        systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
-        if [[ $? != 0 ]]; then
-            echo "Something went wrong when enabling the asus_touchpad_numpad.service"
-            exit 1
-        else
-            echo "Asus touchpad numpad service enabled"
-        fi
-        ;;
-    *)
-        echo "Add this line to startup scripts 'sudo systemctl start asus_touchpad_numpad@$RUN_UNDER_USER.service' or start driver manually with the same line when needed."
-        ;;
-esac
+if [ "$wayland_or_x11" = "x11" ]; then
+    read -r -p "Do you want start the driver automatically at boot using systemd service? [y/N] (result might be black screen which will prevent login, systemd service is not designed to be started at boot with using X11, is recommended start driver on every startup by other way)" response
+    case "$response" in [yY][eE][sS]|[yY])
+            systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
+            if [[ $? != 0 ]]; then
+                echo "Something went wrong when enabling the asus_touchpad_numpad.service"
+                exit 1
+            else
+                echo "Asus touchpad numpad service enabled"
+            fi
+            ;;
+        *)
+            echo "Add this line to startup scripts 'sudo systemctl start asus_touchpad_numpad@$RUN_UNDER_USER.service' or start driver manually with the same line when needed. Now will be service started until first reboot."
+            ;;
+    esac
+else
+    systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
+    if [[ $? != 0 ]]; then
+        echo "Something went wrong when enabling the asus_touchpad_numpad.service"
+        exit 1
+    else
+        echo "Asus touchpad numpad service enabled"
+    fi
+fi
 
 systemctl restart asus_touchpad_numpad@$RUN_UNDER_USER.service
 if [[ $? != 0 ]]; then
