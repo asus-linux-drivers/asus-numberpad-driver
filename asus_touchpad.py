@@ -212,11 +212,9 @@ def gsettingsSet(path, name, value):
 
             log.debug(cmd)
             subprocess.check_output(cmd)
-            return True
         except:
             log.exception('gsettings set failed')
             gsettings_is_here=False
-            return False
 
 
 def gsettingsGet(path, name):
@@ -239,7 +237,7 @@ def gsettingsGetTouchpadSendEvents():
 
 
 def gsettingsSetTouchpadTapToClick(value):
-    return gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
+    gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
 
 
 # Figure out devices from devices file
@@ -638,7 +636,6 @@ def set_touchpad_prop_tap_to_click(value):
 
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
         log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
-        return True
 
     try:
         cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
