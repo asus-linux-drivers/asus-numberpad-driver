@@ -28,10 +28,10 @@ session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
 wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 echo "$wayland_or_x11 is DETECTED"
-if [[ $(apt install 2>/dev/null) ]]; then
-    echo 'apt is here' && apt -y install ibus libevdev2 i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
+if [[ $(apt-get install 2>/dev/null) ]]; then
+    echo 'apt is here' && apt-get -y install ibus libevdev2 i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
     if [ "$wayland_or_x11" = "x11" ]; then
-        apt -y install xinput
+        apt-get -y install xinput
     fi
 elif [[ $(pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
