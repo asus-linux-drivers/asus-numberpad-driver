@@ -680,6 +680,9 @@ def activate_numpad():
     elif enabled_touchpad_pointer == 3:
         set_touchpad_prop_tap_to_click(0)
 
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/132
+    # both values are required to send for succesfull activation (brightness up)
+    send_value_to_touchpad_via_i2c("0x60")
     send_value_to_touchpad_via_i2c("0x01")
      
     if default_backlight_level != "0x01" and not top_left_icon_brightness_func_disabled:
@@ -708,6 +711,12 @@ def deactivate_numpad():
         set_touchpad_prop_tap_to_click(1)
 
 
+    # inactivation can be doubled with another value 0x61 but purpose is
+    # not discovered yet so is used only 0x00 and 0x60 is send for sure during activating 
+    # (in case 0x61 was called directly outside of driver)
+    #
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/132
+    #
     send_value_to_touchpad_via_i2c("0x00")
     brightness = 0
 
