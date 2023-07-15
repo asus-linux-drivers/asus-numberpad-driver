@@ -39,6 +39,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Repeating the key, when is held (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 - Is implemented protection against multitouching accidentally when is multitouch not enabled (printing NumberPad key and slide gestures from corners are cancelled when is second finger used)
+- Is implemented protection against sending NumberPad key when is done pointer button click (left, right, middle one) when is set up config value `press_key_when_is_done_untouch` (by default)
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (*this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*, can be disabled)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
 
