@@ -564,15 +564,30 @@ def is_pressed_touchpad_top_left_icon():
         return False
 
 
+def reset_mt_slot(index):
+    abs_mt_slot_numpad_key[index] = None
+    abs_mt_slot_x_init_values[index] = -1
+    abs_mt_slot_x_values[index] = -1
+    abs_mt_slot_y_init_values[index] = -1
+    abs_mt_slot_y_values[index] = -1
+
+
 def set_none_to_current_mt_slot():
     global abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values
 
-    abs_mt_slot_numpad_key[abs_mt_slot_value] = None
-    abs_mt_slot_x_init_values[abs_mt_slot_value] = -1
-    abs_mt_slot_x_values[abs_mt_slot_value] = -1
-    abs_mt_slot_y_init_values[abs_mt_slot_value] = -1
-    abs_mt_slot_y_values[abs_mt_slot_value] = -166666
+    reset_mt_slot(abs_mt_slot_value)
+
+
+def set_none_to_all_mt_slots():
+    global abs_mt_slot_numpad_key,\
+        abs_mt_slot_x_values, abs_mt_slot_y_values
+
+    abs_mt_slot_numpad_key[:] = None
+    abs_mt_slot_x_init_values[:] = -1
+    abs_mt_slot_x_values[:] = -1
+    abs_mt_slot_y_init_values[:] = -1
+    abs_mt_slot_y_values[:] = -1
 
 
 def pressed_touchpad_top_left_icon(e):
@@ -862,6 +877,7 @@ numlock_touch_start_time = 0
 top_left_icon_touch_start_time = 0
 top_right_icon_touch_start_time = 0
 last_event_time = 0
+key_pointer_button_is_touched = None
 
 config = configparser.ConfigParser()
 load_all_config_values()
@@ -979,7 +995,7 @@ def get_events_for_unicode_char(char):
 
 
 def pressed_numpad_key():
-    global udev, abs_mt_slot_grab_status, abs_mt_slot_numpad_key, abs_mt_slot_value
+    global udev, abs_mt_slot_numpad_key, abs_mt_slot_value
 
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
@@ -1016,19 +1032,6 @@ def replaced_numpad_key(touched_key_now):
     pressed_numpad_key()
 
 
-def is_grabbed_more_than_one_time():
-    result = 0
-
-    for status in abs_mt_slot_grab_status:
-        if status:
-            result = 1
-
-    if result > 1:
-        return True
-    else:
-        return False
-
-
 def ungrab():
     global d_t
 
@@ -1041,9 +1044,9 @@ def ungrab():
 
 
 def ungrab_current_slot():
-    global d_t, abs_mt_slot_grab_status
+    global d_t, abs_mt_slot_grab_status, abs_mt_slot_value
 
-    if not multitouch or not is_grabbed_more_than_one_time():
+    if not multitouch:
         is_grabbed = abs_mt_slot_grab_status[abs_mt_slot_value]
         if is_grabbed:
             abs_mt_slot_grab_status[abs_mt_slot_value] = 0
@@ -1069,12 +1072,7 @@ def unpressed_numpad_key(replaced_by_key=None):
         ]
 
         try:
-
             udev.send_events(events)
-
-            if enabled_touchpad_pointer == 1:
-                ungrab_current_slot()
-
         except OSError as e:
             log.warning("Cannot send press event, %s", e)
 
@@ -1082,6 +1080,9 @@ def unpressed_numpad_key(replaced_by_key=None):
         abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
     else:
         set_none_to_current_mt_slot()
+
+        if enabled_touchpad_pointer == 1:
+            ungrab_current_slot()
 
 
 def get_touched_key():
@@ -1366,7 +1367,8 @@ def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
-        keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values
+        keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
+        key_pointer_button_is_touched
 
     for e in d_t.events():
 
@@ -1392,6 +1394,25 @@ def listen_touchpad_events():
         if is_key_pointer_button(e.code) and enabled_touchpad_pointer == 0:
             continue
 
+        # protection against situations when is clicked pointer button (LEFT, RIGHT, MIDDLE) and in config is set up send key when is released finger
+        # then this code cancel sending all key events unless is finger released 
+        if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
+
+            if e.value == 0:
+                log.info("Released touchpad pointer button")
+                key_pointer_button_is_touched = False
+                set_none_to_all_mt_slots()
+
+                if enabled_touchpad_pointer == 1:
+                    ungrab_current_slot()
+
+                continue
+            else:            
+                log.info("Pressed touchpad pointer button")
+                key_pointer_button_is_touched = True
+
+        # TODO: co ten block pod tímhle, zkusit enabled_touchpad_pointer 2 zda funguje
+
         # enabled_touchpad_pointer value 2 only! is processed
         if numlock and enabled_touchpad_pointer == 2:
             if e.matches(EV_KEY.BTN_LEFT):
@@ -1408,6 +1429,9 @@ def listen_touchpad_events():
         # enabled_touchpad_pointer value 1 only! is processed futher
         # POINTER_BUTTON own handling instead of touchpad driver ends
 
+
+        if key_pointer_button_is_touched:
+            continue
 
         if e.matches(EV_ABS.ABS_MT_SLOT):
             if(e.value < support_for_maximum_abs_mt_slots):
