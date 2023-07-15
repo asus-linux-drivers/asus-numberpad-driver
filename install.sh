@@ -312,7 +312,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
                         filtered_existing_shortcut_string="$filtered_existing_shortcut_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
                     fi
                 else
-                    echo "Found already existing ducplicated shortcut for toggling calculator, will be removed"
+                    echo "Found already existing duplicated shortcut for toggling calculator, will be removed"
                     ((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
                     runuser -u $SUDO_USER gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
                 fi
