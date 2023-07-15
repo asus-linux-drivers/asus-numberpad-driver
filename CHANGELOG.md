@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.9.0 (15.7.2023)
+
+## New feature
+
+- Protection against sending NumberPad key when is pointer button clicked across all `enabled_touchpad_pointer` modes
+- Autoclean up in install and uninstall script with purpose keep only 1 shortcut in gsettings with this driver origin
+- Question which warns about enabling systemctl service after reboot because in some cases is still unresolved black screen after login
+- Autodetection for model `Vivobook_ASUSLaptop M3401QC_M3401QC`
+- Autodetection for model `GX501VIK`
+
+### Fixed
+
+- `apt` changed to `apt-get` as first mentioned is not well usable in scripts
+
 ## v2.8.0 (1.7.2023)
 
 ### Fixed
