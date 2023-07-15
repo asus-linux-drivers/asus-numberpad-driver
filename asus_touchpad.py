@@ -702,8 +702,11 @@ def deactivate_numpad():
 
     if enabled_touchpad_pointer == 0 or enabled_touchpad_pointer == 2:
         ungrab()
+    elif enabled_touchpad_pointer == 1:
+        ungrab_current_slot()
     elif enabled_touchpad_pointer == 3:
         set_touchpad_prop_tap_to_click(1)
+
 
     send_value_to_touchpad_via_i2c("0x00")
     brightness = 0
