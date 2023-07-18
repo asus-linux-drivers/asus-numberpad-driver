@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.9.1 (18.7.2023)
+
+### Fixed
+
+- Sometimes might not be backlight used because was not send another activation value `0x61`
+- Fixed releasing exclusively using of touchpad device for config value `enabled_touchpad_pointer=1`
+
 ## 2.9.0 (15.7.2023)
 
 ### New feature
