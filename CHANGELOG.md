@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Sometimes might not be backlight used because was not send another activation value `0x61`
+- Sometimes might not be backlight used because was not send another activation value `0x60`
 - Fixed releasing exclusively using of touchpad device for config value `enabled_touchpad_pointer=1`
 
 ## 2.9.0 (15.7.2023)
