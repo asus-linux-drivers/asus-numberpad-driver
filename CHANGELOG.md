@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.9.2 (28.7.2023)
+
+### Fixed
+
+- Fixed recogniting which calculator is installed and should be toggled
+
 ## 2.9.1 (18.7.2023)
 
 ### Fixed
