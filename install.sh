@@ -335,8 +335,13 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
         fi
 
-        if [[ $(type io.elementary.calculator 2>/dev/null ; echo $? ) -eq 0 ]]; then
-            echo "io.elementary.calculator here"
+        IS_INSTALLED_ELEMENTARY_OS_CALCULATOR=$(type io.elementary.calculator &>/dev/null ; echo $? )
+        IS_INSTALLED_GNOME_OS_CALCULATOR=$(type gnome-calculator &>/dev/null ; echo $? )
+        echo "is installed io.elementary.calculator: $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR"
+        echo "is installed gnome-calculator: $IS_INSTALLED_GNOME_OS_CALCULATOR"
+
+        if [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
+            echo "setting up for io.elementary.calculator"
 
             mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
             cp scripts/io_elementary_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
@@ -356,8 +361,8 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             echo "Toggling script for calculator app io.elementary.calculator has been installed."
 
             logout_requested=true
-        elif [[ $(type gnome-calculator 2>/dev/null ; echo $? ) -eq 0 ]]; then
-            echo "gnome-calculator here"
+        elif [[ $IS_INSTALLED_GNOME_OS_CALCULATOR -eq 0 ]]; then
+            echo "setting up for gnome-calculator"
 
             mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
             cp scripts/gnome_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
