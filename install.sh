@@ -12,7 +12,9 @@ logout_requested=false
 RUN_UNDER_USER=$USER
 
 if [ "$1" = "--user" ]; then
+    groupadd "input"
     groupadd "uinput"
+    groupadd "i2c"
     echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules
     RUN_UNDER_USER=$SUDO_USER
     usermod -a -G "i2c,input,uinput" $RUN_UNDER_USER
