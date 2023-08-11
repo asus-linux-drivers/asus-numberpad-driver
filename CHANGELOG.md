@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.4 (11.8.2023)
+
+- Fixed installation when group i2c, uniput or input does not exist yet
+
 ## 2.9.3 (5.8.2023)
 
 ### Fixed
