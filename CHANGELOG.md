@@ -1,6 +1,14 @@
 # Changelog
 
+## 2.9.5 (21.8.2023)
+
+### Fixed
+
+- Shown warning and allow to specify whether autostart systemctl service even on Wayland beucase may occurs black screen during logging in etc.
+
 ## 2.9.4 (11.8.2023)
+
+### Fixed
 
 - Fixed installation when group i2c, uniput or input does not exist yet
 
