@@ -484,4 +484,6 @@ Is preferred [ko-fi.com/ldrahnik](https://ko-fi.com/ldrahnik) instead of [buymea
 
 [![BuyMeACoffee](https://img.shields.io/badge/Buy%20to%20maintainer%20a%20coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/ldrahnik)
 
-[![Buy me a coffee supporter](images/buymeacoffee.png)](https://buymeacoffee.com/ldrahnik)
+[![Ko-fi supporters](images/kofi.png)](https://ko-fi.com/ldrahnik)
+
+[![Buy me a coffee supporters](images/buymeacoffee.png)](https://buymeacoffee.com/ldrahnik)
