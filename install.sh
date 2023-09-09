@@ -46,6 +46,12 @@ elif [[ $(dnf help 2>/dev/null) ]]; then
     if [ "$wayland_or_x11" = "x11" ]; then
         dnf -y install xinput
     fi
+elif [[ $(yum help 2>/dev/null) ]]; then
+    # yum was replaced with newer dnf above
+    echo 'yum is here' && yum --y install ibus libevdev curl i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
+    if [ "$wayland_or_x11" = "x11" ]; then
+        yum --y install xinput
+    fi
 fi
 
 modprobe i2c-dev
