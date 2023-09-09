@@ -52,6 +52,8 @@ elif [[ $(yum help 2>/dev/null) ]]; then
     if [ "$wayland_or_x11" = "x11" ]; then
         yum --y install xinput
     fi
+else
+    echo "Not detected package manager. Required packages have not been installed so driver may not work properly. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
 fi
 
 modprobe i2c-dev
