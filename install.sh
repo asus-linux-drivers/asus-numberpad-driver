@@ -31,18 +31,18 @@ wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
 
 echo "$wayland_or_x11 is DETECTED"
 if [[ $(apt-get install 2>/dev/null) ]]; then
-    echo 'apt is here' && apt-get -y install ibus libevdev2 i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
+    echo 'apt is here' && apt-get -y install ibus libevdev2 curl i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
     if [ "$wayland_or_x11" = "x11" ]; then
         apt-get -y install xinput
     fi
 elif [[ $(pacman -h 2>/dev/null) ]]; then
     # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
+    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev curl i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
     if [ "$wayland_or_x11" = "x11" ]; then
         pacman --noconfirm --needed -S xorg-xinput
     fi
 elif [[ $(dnf help 2>/dev/null) ]]; then
-    echo 'dnf is here' && dnf -y install ibus libevdev i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
+    echo 'dnf is here' && dnf -y install ibus libevdev curl i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
     if [ "$wayland_or_x11" = "x11" ]; then
         dnf -y install xinput
     fi
