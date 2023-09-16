@@ -651,14 +651,14 @@ def set_touchpad_prop_tap_to_click(value):
 
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
         log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
-
-    try:
-        cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
-        log.debug(cmd)
-        subprocess.check_output(cmd)
-    except:
-        getting_device_via_xinput_status_failure_count+=1
-        log.error('Setting libinput Tapping EnabledDevice via xinput failed')
+    else:
+        try:
+            cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
+            log.debug(cmd)
+            subprocess.check_output(cmd)
+        except:
+            getting_device_via_xinput_status_failure_count+=1
+            log.error('Setting libinput Tapping EnabledDevice via xinput failed')
 
 
 def grab():
