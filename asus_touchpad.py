@@ -39,6 +39,9 @@ try_sleep = 0.1
 getting_device_via_xinput_status_failure_count = 0
 getting_device_via_xinput_status_max_failure_count = 3
 
+getting_device_via_synclient_status_failure_count = 0
+getting_device_via_synclient_status_max_failure_count = 0
+
 # Numpad layout model
 model = None
 if len(sys.argv) > 1:
@@ -645,20 +648,34 @@ def grab_current_slot():
 
 
 def set_touchpad_prop_tap_to_click(value):
-    global touchpad_name, gsettings_is_here, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+    global touchpad_name, gsettings_is_here, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
 
+    # 1. priority - gsettings
     gsettingsSetTouchpadTapToClick(value)
 
-    if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
+    # 2. priority - xinput
+    if not gsettings_is_here and getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
         log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
     else:
         try:
             cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
             log.debug(cmd)
             subprocess.check_output(cmd)
+            return
         except:
             getting_device_via_xinput_status_failure_count+=1
             log.error('Setting libinput Tapping EnabledDevice via xinput failed')
+
+    # 3. priority - synclient
+    if not gsettings_is_here and getting_device_via_synclient_status_failure_count > getting_device_via_synclient_status_max_failure_count:
+        log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
+    try:
+        cmd = ["synclient", "TapButton1=" + str(value)]
+        log.debug(cmd)
+        subprocess.check_output(cmd)
+        return
+    except:
+        getting_device_via_synclient_status_failure_count+=1
 
 
 def grab():
