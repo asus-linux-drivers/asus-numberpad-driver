@@ -166,9 +166,9 @@ fi
 
 for option in $(ls numpad_layouts); do
     if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). You can specify numpad layout later by yourself. When is recommended layout wrong please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues). Do you want use recommended numpad layout? [y/N]" response
+        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). By default exist 2 variants for each laptop numpad layout. Standard one is recommended to use and send keys except percent and hash tag char directly, unfortunately is not resistance to overbinding keys to something else and that is reason why exist second version which send keys via unicode sequence of numbers except backspace and enter via pressing Ctrl+Shift+U+<sequence of numbers>. Answering no, you can select other one from defaults (unicode variant for example) or you are able manually create your custom numpad layout later after installing. When is recommended layout (not a variant) wrong please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues). Do you want use recommended numpad layout, standard variant? [y/N]" response
         case "$response" in [yY][eE][sS]|[yY])
-            model=$detected_layout_via_offline_table
+            model=$detected_layout_via_offline_table-unicode
             ;;
         *)
             ;;
