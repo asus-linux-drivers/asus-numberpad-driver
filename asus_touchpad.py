@@ -935,15 +935,15 @@ def set_tracking_id(value):
 
 def get_compose_key_end_events_for_unicode_string():
 
-    enter_pressed = InputEvent(EV_KEY.KEY_SPACE, 1)
-    enter_unpressed = InputEvent(EV_KEY.KEY_SPACE, 0)
+    space_pressed = InputEvent(EV_KEY.KEY_SPACE, 1)
+    space_unpressed = InputEvent(EV_KEY.KEY_SPACE, 0)
 
     events = [
-        InputEvent(EV_MSC.MSC_SCAN, enter_pressed.code.value),
-        enter_pressed,
+        InputEvent(EV_MSC.MSC_SCAN, space_pressed.code.value),
+        space_pressed,
         InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, enter_unpressed.code.value),
-        enter_unpressed,
+        InputEvent(EV_MSC.MSC_SCAN, space_unpressed.code.value),
+        space_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0)
     ]
 
