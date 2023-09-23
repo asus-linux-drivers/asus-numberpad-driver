@@ -22,8 +22,6 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
 
-gsettings_is_here = True
-
 # Setup logging
 # LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea"  # all messages
 # LOG=ERROR sudo -E ./asus_touchpad.py "up5401ea"  # only error messages
@@ -36,11 +34,14 @@ log.setLevel(os.environ.get('LOG', 'INFO'))
 try_times = 5
 try_sleep = 0.1
 
+gsettings_failure_count = 0
+gsettings_max_failure_count = 3
+
 getting_device_via_xinput_status_failure_count = 0
 getting_device_via_xinput_status_max_failure_count = 3
 
 getting_device_via_synclient_status_failure_count = 0
-getting_device_via_synclient_status_max_failure_count = 0
+getting_device_via_synclient_status_max_failure_count = 3
 
 # Numpad layout model
 model = None
@@ -203,9 +204,9 @@ def config_set(key, value, no_save=False, already_has_lock=False):
 
 
 def gsettingsSet(path, name, value):
-    global gsettings_is_here
+    global gsettings_failure_count, gsettings_max_failure_count
 
-    if gsettings_is_here:
+    if gsettings_failure_count < gsettings_max_failure_count:
         try:
             sudo_user = os.environ.get('SUDO_USER')
             if sudo_user is not None:
@@ -214,33 +215,37 @@ def gsettingsSet(path, name, value):
                 cmd = ['gsettings', 'set', path, name, str(value)]
 
             log.debug(cmd)
-            subprocess.check_output(cmd)
+            subprocess.call(cmd)
         except:
             log.exception('gsettings set failed')
-            gsettings_is_here=False
+            gsettings_failure_count+=1
+    else:
+        log.debug('Gsettings failed more then: \"%s\" so is not try anymore', gsettings_max_failure_count)
 
 
 def gsettingsGet(path, name):
-    global gsettings_is_here
+    global gsettings_failure_count, gsettings_max_failure_count
 
-    if gsettings_is_here:
+    if gsettings_failure_count < gsettings_max_failure_count:
         try:
             cmd = ['gsettings', 'get', path, name]
             propData = subprocess.check_output(cmd)
-            propDataDecoded = propData.decode()
-            return propDataDecoded
+            return propData.decode()
         except:
-            log.exception('gsettings set failed')
-            gsettings_is_here=False
-            return None
+            log.exception('gsettings get failed')
+            gsettings_failure_count+=1
+    else:
+        log.debug('Gsettings failed more then: \"%s\" so is not try anymore', gsettings_max_failure_count)
 
 
 def gsettingsGetTouchpadSendEvents():
     return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events')
 
-
 def gsettingsSetTouchpadTapToClick(value):
     gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
+
+def gsettingsGetUnicodeHotkey():
+    return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey')
 
 
 # Figure out devices from devices file
@@ -371,7 +376,7 @@ def get_keycode_of_ascii_char(char):
     return keycode
 
 
-def get_keycode_which_reflects_current_layout(char, reset_udev=True):
+def get_key_which_reflects_current_layout(char, reset_udev=True):
     global enabled_keys_for_unicode_shortcut, udev, dev
 
     keycode = get_keycode_of_ascii_char(char)
@@ -384,7 +389,7 @@ def get_keycode_which_reflects_current_layout(char, reset_udev=True):
             udev = dev.create_uinput_device()
             log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
 
-            # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
+            # Sleep for a little bit so udev, libinput, Xorg, Wayland, ... all have had
             # a chance to see the device and initialize it. Otherwise the event
             # will be sent by the kernel but nothing is ready to listen to the
             # device yet
@@ -402,11 +407,13 @@ dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 # predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
 
-# standart is U
-# for FR is S
 enabled_keys_for_unicode_shortcut = [
-    EV_KEY.KEY_U,
-    EV_KEY.KEY_S,
+    EV_KEY.KEY_LEFTSHIFT,
+    EV_KEY.KEY_LEFTCTRL,
+    EV_KEY.KEY_SPACE,
+    EV_KEY.KEY_ENTER,
+    EV_KEY.KEY_U, # standart is U
+    EV_KEY.KEY_S, # for FR is S
     EV_KEY.KEY_0,
     EV_KEY.KEY_1,
     EV_KEY.KEY_2,
@@ -436,16 +443,12 @@ enabled_keys_for_unicode_shortcut = [
 ]
 # enable equivalent key of "U" for currently used keyboard layout
 try:
-    get_keycode_which_reflects_current_layout("U", False)
+    get_key_which_reflects_current_layout("U", False)
 except:
     pass
 
 for key in enabled_keys_for_unicode_shortcut:
     dev.enable(key)
-
-dev.enable(EV_KEY.KEY_LEFTSHIFT)
-dev.enable(EV_KEY.KEY_LEFTCTRL)
-dev.enable(EV_KEY.KEY_SPACE)
 
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
@@ -460,14 +463,15 @@ def isEvent(event):
 
 
 def is_device_enabled(device_name):
-    global getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+    global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
 
-    value = gsettingsGetTouchpadSendEvents()
-    if value:
-        if 'enabled' in value:
-            return True
-        elif 'disabled' in value:
-            return False
+    if gsettings_failure_count < gsettings_max_failure_count:
+        value = gsettingsGetTouchpadSendEvents()
+        if value:
+            if 'enabled' in value:
+                return True
+            elif 'disabled' in value:
+                return False
 
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
         log.debug('Getting Device Enabled via xinput failed more then: \"%s\" so is not try anymore, returned Touchpad enabled', getting_device_via_xinput_status_max_failure_count)
@@ -648,31 +652,33 @@ def grab_current_slot():
 
 
 def set_touchpad_prop_tap_to_click(value):
-    global touchpad_name, gsettings_is_here, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
+    global touchpad_name, gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
 
     # 1. priority - gsettings
-    gsettingsSetTouchpadTapToClick(value)
+    if gsettings_failure_count < gsettings_max_failure_count:
+        gsettingsSetTouchpadTapToClick(value)
+        return
 
     # 2. priority - xinput
-    if not gsettings_is_here and getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
+    if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
         log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
     else:
         try:
             cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
             log.debug(cmd)
-            subprocess.check_output(cmd)
+            subprocess.call(cmd)
             return
         except:
             getting_device_via_xinput_status_failure_count+=1
             log.error('Setting libinput Tapping EnabledDevice via xinput failed')
 
     # 3. priority - synclient
-    if not gsettings_is_here and getting_device_via_synclient_status_failure_count > getting_device_via_synclient_status_max_failure_count:
+    if getting_device_via_synclient_status_failure_count > getting_device_via_synclient_status_max_failure_count:
         log.debug('Setting libinput Tapping EnabledDevice via xinput failed more then: \"%s\" times so is not try anymore', getting_device_via_xinput_status_max_failure_count)
     try:
         cmd = ["synclient", "TapButton1=" + str(value)]
         log.debug(cmd)
-        subprocess.check_output(cmd)
+        subprocess.call(cmd)
         return
     except:
         getting_device_via_synclient_status_failure_count+=1
@@ -951,41 +957,62 @@ def get_compose_key_end_events_for_unicode_string():
 
 
 def get_compose_key_start_events_for_unicode_string():
-    global udev, dev
+    global gsettings_failure_count, gsettings_max_failure_count
 
-    left_shift_pressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 1)
-    left_shift_unpressed = InputEvent(EV_KEY.KEY_LEFTSHIFT, 0)
-    left_ctrl_pressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 1)
-    left_ctrl_unpressed = InputEvent(EV_KEY.KEY_LEFTCTRL, 0)
+    string_with_unicode_hotkey = gsettingsGetUnicodeHotkey()
 
-    try:
-        U_key = get_keycode_which_reflects_current_layout("U")
-    except:
-        U_key = EV_KEY.KEY_U
+    keys = []
 
-    key_U_pressed = InputEvent(U_key, 1)
-    key_U_unpressed = InputEvent(U_key, 0)
+    if string_with_unicode_hotkey is not None:      
 
-    events = [
-        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_pressed.code.value),
-        left_ctrl_pressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_pressed.code.value),
-        left_shift_pressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, key_U_pressed.code.value),
-        key_U_pressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, key_U_unpressed.code.value),
-        key_U_unpressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_shift_unpressed.code.value),
-        left_shift_unpressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-        InputEvent(EV_MSC.MSC_SCAN, left_ctrl_unpressed.code.value),
-        left_ctrl_unpressed,
-        InputEvent(EV_SYN.SYN_REPORT, 0),
-    ]
+        string_with_unicode_hotkey = string_with_unicode_hotkey.split("'")[1]
+
+        gsettingsKeyModifiersToXlibSpecificKeyModifiers = {
+            'Control': 'Control_L',
+            'Shift': 'Shift_L'
+        }
+
+        for key, replacedWithKey in gsettingsKeyModifiersToXlibSpecificKeyModifiers.items():
+            string_with_unicode_hotkey = re.sub("<" + key + ">", "<" + replacedWithKey + ">", string_with_unicode_hotkey)
+
+        key_modifiers = re.findall("<(.*?)>", string_with_unicode_hotkey)
+
+        for key_modifier in key_modifiers:
+            try:
+                key_evdev = get_key_which_reflects_current_layout(key_modifier)
+                keys.append(key_evdev)
+            except:
+                log.error("Error during trying to find key for modifier of found compose shortcut {}".format(key_modifier))
+                pass
+
+        try:
+            first_number_index = string_with_unicode_hotkey.rfind('>') + 1
+            key_evdev = get_key_which_reflects_current_layout(string_with_unicode_hotkey[first_number_index])
+            keys.append(key_evdev)
+        except:
+            pass
+    else:
+        try:
+            U_key = get_key_which_reflects_current_layout("U")
+        except:
+            U_key = EV_KEY.KEY_U
+
+        keys.append(EV_KEY.KEY_LEFTCTRL)
+        keys.append(EV_KEY.KEY_LEFTSHIFT)
+        keys.append(U_key)
+
+
+    events = []
+
+    for key in keys:
+        inputEvent = InputEvent(key, 1)
+        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
+        events.append(inputEvent)
+
+    for key in keys:
+        inputEvent = InputEvent(key, 0)
+        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
+        events.append(inputEvent)
 
     return events
 
@@ -998,7 +1025,7 @@ def get_events_for_unicode_char(char):
 
         try:
             # try x11
-            key = get_keycode_which_reflects_current_layout(hex_digit)
+            key = get_key_which_reflects_current_layout(hex_digit)
         except:
             # x11 not here - not found DISPLAY or another exception from lib X11 was thrown - probably Wayland here
             if hex_digit.isnumeric():
@@ -1751,6 +1778,7 @@ threads.append(t)
 # start all threads
 for thread in threads:
     thread.start()
+
 
 try:
     listen_touchpad_events()
