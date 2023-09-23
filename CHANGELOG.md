@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.0.0 (23.9.2023)
+
+### New feature
+
+- Unicode hotkey can be changed via gsettings (`dconf`)
+- Numpad layout can be chosen from direct numeric keys (by default) or unicode variant
+
+### Fixed
+
+- Found fix for `Invalid MIT-MAGIC-COOKIE-1 key` mentioned in FAQ
+- Disable Tap to click when is installed synaptics driver
+- When is reached maximum allowed attempts xinput is not used
+- Added support for yuml (dnf predecessor)
+- Added curl as dependency
+
+
 ## 2.9.5 (21.8.2023)
 
 ### Fixed
