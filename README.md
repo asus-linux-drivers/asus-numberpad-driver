@@ -326,6 +326,18 @@ sudo chown ldrahnik user
 sudo chown :ldrahnik user
 ```
 
+**Invalid MIT-MAGIC-COOKIE-1 key**
+
+When this happens on X11, try simply remove the currently used `.Xauthority` discovered via `xauth` command and then reboot because file will be auto-created:
+
+```
+$ xauth
+Using authority file /home/ldrahnik/.Xauthority
+xauth>^C
+$ rm /home/ldrahnik/.Xauthority
+$ reboot
+```
+
 ## Configuration
 
 ### Keyboard layout
