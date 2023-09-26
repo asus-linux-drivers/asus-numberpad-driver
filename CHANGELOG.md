@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 3.0.1 (26.9.2023)
+
+### Fixed
+
+- Fixed issue during installing when was compared config file to not existing local one or compared to modified considered as default
+
 ## 3.0.0 (23.9.2023)
 
 ### New feature
