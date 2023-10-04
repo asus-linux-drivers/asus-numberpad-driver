@@ -400,7 +400,7 @@ def get_key_which_reflects_current_layout(char, reset_udev=True):
 
 # Create a new keyboard device to send numpad events
 dev = Device()
-dev.name = "Asus Touchpad/Numpad"
+dev.name = touchpad_name.split(" ")[0] + touchpad_name.split(" ")[1] + " NumberPad"
 dev.enable(EV_KEY.BTN_LEFT)
 dev.enable(EV_KEY.BTN_RIGHT)
 dev.enable(EV_KEY.BTN_MIDDLE)
