@@ -1,5 +1,5 @@
 [Unit]
-Description=Asus Touchpad to Numpad Handler
+Description=Asus Touchpad to Numpad Handler %i
 
 [Service]
 User=%i
