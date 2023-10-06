@@ -580,8 +580,7 @@ def reset_mt_slot(index):
 
 
 def set_none_to_current_mt_slot():
-    global abs_mt_slot_numpad_key,\
-        abs_mt_slot_x_values, abs_mt_slot_y_values
+    global abs_mt_slot_value
 
     reset_mt_slot(abs_mt_slot_value)
 
@@ -1265,7 +1264,7 @@ def pressed_touchpad_top_right_icon(value):
 
 
 def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time
 
     if e.value != 0:
         return
@@ -1289,6 +1288,18 @@ def is_slided_from_top_right_icon(e):
 
         return True
     else:
+        log.info("Slided from top_right_icon taken NOT longer then is required. X, y:")
+        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
+        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
+        log.info("Required is min x, y:")
+        log.info(activation_min_x)
+        log.info(activation_min_y)
+
+        top_right_icon_touch_start_time = 0
+        numlock_touch_start_time = 0
+
+        set_none_to_current_mt_slot()
+
         return False
 
 
@@ -1317,6 +1328,17 @@ def is_slided_from_top_left_icon(e):
 
         return True
     else:
+        log.info("Slided from top_left_icon taken NOT longer then is required. X, y:")
+        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
+        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
+        log.info("Required is min x, y:")
+        log.info(activation_min_x)
+        log.info(activation_min_y)
+
+        top_left_icon_touch_start_time = 0
+        
+        set_none_to_current_mt_slot()
+
         return False
 
 
