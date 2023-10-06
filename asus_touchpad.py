@@ -1278,7 +1278,7 @@ def is_slided_from_top_right_icon(e):
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
-        abs_mt_slot_y_values[abs_mt_slot_value] < maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
+        abs_mt_slot_y_values[abs_mt_slot_value] > maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
 
         log.info("Slided from top_right_icon taken longer then is required. X, y:")
         log.info(abs_mt_slot_x_values[abs_mt_slot_value])
