@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.0.0 (11.10.2023)
+
+### New feature
+
+- The driver run under current user only
+
+### Fixed
+
+- Systemctl service dbus session environment variable for both Wayland/X11
+
+### Refactored
+
+- Install and uninstall script divided into multiple scripts which can run separately
+- To new name asus-numberpad-driver
 
 ## 3.0.1 (26.9.2023)
 
