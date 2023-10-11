@@ -1,2 +1,2 @@
-SUBSYSTEM=="usb", ACTION=="add", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="/usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh"
-SUBSYSTEM=="usb", ACTION=="remove", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="/usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh"
+SUBSYSTEM=="usb", ACTION=="add", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_connected.sh"
+SUBSYSTEM=="usb", ACTION=="remove", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_disconnected.sh"
