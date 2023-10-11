@@ -11,7 +11,6 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "sudo": true,
             "args": ["up5401ea-unicode-31B9", ""]
         }
     ]

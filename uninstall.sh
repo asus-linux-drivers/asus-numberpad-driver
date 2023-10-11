@@ -1,203 +1,129 @@
 #!/bin/bash
 
-if [[ $(id -u) != 0 ]]
-then
-	echo "Please, run this script as root (using sudo for example)"
-	exit 1
-fi
+source non_sudo_check.sh
 
-# for `rm` exclude !(xy)
-shopt -s extglob
+LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
 
-logout_requested=false
+# log output from every uninstalling attempt aswell
+LOGS_UNINSTALL_LOG_FILE_NAME=uninstall-"$(date +"%d-%m-%Y-%H-%M-%S")".log
+LOGS_UNINSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_UNINSTALL_LOG_FILE_NAME"
+touch "$LOGS_UNINSTALL_LOG_FILE_PATH"
 
-# "root" by default or when is used --user it is "current user"
-RUN_UNDER_USER=$USER
+{
+	# for `rm` exclude !(xy)
+	shopt -s extglob
 
-if [ "$1" = "--user" ]
-then
-    RUN_UNDER_USER=$SUDO_USER
-fi
+    INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+    CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+    CONFIG_FILE_NAME="numberpad_dev"
+    CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
-echo "Driver will be stopped and uninstalled for user"
-echo $RUN_UNDER_USER
+	NUMPAD_LAYOUTS_DIR="$INSTALL_DIR_PATH/numpad_layouts/"
 
-source remove_previous_implementation_of_service.sh
-
-systemctl stop asus_touchpad_numpad@$RUN_UNDER_USER.service
-if [[ $? != 0 ]]
-then
-	echo "asus_touchpad_numpad.service cannot be stopped correctly..."
-fi
-
-systemctl disable asus_touchpad_numpad@$RUN_UNDER_USER.service
-if [[ $? != 0 ]]
-then
-	echo "asus_touchpad_numpad.service cannot be disabled correctly..."
-fi
-
-rm -f /etc/systemd/system/asus_touchpad_numpad@.service
-if [[ $? != 0 ]]
-then
-	echo "/etc/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
-fi
-
-
-NUMPAD_LAYOUTS_DIR="/usr/share/asus_touchpad_numpad-driver/numpad_layouts/"
-
-NUMPAD_LAYOUTS_DIR_DIFF=""
-if test -d "$NUMPAD_LAYOUTS_DIR"
-then
-    NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ numpad_layouts $NUMPAD_LAYOUTS_DIR)
-fi
-
-if [ "$NUMPAD_LAYOUTS_DIR_DIFF" != "" ]
-then
-    read -r -p "Installed numpad layouts contain modifications compared to the default ones. Do you want remove them [y/N]" response
-    case "$response" in [yY][eE][sS]|[yY])
-		rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(asus_touchpad_numpad_dev)
-		if [[ $? != 0 ]]
-		then
-			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-		fi
-        ;;
-    *)
-		rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(numpad_layouts|asus_touchpad_numpad_dev)
-		if [[ $? != 0 ]]
-		then
-			echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-		fi
-		echo "Numpad layouts in /usr/share/asus_touchpad_numpad-driver/conf/ have not been removed and remain in system:"
-        ls /usr/share/asus_touchpad_numpad-driver/numpad_layouts
-        ;;
-    esac
-else
-	rm -rf "/usr/share/asus_touchpad_numpad-driver/"!(asus_touchpad_numpad_dev)
-	if [[ $? != 0 ]]
+	NUMPAD_LAYOUTS_DIR_DIFF=""
+	if test -d "$NUMPAD_LAYOUTS_DIR"
 	then
-		echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
+	    NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ numpad_layouts $NUMPAD_LAYOUTS_DIR)
 	fi
-fi
 
-CONF_FILE="/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
+	if [ "$NUMPAD_LAYOUTS_DIR_DIFF" != "" ]
+	then
+	    read -r -p "Installed numpad layouts contain modifications compared to the default ones. Do you want remove them [y/N]" response
+	    case "$response" in [yY][eE][sS]|[yY])
+			rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
+			if [[ $? != 0 ]]
+			then
+				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
+			fi
+        	;;
+    	*)
+			rm -rf "$INSTALL_DIR_PATH/!(numpad_layouts|$CONFIG_FILE_NAME)"
+			if [[ $? != 0 ]]
+			then
+				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
+			fi
 
-CONFIG_FILE_DIFF=""
-if test -f "$CONF_FILE"
-then
-	CONFIG_FILE_DIFF=$(diff <(grep -v '^#' asus_touchpad_numpad_dev) <(grep -v '^#' $CONF_FILE))
-fi
+			echo
+			echo "Numpad layouts in $INSTALL_DIR_PATH/numpad_layouts have not been removed and remain in system:"
+	        ls /$INSTALL_DIR_PATH/numpad_layouts
+        	;;
+    	esac
+	else
+		rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
+		if [[ $? != 0 ]]
+		then
+			echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
+		fi
+	fi
 
-if [ "$CONFIG_FILE_DIFF" != "" ]
-then
-    read -r -p "Config file contains modifications compared to the default one. Do you want remove config file [y/N]" response
-    case "$response" in [yY][eE][sS]|[yY])
+	if [[ -f "$CONF_FILE" ]]; then
+
+	    read -r -p "Do you want remove config file [y/N]" RESPONSE
+	    case "$RESPONSE" in [yY][eE][sS]|[yY])
+
+			if test -d "$NUMPAD_LAYOUTS_DIR"
+			then
+				rm -f "$CONFIG_FILE_PATH"
+			else
+				rm -rf "$INSTALL_DIR_PATH"
+			fi
+
+			if [[ $? != 0 ]]
+			then
+				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
+			fi
+        	;;
+    	*)
+			echo "Config file have not been removed and remain in system:"
+			echo "$CONFIG_FILE_PATH"
+        	;;
+    	esac
+	else
 
 		if test -d "$NUMPAD_LAYOUTS_DIR"
 		then
-			rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+			rm -f $CONFIG_FILE_PATH
 		else
-			rm -rf /usr/share/asus_touchpad_numpad-driver
+			rm -rf $INSTALL_DIR_PATH
 		fi
 
 		if [[ $? != 0 ]]
 		then
-			echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
+			echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
 		fi
-        ;;
-    *)
-		echo "Config file have not been removed and remain in system:"
-		echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev"
-        ;;
-    esac
-else
-
-	if test -d "$NUMPAD_LAYOUTS_DIR"
-	then
-		rm -f /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
-	else
-		rm -rf /usr/share/asus_touchpad_numpad-driver
 	fi
 
-	if [[ $? != 0 ]]
-	then
-		echo "/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev cannot be removed correctly..."
-	fi
-fi
+	echo "Asus numberpad driver removed"
 
-rm -rf /var/log/asus_touchpad_numpad-driver
-if [[ $? != 0 ]]
-then
-	echo "/var/log/asus_touchpad_numpad-driver cannot be removed correctly..."
-fi
+	echo
 
-rm -f /usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules
-if [[ $? != 0 ]]
-then
-	echo "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules cannot be removed correctly..."
-fi
+	source uninstall_user_groups.sh
 
-systemctl daemon-reload
+	echo
 
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when was called systemctl daemon reload"
-else
-    echo "Systemctl daemon realod called succesfully"
-fi
+	source uninstall_external_keyboard_toggle.sh
 
-# remove shortcuts for toggling calculator added by driver
+	echo
 
-existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-#echo $existing_shortcut_string
+	source uninstall_calc_toggle.sh
 
-filtered_existing_shortcut_string="["
-filtered_existing_shortcut_count=0
+	echo
 
-if [[ "$existing_shortcut_string" != "@as []" ]]; then
-	IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
-    for shortcut_index in "${!existing_shortcut_array[@]}"; do
-        shortcut="${existing_shortcut_array[$shortcut_index]}"
-        shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
+	source uninstall_service.sh
 
-        command=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
-        #echo $command
-        if [[ "$command" = "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
-			((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
-            echo "Removed shortcut added by installation of this driver for toggling calculator"
-            runuser -u $SUDO_USER gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
-        else
-			#echo "Found something else on index $shortcut_index"
-			if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
-            	filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
-            else
-                filtered_existing_shortcut_string="$filtered_existing_shortcut_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
-            fi
-		fi
-    done
+	echo
 
-    filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
-    #echo $filtered_existing_shortcut_string
-    #echo $filtered_existing_shortcut_count
+	echo "Uninstallation finished succesfully"
 
-	if [[ $filtered_existing_shortcut_count != 0 ]]; then
-		runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${filtered_existing_shortcut_string}"
-		logout_requested=true
-	fi
-fi
+	echo
 
-if [[ "$logout_requested" = true ]]
-then
-
-    echo "Uninstall process requested to succesfull finish atleast log out or reboot"
-    echo "Without that reverted changes might not be done"
-
-    read -r -p "Do you want reboot now? [y/N]" response
-    case "$response" in [yY][eE][sS]|[yY])
+	read -r -p "Reboot is required. Do you want reboot now? [y/N]" RESPONSE
+    case "$RESPONSE" in [yY][eE][sS]|[yY])
         reboot
         ;;
     *)
         ;;
     esac
-fi
 
-echo "Uninstall finished"
-exit 0
+	exit 0
+} 2>&1 | sudo tee "$LOGS_UNINSTALL_LOG_FILE_PATH"
