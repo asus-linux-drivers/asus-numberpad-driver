@@ -1,446 +1,136 @@
 #!/bin/bash
 
-# Checking if the script is runned as root (via sudo or other)
-if [[ $(id -u) != 0 ]]; then
-    echo "Please run the installation script as root (using sudo for example)"
-    exit 1
-fi
+source non_sudo_check.sh
 
-logout_requested=false
+LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
 
-# "root" by default or when is used --user it is "current user"
-RUN_UNDER_USER=$USER
+source install_logs.sh
 
-if [ "$1" = "--user" ]; then
-    groupadd "input"
-    groupadd "uinput"
-    groupadd "i2c"
-    echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules
-    RUN_UNDER_USER=$SUDO_USER
-    usermod -a -G "i2c,input,uinput" $RUN_UNDER_USER
-    logout_requested=true
-fi
+echo
 
-echo "driver will run under user $RUN_UNDER_USER"
+# log output from every installing attempt aswell
+LOGS_INSTALL_LOG_FILE_NAME=install-"$(date +"%d-%m-%Y-%H-%M-%S")".log
+LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
+touch "$LOGS_INSTALL_LOG_FILE_PATH"
 
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-
-# this works because sudo sets the environment variable SUDO_USER to the original username
-session_id=$(loginctl | grep $SUDO_USER | head -1 | awk '{print $1}')
-wayland_or_x11=$(loginctl show-session $session_id -p Type --value)
-
-echo "$wayland_or_x11 is DETECTED"
-if [[ $(apt-get install 2>/dev/null) ]]; then
-    echo 'apt is here' && apt-get -y install ibus libevdev2 curl i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
-    if [ "$wayland_or_x11" = "x11" ]; then
-        apt-get -y install xinput
-    fi
-elif [[ $(pacman -h 2>/dev/null) ]]; then
-    # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-    echo 'pacman is here' && pacman --noconfirm --needed -S ibus libevdev curl i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
-    if [ "$wayland_or_x11" = "x11" ]; then
-        pacman --noconfirm --needed -S xorg-xinput
-    fi
-elif [[ $(dnf help 2>/dev/null) ]]; then
-    echo 'dnf is here' && dnf -y install ibus libevdev curl i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
-    if [ "$wayland_or_x11" = "x11" ]; then
-        dnf -y install xinput
-    fi
-elif [[ $(yum help 2>/dev/null) ]]; then
-    # yum was replaced with newer dnf above
-    echo 'yum is here' && yum --y install ibus libevdev curl i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
-    if [ "$wayland_or_x11" = "x11" ]; then
-        yum --y install xinput
-    fi
-else
-    echo "Not detected package manager. Required packages have not been installed so driver may not work properly. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
-fi
-
-modprobe i2c-dev
-
-# Checking if the i2c-dev module is successfuly loaded
-if [[ $? != 0 ]]; then
-    echo "i2c-dev module cannot be loaded correctly. Make sure you have installed i2c-tools package"
-    exit 1
-fi
-
-interfaces=$(for i in $(i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
-if [ -z "$interfaces" ]; then
-    echo "No i2c interface can be found. Make sure you have installed libevdev packages"
-    exit 1
-fi
-
-touchpad_detected=false
-for i in $interfaces; do
-    echo -n "Testing interface $i : "
-    number=$(echo -n $i | cut -d'-' -f2)
-    offTouchpadCmd="i2ctransfer -f -y $number w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
-    i2c_test=$($offTouchpadCmd 2>&1)
-    if [ -z "$i2c_test" ]; then
-        echo "sucess"
-        touchpad_detected=true
-        break
+{
+    if [[ $(sudo apt-get install 2>/dev/null) ]]; then
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
+    elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
+        # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
+    elif [[ $(sudo dnf help 2>/dev/null) ]]; then
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
+    elif [[ $(sudo yum help 2>/dev/null) ]]; then
+        # yum was replaced with newer dnf above
+        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
     else
-        echo "failed"
+        echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
-done
 
-if [ "$touchpad_detected" = false ]; then
-    echo 'The detection was not successful. Touchpad not found.'
-    exit 1
-fi
+    echo
 
-if [[ -d numpad_layouts/__pycache__ ]]; then
-    rm -rf numpad_layouts/__pycache__
-fi
+    sudo modprobe i2c-dev
 
-laptop=$(dmidecode -s system-product-name | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
-laptop_full=$(dmidecode -s system-product-name)
+    # check if the i2c-dev module is successfully loaded
+    if [[ $? != 0 ]]; then
+        echo "i2c-dev module cannot be loaded. Make sure you have installed i2c-tools package"
+        exit 1
+    else
+        echo "i2c-dev module loaded"
+    fi
 
-echo "Detected laptop: $laptop_full"
+    echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev.conf >/dev/null
 
-detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f1)
-detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $laptop | head -1 | cut -d'=' -f2)
+    if [[ $? != 0 ]]; then
+        echo "Something went wrong when adding i2c-dev module to auto loaded modules"
+        exit 1
+    else
+        echo "i2c-dev module added to auto loaded modules"
+    fi
 
-# used below for recommendation of layout & for correct brightness levels
-DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 2 -d ":" | head -1)
+    echo
 
-if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
+    source install_device_check.sh
 
-    #VENDOR_ID="04f3"
-    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
-    #echo $VENDOR_ID
-    #DEVICE_ID="31b9"
+    echo
 
-    # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
-    # Should return DEVICE_ID: 3101 of 'ELAN1406:00'
-    # N: Name="ELAN9009:00 04F3:2C23 Touchpad"
-    # N: Name="ELAN1406:00 04F3:3101 Touchpad"
+    source install_user_groups.sh
 
-    #echo $DEVICE_ID
-    USER_AGENT="user-agent-name-here"
-    DEVICE_LIST_CURL_URL="https://linux-hardware.org/?view=search&vendorid=$VENDOR_ID&deviceid=$DEVICE_ID&typeid=input%2Fkeyboard"
-    #echo $CURL_URL
-    DEVICE_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$DEVICE_LIST_CURL_URL" )
-    #echo $RESULT
-    DEVICE_URL=$(echo $DEVICE_LIST_CURL | xmllint --html --xpath '//td[@class="device"]//a[1]/@href' 2>/dev/null - | cut -f2 -d"\"")
-    #echo $DEVICE_URL_LIST
-    LAPTOP_LIST_CURL_URL="https://linux-hardware.org$DEVICE_URL"
-    #echo $LAPTOP_LIST_CURL_URL
-    LAPTOP_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$LAPTOP_LIST_CURL_URL" )
-    #echo $LAPTOP_LIST_CURL
-    LAPTOP_LIST=$(echo $LAPTOP_LIST_CURL | xmllint --html --xpath '//table[contains(@class, "computers_list")]//tr/td[3]/span/@title' 2>/dev/null -)
-    #echo $LAPTOP_LIST
+    echo
 
-    # create laptop array
-    #
-    # [0] = Zenbook UX3402ZA_UX3402ZA
-    # [1] = Zenbook UM5401QAB_UM5401QA
-    # ...
-    #
-    IFS='\"' read -r -a array <<< $(echo $LAPTOP_LIST)
-    for index in "${!array[@]}"
-    do
-        if [[ "${array[index]}" != " title=" && "${array[index]}" != "title=" ]]; then
-            LAPTOP_NAME="${array[index]}"
-            #echo $LAPTOP_NAME
+    # do not install __pycache__
+    if [[ -d layouts/__pycache__ ]]; then
+        rm -rf layouts/__pycache__
+    fi
 
-            probe_laptop=$( echo $LAPTOP_NAME | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
-            #echo $probe_laptop
-            detected_laptop_via_offline_table=$(cat laptop_numpad_layouts | grep $probe_laptop | head -1 | cut -d'=' -f1)
-            detected_layout_via_offline_table=$(cat laptop_numpad_layouts | grep $probe_laptop | head -1 | cut -d'=' -f2)
+    INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+    CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+    CONFIG_FILE_NAME="numberpad_dev"
+    CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
-            if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
-                continue
-            else
-                break
+    sudo mkdir -p "$INSTALL_DIR_PATH/layouts"
+    sudo chown -R $USER "$INSTALL_DIR_PATH"
+    sudo install numberpad.py "$INSTALL_DIR_PATH"
+    sudo install -t "$INSTALL_DIR_PATH/layouts" layouts/*.py
+
+    if [[ -f "$CONFIG_FILE_PATH" ]]; then
+        read -r -p "In system remains config file from previous installation. Do you want replace that config with default config? [y/N]" RESPONSE
+        case "$RESPONSE" in [yY][eE][sS]|[yY])
+
+            # default will be autocreated, that is why is removed
+            sudo rm -f $CONFIG_FILE_PATH
+            if [[ $? != 0 ]]; then
+                echo "$CONFIG_FILE_PATH cannot be removed correctly..."
+                exit 1
             fi
-        fi
-    done
-
-    if [[ -z "$detected_layout_via_offline_table" || "$detected_layout_via_offline_table" == "none" ]]; then
-        echo "Could not automatically detect numpad layout for your laptop. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
-    fi
-fi
-
-for option in $(ls numpad_layouts); do
-    if [ "$option" = "$detected_layout_via_offline_table.py" ]; then   
-        read -r -p "Automatically recommended numpad layout: $detected_layout_via_offline_table (associated to $detected_laptop_via_offline_table). By default exist 2 variants for each laptop numpad layout. Standard one is recommended to use and send keys except percent and hash tag char directly, unfortunately is not resistance to overbinding keys to something else and that is reason why exist second version which send keys via unicode sequence of numbers except backspace and enter via pressing Ctrl+Shift+U+<sequence of numbers>. Answering no, you can select other one from defaults (unicode variant for example) or you are able manually create your custom numpad layout later after installing. When is recommended layout (not a variant) wrong please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues). Do you want use recommended numpad layout, standard variant? [y/N]" response
-        case "$response" in [yY][eE][sS]|[yY])
-            model=$detected_layout_via_offline_table
             ;;
         *)
             ;;
         esac
+    else
+        echo "Default config will be autocreated during the first run and available for futher modifications here:"
+        echo "$CONFIG_FILE_PATH"
     fi
-done
 
-if [ -z "$model" ]; then
     echo
-    echo "Select your model keypad layout:"
-    PS3='Please enter your choice '
-    options=($(ls numpad_layouts) "Quit")
-    select selected_opt in "${options[@]}"; do
-        if [ "$selected_opt" = "Quit" ]; then
-            exit 0
-        fi
 
-        for option in $(ls numpad_layouts); do
-            if [ "$option" = "$selected_opt" ]; then
-                model=${selected_opt::-3}
-                break
-            fi
-        done
+    source install_layout_auto_suggestion.sh
 
-        if [ -z "$model" ]; then
-            echo "invalid option $REPLY"
-        else
-            break
-        fi
-    done
-fi
+    echo
 
-echo "Selected key layout $model"
+    if [ -z "$LAYOUT_NAME" ]; then
 
-SPECIFIC_BRIGHTNESS_VALUES="$model-$DEVICE_ID"
-if [ -f "numpad_layouts/$SPECIFIC_BRIGHTNESS_VALUES.py" ];
-then
-    model=$SPECIFIC_BRIGHTNESS_VALUES
+        source install_layout_select.sh
 
-    echo "Selected key layout specified to $model by touchpad ID $DEVICE_ID"
-fi
+        echo
+    fi
 
-echo "Installing asus touchpad service to /etc/systemd/system/"
+    source install_service.sh
 
-source remove_previous_implementation_of_service.sh
+    echo
 
-CONFIG_FILE_DIR="/usr/share/asus_touchpad_numpad-driver"
-CONFIG_FILE_NAME="asus_touchpad_numpad_dev"
-CONF_FILE="$CONFIG_FILE_DIR/$CONFIG_FILE_NAME"
+    source install_external_keyboard_toggle.sh
 
-if [ "$wayland_or_x11" = "x11" ]; then
-    echo "X11 is detected"
+    echo
 
-    xauthority=$(/usr/bin/xauth info | grep Authority | awk '{print $3}')
-    xdisplay=$(echo $DISPLAY)
-    echo "DISPLAY: $xdisplay"
-    echo "AUTHORITY: $xauthority"
-    cat asus_touchpad.X11.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" LAYOUT=$model XDISPLAY=$xdisplay XAUTHORITY=$xauthority envsubst '$LAYOUT $XAUTHORITY $XDISPLAY $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
-elif [ "$wayland_or_x11" = "wayland" ]; then
-    echo "Wayland is detected, unfortunatelly you will not be able use feature: Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell, at this moment is supported only X11"
+    source install_calc_toggle.sh
 
-    cat asus_touchpad.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" LAYOUT=$model envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
-else
-    echo "Wayland or X11 is not detected"
+    echo
 
-    cat asus_touchpad.service | CONFIG_FILE_DIR="$CONFIG_FILE_DIR/" LAYOUT=$model envsubst '$LAYOUT $CONFIG_FILE_DIR' > /etc/systemd/system/asus_touchpad_numpad@.service
-fi
+    echo "Installation finished succesfully"
 
+    echo
 
-mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
-chown -R $RUN_UNDER_USER /usr/share/asus_touchpad_numpad-driver
-mkdir -p /var/log/asus_touchpad_numpad-driver
-install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
-install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
-
-echo "Installing udev rules to /usr/lib/udev/rules.d/"
-
-cp udev/90-numberpad-external-keyboard.rules /usr/lib/udev/rules.d/
-
-echo "Added 90-numberpad-external-keyboard.rules"
-mkdir -p /usr/share/asus_touchpad_numpad-driver/udev
-
-cat udev/external_keyboard_is_connected.sh | CONFIG_FILE_DIR=$CONFIG_FILE_DIR envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
-cat udev/external_keyboard_is_disconnected.sh | CONFIG_FILE_DIR=$CONFIG_FILE_DIR envsubst '$CONFIG_FILE_DIR' > /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
-chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_connected.sh
-chmod +x /usr/share/asus_touchpad_numpad-driver/udev/external_keyboard_is_disconnected.sh
-
-udevadm control --reload-rules
-
-echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
-
-if [[ -f "$CONF_FILE" ]]; then
-    read -r -p "In system remains config file from previous installation. Do you want replace this with default config file [y/N]" response
-    case "$response" in [yY][eE][sS]|[yY])
-        # default will be autocreated, so that is why remove
-        rm -f $CONF_FILE
-        if [[ $? != 0 ]]; then
-            echo "$CONF_FILE cannot be removed correctly..."
-            exit 1
-        fi
-        ;;
-    *)
-        ;;
-    esac
-else
-    echo "Installed default config which can be futher modified here:"
-    echo "$CONF_FILE"
-fi
-
-if [[ $(type gsettings 2>/dev/null) ]]; then
-    echo "gsettings is here"
-    read -r -p "Do you want automatically try install toggling script for XF86Calculator key? Slide from top left icon will then invoke/close detected calculator app. [y/N]" response
-    case "$response" in [yY][eE][sS]|[yY])
-
-        existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-        #echo $existing_shortcut_string
-
-        new_shortcut_index=0
-        filtered_existing_shortcut_string="["
-        filtered_existing_shortcut_count=0
-
-        if [[ "$existing_shortcut_string" != "@as []" ]]; then
-            IFS=', ' read -ra existing_shortcut_array <<< "$existing_shortcut_string"
-            for shortcut_index in "${!existing_shortcut_array[@]}"; do
-                shortcut="${existing_shortcut_array[$shortcut_index]}"
-                shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
-
-                # looking for first free highest index (gaps will not be used for sure)
-                if [[ "$shortcut_index" -gt "$new_shortcut_index" ]]; then
-                    new_shortcut_index=$shortcut_index
-                    #echo $shortcut_index
-                fi
-
-                # filter out already added the same shortcuts by this driver (can be caused by running install script multiple times so clean and then add only 1 new - we want no duplicates)
-                command=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
-                #echo $command
-                if [[ "$command" != "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
-                    #echo "Found something else on index $shortcut_index"
-                    if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
-                        filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
-                    else
-                        filtered_existing_shortcut_string="$filtered_existing_shortcut_string""'/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
-                    fi
-                else
-                    echo "Found already existing duplicated shortcut for toggling calculator, will be removed"
-                    ((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
-                    runuser -u $SUDO_USER gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
-                fi
-            done
-            ((new_shortcut_index=new_shortcut_index+1))
-            #echo $new_shortcut_index
-            filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
-            #echo $filtered_existing_shortcut_string
-            #echo $filtered_existing_shortcut_count
-
-            if [[ $filtered_existing_shortcut_count != 0 ]]; then
-                new_shortcut_string=${filtered_existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index']"
-            else
-                # after filtering duplicated shortcuts array of shortcuts is completely empty
-                new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
-            fi
-            #echo $new_shortcut_string
-        else
-            # array of shortcuts is completely empty
-            new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
-        fi
-
-        IS_INSTALLED_ELEMENTARY_OS_CALCULATOR=$(type io.elementary.calculator &>/dev/null ; echo $? )
-        IS_INSTALLED_GNOME_OS_CALCULATOR=$(type gnome-calculator &>/dev/null ; echo $? )
-        echo "is installed io.elementary.calculator: $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR"
-        echo "is installed gnome-calculator: $IS_INSTALLED_GNOME_OS_CALCULATOR"
-
-        if [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
-            echo "setting up for io.elementary.calculator"
-
-            mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
-            cp scripts/io_elementary_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-
-            # this has to be empty (no doubled XF86Calculator)
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
-
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${new_shortcut_string}"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
-
-            existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-            #echo $existing_shortcut_string
-            echo "Toggling script for calculator app io.elementary.calculator has been installed."
-
-            logout_requested=true
-        elif [[ $IS_INSTALLED_GNOME_OS_CALCULATOR -eq 0 ]]; then
-            echo "setting up for gnome-calculator"
-
-            mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
-            cp scripts/gnome_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-
-            # this has to be empty (no doubled XF86Calculator)
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
-
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "${new_shortcut_string}"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "name" "Calculator"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "command" "bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh"
-            runuser -u $SUDO_USER gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$new_shortcut_index/ "binding" "XF86Calculator"
-
-            existing_shortcut_string=$(runuser -u $SUDO_USER gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-            #echo $existing_shortcut_string
-            echo "Toggling script for calculator app gnome-calculator has been installed."
-
-            logout_requested=true
-        else
-           echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
-        fi
-        ;;
-    *)
-        ;;
-    esac
-else
-    echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
-fi
-
-systemctl daemon-reload
-
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when was called systemctl daemon reload"
-    exit 1
-else
-    echo "Systemctl daemon realod called succesfully"
-fi
-
-read -r -p "Do you want start the driver automatically at boot using systemd service? [y/N] (result might be black screen which will prevent login, systemd service is not designed to be started at boot with using X11, is recommended start driver on every startup by other way)" response
-case "$response" in [yY][eE][sS]|[yY])
-        systemctl enable asus_touchpad_numpad@$RUN_UNDER_USER.service
-        if [[ $? != 0 ]]; then
-            echo "Something went wrong when enabling the asus_touchpad_numpad.service"
-            exit 1
-        else
-            echo "Asus touchpad numpad service enabled"
-        fi
-        ;;
-    *)
-        echo "Add this line to startup scripts 'sudo systemctl start asus_touchpad_numpad@$RUN_UNDER_USER.service' or start driver manually with the same line when needed. Now will be service started until first reboot."
-        ;;
-esac
-
-systemctl restart asus_touchpad_numpad@$RUN_UNDER_USER.service
-if [[ $? != 0 ]]; then
-    echo "Something went wrong when enabling the asus_touchpad_numpad.service"
-    exit 1
-else
-    echo "Asus touchpad numpad service started"
-fi
-
-if [[ "$logout_requested" = true ]]
-then
-
-    echo "Install process requested to succesfull finish atleast log out or reboot"
-    echo "Without that driver might not work properly"
-
-    read -r -p "Do you want reboot now? [y/N]" response
+    read -r -p "Reboot is required. Do you want reboot now? [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
         reboot
         ;;
     *)
         ;;
     esac
-fi
 
-echo "Install finished"
+    echo
 
-exit 0
+    exit 0
+} 2>&1 | sudo tee "$LOGS_INSTALL_LOG_FILE_PATH"

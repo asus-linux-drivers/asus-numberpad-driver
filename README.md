@@ -23,8 +23,9 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 ## Features
 
+- Driver is installed for current user and does not run under `$ sudo`
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with possibility [create custom one or improve existing](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout) (keys, sizes, paddings..)
-- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when is run `sudo bash ./install.sh` changes done in config file may not be overwritten, the same when is run `sudo bash ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
+- Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when is run `$ bash ./install.sh` changes done in config file may not be overwritten, the same when is run `$ bash ./uninstall.sh` and when config file or part of does not exist is automatically created/completed with default values)
 - Automatic NumberPad model detection via [list of used NumberPad layouts for laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts) and when is available a connection via finding all other laptops on [linux-hardware.org](https://linux-hardware.org) which use the same version of NumberPad to which might be already in mentioned list associated proper layout
 - Activation/deactivation of NumberPad via holding top right icon or every spot with key `KEY_NUMLOCK` (activation time by default 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning on top right icon (by default is required end slide after at least 30% of touchpad width and height)
@@ -42,6 +43,90 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 - Is implemented protection against sending NumberPad key when is done pointer button click (left, right, middle one) when is set up config value `press_key_when_is_done_untouch` (by default)
 - Disabling Touchpad (e.g. Fn+special key) disables by default NumberPad as well (*this functionality supports atm only `xinput` from `xorg` and `gnome` via `gsettings`*, can be disabled)
 - Is recognized when is connected external keyboard and automatically is changed [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
+
+## Installation
+
+Get latest dev version using `git`
+
+```bash
+$ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
+$ cd asus-numberpad-driver
+```
+
+or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install like this for current user only or for all users
+
+```bash
+# try found touchpad with numberpad
+$ bash install_device_check.sh
+```
+
+```bash
+# install for current user
+$ bash install.sh
+```
+
+or run separately parts of install script
+
+- add user to newly created `numberpad` group which owns `/var/log/asus-numberpad-driver`
+
+```bash
+$ install_logs.sh
+```
+
+- add user to groups `i2c,input,uinput`
+
+```bash
+$ bash install_user_groups.sh
+```
+
+- install predefined rule for change configuration when is external keyboard connected/disconnected
+
+```bash
+$ export INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+$ export CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+$ export CONFIG_FILE_NAME="numberpad_dev"
+$ export CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
+
+$ bash install_external_keyboard_toggle.sh
+```
+
+- run driver now and every time when user log in (do NOT run as `$ sudo`, works via `systemctl --user`)
+
+```bash
+$ export CONFIG_FILE_DIR_PATH="/usr/share/asus-numberpad-driver"
+$ export LAYOUT_NAME="up5401ea"
+
+$ bash install_service.sh
+```
+
+- make work top left corner slide gesture as function for show/disable calculator app (script below supports `io.elementary.calculator` and `gnome-calculator` via `gsettings`)
+
+```bash
+$ bash install_calc_toggle.sh
+```
+
+or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-numberpad-driver-ux433fa-git`)
+
+```bash
+$ paru -S asus-numberpad-driver-${model}-git
+```
+
+## Uninstallation
+
+And to uninstall run
+
+```bash
+bash uninstall.sh
+```
+
+or run separately parts of uninstall script
+
+```bash
+bash uninstall_calc_toggle.sh
+bash uninstall_external_keyboard_toggle.sh
+bash uninstall_external_service.sh
+bash uninstall_user_groups.sh
+```
 
 ## Layouts
 
@@ -112,72 +197,31 @@ B: MSC=20
 
 [Link](touchpad_product_id_info.md)
 
-## Installation
-
-Install latest dev version using `git`
-
-```bash
-git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
-cd asus-numberpad-driver
-# install under current user (highly recommended)
-sudo bash ./install.sh --user
-# install as root
-sudo bash ./install.sh
-```
-
-or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and run:
-
-```bash
-# install as root
-sudo bash ./install.sh
-# install under current user (highly recommended)
-sudo bash ./install.sh --user
-```
-
-or is available package for arch on AUR [here](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace model with available models, e.g. `asus-numberpad-driver-ux433fa-git`)
-
-```bash
-paru -S asus-numberpad-driver-${model}-git
-```
-
-## Uninstallation
-
-And to uninstall, just run:
-
-```bash
-sudo bash ./uninstall.sh
-# stop driver and uninstall for current user
-sudo bash ./uninstall.sh --user
-```
-
 ### Dependencies
 
-**Everything is included in install script `sudo bash ./install.sh`**
+**Everything is included in install scripts**
 
 To see the exact commands for your package manager look [here](./install.sh) (for python dependencies take a look at [requirements.txt](./requirements.txt))
 
 ## Troubleshooting
 
 - **Start point [x:0,y:0] of touchpad is on the left top!**
-- **Before debugging make sure you have disabled the asus_touchpad_numpad@.service service**
+- **Before debugging make sure you have disabled the asus_numberpad_driver@.service**
 
 ```bash
-# when installed for running under root (`sudo bash ./install.sh`)
-sudo systemctl stop asus_touchpad_numpad@root.service
-# when installed for running under current user (`sudo bash ./install.sh --user`)
-sudo systemctl stop asus_touchpad_numpad@<user>.service
+$ systemctl stop --user asus_numberpad_driver@<$USER>.service
 ```
 
 - To show debug logs run this command in terminal (**Do not forget specify numpad layout and which config do you want to use**):
 
 ```bash
-# LOG=DEBUG sudo -E ./asus_touchpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: asus_touchpad_numpad_dev, by default is taken CWD - current working directory, not existing config file is created and filled with default values>
+# LOG=DEBUG ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, not existing config file is created and filled with default values>
 
 cd asus-numberpad-driver
-LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "" # now driver use root of repository as directory for config file named asus_touchpad_numpad_dev
+LOG=DEBUG ./numberpad.py "up5401ea" "" # now driver use root of repository as directory for config file named numberpad_dev which if does not exist will be autocreated with default values
 
 cd asus-numberpad-driver
-LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea" "/usr/share/asus_touchpad_numpad-driver/" # now driver use installed config
+LOG=DEBUG ./numberpad.py "up5401ea" "/usr/share/asus-numberpad-driver/" # now driver use installed config
 ```
 
 - To show pressed keys:
@@ -203,14 +247,12 @@ xdotool key XF86Calculator
 - directly just change `enabled` in appropriate config file:
 
 ```
-# when is installed under current user (--user) sudo is not required
-
 # enabling NumberPad via command line
-sudo sed -i "s/enabled = 0/enabled = 1/g" asus_touchpad_numpad_dev
-sudo sed -i "s/enabled = 0/enabled = 1/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+sed -i "s/enabled = 0/enabled = 1/g" numberpad_dev
+sed -i "s/enabled = 0/enabled = 1/g" /usr/share/asus-numberpad-driver/numberpad_dev
 # disabling
-sudo sed -i "s/enabled = 1/enabled = 0/g" asus_touchpad_numpad_dev
-sudo sed -i "s/enabled = 1/enabled = 0/g" /usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev
+sed -i "s/enabled = 1/enabled = 0/g" numberpad_dev
+sed -i "s/enabled = 1/enabled = 0/g" /usr/share/asus-numberpad-driver/numberpad_dev
 ```
 
 **Is any key from NumberPad not send properly?**
@@ -284,7 +326,7 @@ $ sudo install dconf-editor
 $ gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
 $ gsettings set org.gnome.settings-daemon.plugins.media-keys calculator-static [\'\']
 ```
-- Whether script works can be tested via `bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh`
+- Whether script works can be tested via `bash /usr/share/asus-numberpad-driver/scripts/calculator_toggle.sh`
 
 - Whether keybinding works can be tested via slide gesture from NumberPad or via simulating `XF86Calculator` key `xdotool key XF86Calculator`
 
@@ -338,14 +380,21 @@ $ rm /home/ldrahnik/.Xauthority
 $ reboot
 ```
 
+**Read environment variables for systemctl service**
+
+```
+$ systemctl status <name>.service # read PID
+$ sudo strings /proc/<PID>/environ
+```
+
 ## Configuration
 
 ### Keyboard layout
 
-During the install process `sudo bash ./install.sh`, you're required to select your keyboard layout:
+During the install process `bash ./install.sh`, you're required to select your keyboard layout:
 
 ```
-Select models keypad layout:
+...
 1) b7402.py
 2) e210ma.py
 3) g533.py
@@ -356,11 +405,12 @@ Select models keypad layout:
 8) ux581l.py
 9) Quit
 Please enter your choice
+...
 ```
 
 Each key layout (`g533.py`, `gx701.py`, ..) chosen during the install process corresponds to the specific file. To change any layout depending settings you need to locally edit the selected layout file and change the value of the corresponding variable from the first table below.
 
-Example: If you want to set the size of top right icon to bigger and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variables (`top_right_icon_width = 400`,`top_right_icon_height = 400`) in the layout file (`asus-numberpad-driver/numpad_layouts/up5401ea.py`) and install the layout again.
+Example: If you want to set the size of top right icon to bigger and you have chosen the layout `up5401ea.py` during the install process. You need to change the corresponding variables (`top_right_icon_width = 400`,`top_right_icon_height = 400`) in the layout file (`asus-numberpad-driver/layouts/up5401ea.py`) and install the layout again.
 
 | Option                                        | Required | Default           | Description |
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -386,7 +436,7 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 
 ### Configuration file
 
-What is not depending on specific keyboard of Numpad is mentioned in table below and can be changed in config file `asus_touchpad_numpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus_touchpad_numpad-driver/asus_touchpad_numpad_dev`. Example default one:
+What is not depending on specific keyboard of Numpad is mentioned in table below and can be changed in config file `numberpad_dev` (dev as device interface because is here saved even status enabled of NumberPad, latest used brightness) in installed driver location `/usr/share/asus-numberpad-driver/numberpad_dev`. Example default one:
 
 ```
 [main]
