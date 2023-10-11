@@ -1,0 +1,17 @@
+[Unit]
+Description=Asus NumberPad Driver
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env python3 /usr/share/asus-numberpad-driver/numberpad.py $LAYOUT_NAME $CONFIG_FILE_DIR_PATH
+StandardOutput=append:$ERROR_LOG_FILE_PATH
+StandardError=append:$ERROR_LOG_FILE_PATH
+TimeoutSec=5
+Restart=on-failure
+Environment="DISPLAY=$DISPLAY"
+Environment="XAUTHORITY=$XAUTHORITY"
+Environment="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
+Environment="XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
+
+[Install]
+WantedBy=default.target
