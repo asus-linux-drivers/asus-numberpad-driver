@@ -22,13 +22,11 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
 
-# Setup logging
-# LOG=DEBUG sudo -E ./asus_touchpad.py "up5401ea"  # all messages
-# LOG=ERROR sudo -E ./asus_touchpad.py "up5401ea"  # only error messages
-logging.basicConfig()
-log = logging.getLogger('asus-touchpad-numpad-driver')
-log.setLevel(os.environ.get('LOG', 'INFO'))
-
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=os.environ.get('LOG', 'INFO')
+)
+log = logging.getLogger('asus-numberpad-driver')
 
 # Constants
 try_times = 5
@@ -48,9 +46,9 @@ model = None
 if len(sys.argv) > 1:
     model = sys.argv[1]
 try:
-    model_layout = importlib.import_module('numpad_layouts.' + model)
+    model_layout = importlib.import_module('layouts.' + model)
 except:
-    log.error("Numpad layout *.py from dir numpad_layouts is required as first argument. Re-run install script or add missing first argument (valid value is b7402, e210ma, g533, gx551, gx701, up5401, ..).")
+    log.error("Numpad layout *.py from dir layouts is required as first argument. Re-run install script or add missing first argument (valid value is b7402, e210ma, g533, gx551, gx701, up5401ea, ..).")
     sys.exit(1)
 
 # Config file dir
@@ -82,7 +80,7 @@ backlight_levels = getattr(model_layout, "backlight_levels", [])
 
 
 # Config
-CONFIG_FILE_NAME = "asus_touchpad_numpad_dev"
+CONFIG_FILE_NAME = "numberpad_dev"
 CONFIG_SECTION = "main"
 CONFIG_ENABLED = "enabled"
 CONFIG_ENABLED_DEFAULT = False
