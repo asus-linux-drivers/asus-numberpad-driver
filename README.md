@@ -53,49 +53,35 @@ $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
 ```
 
-or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install like this for current user only or for all users
+or download latest release (stable version) from [release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install for current user
 
 ```bash
-# try found touchpad with numberpad
-$ bash install_device_check.sh
-```
-
-```bash
-# install for current user
 $ bash install.sh
 ```
 
 or run separately parts of install script
 
-- add user to newly created `numberpad` group which owns `/var/log/asus-numberpad-driver`
+- try found touchpad with numberpad
 
 ```bash
-$ install_logs.sh
+$ bash install_device_check.sh
 ```
 
-- add user to groups `i2c,input,uinput`
+- add a user to groups `i2c,input,uinput`
 
 ```bash
 $ bash install_user_groups.sh
 ```
 
-- install predefined rule for change configuration when is external keyboard connected/disconnected
+- install a predefined rule for change configuration when is external keyboard connected/disconnected
 
 ```bash
-$ export INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-$ export CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
-$ export CONFIG_FILE_NAME="numberpad_dev"
-$ export CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
-
 $ bash install_external_keyboard_toggle.sh
 ```
 
 - run driver now and every time when user log in (do NOT run as `$ sudo`, works via `systemctl --user`)
 
 ```bash
-$ export CONFIG_FILE_DIR_PATH="/usr/share/asus-numberpad-driver"
-$ export LAYOUT_NAME="up5401ea"
-
 $ bash install_service.sh
 ```
 
@@ -113,19 +99,19 @@ $ paru -S asus-numberpad-driver-${model}-git
 
 ## Uninstallation
 
-And to uninstall run
+To uninstall run
 
 ```bash
-bash uninstall.sh
+$ bash uninstall.sh
 ```
 
-or run separately parts of uninstall script
+or run separately parts of the uninstall script
 
 ```bash
-bash uninstall_calc_toggle.sh
-bash uninstall_external_keyboard_toggle.sh
-bash uninstall_external_service.sh
-bash uninstall_user_groups.sh
+$ bash uninstall_calc_toggle.sh
+$ bash uninstall_external_keyboard_toggle.sh
+$ bash uninstall_external_service.sh
+$ bash uninstall_user_groups.sh
 ```
 
 ## Layouts
