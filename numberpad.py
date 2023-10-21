@@ -459,14 +459,12 @@ def isEvent(event):
     else:
         return False
 
-def isEventArray(events):
+def isEventList(events):
     if type(events) is list:
-        first_event = events[0]
-        if getattr(first_event, "name", None) is not None and\
-               getattr(EV_KEY, first_event.name):
-            return True
-        else:
-            return False
+        for event in events:
+            if not isEvent(event):
+                return False
+        return True
     else:
         return False
 
@@ -1066,15 +1064,11 @@ def pressed_numpad_key():
 
     events = []
 
-    if isEventArray(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+    if isEventList(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
         for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
-             events.append(InputEvent(event, 1))
-
-        for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
-             events.append(InputEvent(event, 0))
-
-        events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+            events.append(InputEvent(event, 1))
+            events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
 
     elif isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
         events = [
@@ -1138,13 +1132,12 @@ def unpressed_numpad_key(replaced_by_key=None):
 
     events = []
 
-    if isEventArray(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+    if isEventList(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
         for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
-            events = [
-                InputEvent(event, 0),
-                InputEvent(EV_SYN.SYN_REPORT, 0)
-            ]
+            events.append(InputEvent(event, 0))
+            events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+
     elif isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
         events = [
