@@ -4,11 +4,6 @@
 source non_sudo_check.sh
 
 # INHERIT VARS
-#INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-#CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
-#CONFIG_FILE_NAME="numberpad_dev"
-#CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
-
 if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi
