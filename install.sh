@@ -11,7 +11,6 @@ echo
 # log output from every installing attempt aswell
 LOGS_INSTALL_LOG_FILE_NAME=install-"$(date +"%d-%m-%Y-%H-%M-%S")".log
 LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
-touch "$LOGS_INSTALL_LOG_FILE_PATH"
 
 {
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
