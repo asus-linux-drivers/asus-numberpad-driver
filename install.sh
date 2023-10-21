@@ -15,15 +15,15 @@ touch "$LOGS_INSTALL_LOG_FILE_PATH"
 
 {
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify libxml2-utils
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib libxml2
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
-        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         # yum was replaced with newer dnf above
-        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib
+        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
