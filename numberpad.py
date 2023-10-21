@@ -459,6 +459,14 @@ def isEvent(event):
     else:
         return False
 
+def isEventArray(events):
+    first_event = events[0]
+    if getattr(first_event, "name", None) is not None and\
+           getattr(EV_KEY, first_event.name):
+        return True
+    else:
+        return False
+
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
@@ -1055,17 +1063,22 @@ def pressed_numpad_key():
 
     events = []
 
-    if not isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+    if isEventArray(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
-        unicode_string = abs_mt_slot_numpad_key[abs_mt_slot_value]
-        for unicode_char in unicode_string:
-            events = events + get_events_for_unicode_char(unicode_char)
-
-    else:
+        for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
+            events = [
+                InputEvent(event, 1),
+                InputEvent(EV_SYN.SYN_REPORT, 0)
+            ]
+    elif isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
         events = [
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 1),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
+    else:
+        unicode_string = abs_mt_slot_numpad_key[abs_mt_slot_value]
+        for unicode_char in unicode_string:
+            events = events + get_events_for_unicode_char(unicode_char)
 
     try:
         if enabled_touchpad_pointer == 1:
@@ -1117,13 +1130,23 @@ def unpressed_numpad_key(replaced_by_key=None):
     log.info("Unpressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-    if isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+    events = []
+
+    if isEventArray(abs_mt_slot_numpad_key[abs_mt_slot_value]):
+
+        for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
+            events = [
+                InputEvent(event, 0),
+                InputEvent(EV_SYN.SYN_REPORT, 0)
+            ]
+    elif isEvent(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
         events = [
             InputEvent(abs_mt_slot_numpad_key[abs_mt_slot_value], 0),
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
 
+    if events:
         try:
             udev.send_events(events)
         except OSError as e:
