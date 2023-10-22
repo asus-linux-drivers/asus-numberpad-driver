@@ -110,7 +110,7 @@ or run separately parts of the uninstall script
 ```bash
 $ bash uninstall_calc_toggle.sh
 $ bash uninstall_external_keyboard_toggle.sh
-$ bash uninstall_external_service.sh
+$ bash uninstall_service.sh
 $ bash uninstall_user_groups.sh
 ```
 
