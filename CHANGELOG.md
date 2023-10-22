@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.1.0 (22.10.2023)
+
+### New feature
+
+- Added possibility define array of key events inside layouts (e.g. `[EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_KP5]]`)
+
+### Fixed
+
+- Added missing dependency `xmllint` for auto suggestion
+
 ## 4.0.0 (11.10.2023)
 
 ### New feature
