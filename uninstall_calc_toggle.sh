@@ -18,7 +18,7 @@ if [[ "$existing_shortcut_string" != "@as []" ]]; then
         shortcut_index=$( echo $shortcut | cut -d/ -f 8 | sed 's/[^0-9]//g')
 
         command=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
-        if [[ "$command" = "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
+        if [[ "$command" = "'bash /usr/share/asus-numberpad-driver/scripts/calculator_toggle.sh'" ]]; then
 			((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
             echo "Removed shortcut added by installation of this driver for toggling calculator"
             gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/

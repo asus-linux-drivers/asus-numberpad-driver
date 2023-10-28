@@ -38,7 +38,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
                 # filter out already added the same shortcuts by this driver (can be caused by running install script multiple times so clean and then add only 1 new - we want no duplicates)
                 command=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
-                if [[ "$command" != "'bash /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh'" ]]; then
+                if [[ "$command" != "'bash /usr/share/asus-numberpad-driver/scripts/calculator_toggle.sh'" ]]; then
                     #echo "Found something else on index $shortcut_index"
                     if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
                         filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
@@ -79,9 +79,9 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
         if [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
             echo "Setting up for io.elementary.calculator"
 
-            mkdir -p $INSTALL_DIR_PATH/scripts
-            cp scripts/io_elementary_calculator_toggle.sh $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
-            chmod +x $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
+            sudo mkdir -p $INSTALL_DIR_PATH/scripts
+            sudo cp scripts/io_elementary_calculator_toggle.sh $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
+            sudo chmod +x $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
 
             # this has to be empty (no doubled XF86Calculator)
             gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
@@ -99,9 +99,9 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
         elif [[ $IS_INSTALLED_GNOME_OS_CALCULATOR -eq 0 ]]; then
             echo "Setting up for gnome-calculator"
 
-            mkdir -p /usr/share/asus_touchpad_numpad-driver/scripts
-            cp scripts/gnome_calculator_toggle.sh /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
-            chmod +x /usr/share/asus_touchpad_numpad-driver/scripts/calculator_toggle.sh
+            sudo mkdir -p $INSTALL_DIR_PATH/scripts
+            sudo cp scripts/gnome_calculator_toggle.sh $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
+            sudo chmod +x $INSTALL_DIR_PATH/scripts/calculator_toggle.sh
 
             # this has to be empty (no doubled XF86Calculator)
             gsettings set org.gnome.settings-daemon.plugins.media-keys calculator [\'\']
