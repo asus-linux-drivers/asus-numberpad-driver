@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.1 (30.10.2023)
+
+### Fixed
+
+- Install script for calculator toggling
+
 ## 4.1.0 (22.10.2023)
 
 ### New feature
