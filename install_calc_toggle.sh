@@ -56,14 +56,14 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
 
             if [[ $filtered_existing_shortcut_count != 0 ]]; then
-                new_shortcut_string=${filtered_existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$NEW_SHORTCUT_INDEX']"
+                new_shortcut_string=${filtered_existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$NEW_SHORTCUT_INDEX/']"
             else
                 # after filtering duplicated shortcuts array of shortcuts is completely empty
-                new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
+                new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']"
             fi
         else
             # array of shortcuts is completely empty
-            new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0']"
+            new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']"
         fi
 
         IS_INSTALLED_ELEMENTARY_OS_CALCULATOR=$(type io.elementary.calculator &>/dev/null ; echo $? )
