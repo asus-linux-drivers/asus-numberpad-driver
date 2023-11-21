@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.2 (21.11.2023)
+
+### Fixed
+
+- Install script for calculator toggling (no longer break another shorcuts)
+
 ## 4.1.1 (30.10.2023)
 
 ### Fixed
