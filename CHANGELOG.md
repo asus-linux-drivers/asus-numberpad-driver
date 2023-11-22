@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.1.3 (22.11.2023)
+
+### New feature
+
+- Autodetection for model `Zenbook UM3402YAR_UM3402YA`
+
+### Fixed 
+
+- Fixed online autodetection
+- Fixed endless cycle activating & inactivating of NumberPad when was NumberPad disabled by disabling touchpad
+
 ## 4.1.2 (21.11.2023)
 
 ### Fixed
