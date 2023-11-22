@@ -1707,6 +1707,13 @@ def check_touchpad_status():
 
     if not is_touchpad_enabled:
         numlock = False        
+
+        sys_numlock = get_system_numlock()
+        if sys_numlock and numpad_disables_sys_numlock:
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock deactivated")
+
         deactivate_numpad()
         log.info("Numpad deactivated")
 
