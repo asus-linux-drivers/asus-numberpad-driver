@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.4 (23.11.2023)
+
+### Fixed 
+
+- Removing driver folder during uninstalling
+
 ## 4.1.3 (22.11.2023)
 
 ### New feature
