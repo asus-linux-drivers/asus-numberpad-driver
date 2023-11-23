@@ -9,10 +9,10 @@ LOGS_UNINSTALL_LOG_FILE_NAME=uninstall-"$(date +"%d-%m-%Y-%H-%M-%S")".log
 LOGS_UNINSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_UNINSTALL_LOG_FILE_NAME"
 touch "$LOGS_UNINSTALL_LOG_FILE_PATH"
 
-{
-	# for `rm` exclude !(xy)
-	shopt -s extglob
+# for `rm` exclude !(xy)
+shopt -s extglob
 
+{
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
     CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
     CONFIG_FILE_NAME="numberpad_dev"
