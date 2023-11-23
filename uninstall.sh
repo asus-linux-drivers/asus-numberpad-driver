@@ -30,14 +30,14 @@ shopt -s extglob
 	then
 	    read -r -p "Installed numpad layouts contain modifications compared to the default ones. Do you want remove them [y/N]" response
 	    case "$response" in [yY][eE][sS]|[yY])
-			rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
+			sudo rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
 			if [[ $? != 0 ]]
 			then
 				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
 			fi
         	;;
     	*)
-			rm -rf "$INSTALL_DIR_PATH/!(numpad_layouts|$CONFIG_FILE_NAME)"
+			sudo rm -rf "$INSTALL_DIR_PATH/!(numpad_layouts|$CONFIG_FILE_NAME)"
 			if [[ $? != 0 ]]
 			then
 				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
@@ -49,7 +49,7 @@ shopt -s extglob
         	;;
     	esac
 	else
-		rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
+		sudo rm -rf "$INSTALL_DIR_PATH/!($CONFIG_FILE_NAME)"
 		if [[ $? != 0 ]]
 		then
 			echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
@@ -63,9 +63,9 @@ shopt -s extglob
 
 			if test -d "$NUMPAD_LAYOUTS_DIR"
 			then
-				rm -f "$CONFIG_FILE_PATH"
+				sudo rm -f "$CONFIG_FILE_PATH"
 			else
-				rm -rf "$INSTALL_DIR_PATH"
+				sudo rm -rf "$INSTALL_DIR_PATH"
 			fi
 
 			if [[ $? != 0 ]]
@@ -82,9 +82,9 @@ shopt -s extglob
 
 		if test -d "$NUMPAD_LAYOUTS_DIR"
 		then
-			rm -f $CONFIG_FILE_PATH
+			sudo rm -f $CONFIG_FILE_PATH
 		else
-			rm -rf $INSTALL_DIR_PATH
+			sudo rm -rf $INSTALL_DIR_PATH
 		fi
 
 		if [[ $? != 0 ]]
