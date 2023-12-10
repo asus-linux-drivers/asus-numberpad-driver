@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.5 (10.12.2023)
+
+### Fixed
+
+- Missing space in newly created virtual NumberPad device name
+
 ## 4.1.4 (23.11.2023)
 
 ### Fixed 
