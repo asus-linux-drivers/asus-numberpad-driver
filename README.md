@@ -21,7 +21,7 @@ If you find this project useful, do not forget to give it a [![GitHub stars](htt
 
 [CHANGELOG.md](CHANGELOG.md)
 
-## FAQ
+## Frequently Asked Questions
 
 [FAQ](#faq)
 
