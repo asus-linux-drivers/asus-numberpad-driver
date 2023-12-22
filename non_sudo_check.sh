@@ -1,5 +1,5 @@
 
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ $(id -u) == 0 ]]; then
     echo "Please run the install and uninstallation scripts as current user"

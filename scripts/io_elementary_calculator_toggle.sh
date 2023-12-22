@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ $(ps aux | grep io.elementary.calculator | grep -v grep) ]]; then
 	flatpak kill io.elementary.calculator &>/dev/null &

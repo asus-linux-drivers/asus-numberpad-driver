@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ $(pgrep -lf gnome-calculator) ]]; then
 	killall gnome-calculator &>/dev/null &
