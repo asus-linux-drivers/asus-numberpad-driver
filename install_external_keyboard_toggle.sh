@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 source non_sudo_check.sh
@@ -19,18 +18,18 @@ fi
 
 echo "External keyboard"
 echo
-echo "Is predefined rule for change configuration when is external keyboard connected/disconnected."
+echo "This is a predefined rule for changing the configuration when an external keyboard is connected/disconnected."
 echo
-echo "State connected of external keyboard means these changes:"
+echo "The application of this rule results in the following changes if an external keyboard is connected:"
 echo
-echo " - Numlock key does not activate numberpad (config value is sys_numlock_enables_numpad=0)"
-echo " - Numberpad does not disable numlock (config value is numpad_disables_sys_numlock=0)"
+echo " - Numlock key does not activate NumberPad (config value is set to sys_numlock_enables_numpad=0)"
+echo " - Numberpad disactivation does not disable Numlock (config value is set to numpad_disables_sys_numlock=0)"
 echo
-echo "In summary when is external keyboard connected then is numberpad not linked to numlock state in both ways. Not connected state is the opposite."
+echo "In summary when an external keyboard is connected then NumberPad activation is not linked to Numlock state and vice versa."
 
 echo
 
-read -r -p "Do you want install rule for external keyboard? [y/N]" RESPONSE
+read -r -p "Do you want install the rule for external keyboard? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
@@ -38,10 +37,10 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
 
     if [[ $? != 0 ]]; then
-        echo "Something went wrong when moving 90-numberpad-external-keyboard.rules"
+        echo "Something went wrong when applying 90-numberpad-external-keyboard.rules"
         exit 1
     else
-        echo "Rule 90-numberpad-external-keyboard.rules placed"
+        echo "Rule 90-numberpad-external-keyboard.rules applied"
     fi
 
     sudo mkdir -p "$INSTALL_DIR_PATH/udev"
