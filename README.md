@@ -500,6 +500,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 - [rust] <https://github.com/iamkroot/asus-numpad> rewritten in rust the same python project which was starting point for this repository  <https://github.com/mohamed-badaoui/asus-numberpad-driver>
 - [python service, configurable, the most up-to-date] **The above project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver>
 - [c++] <https://github.com/haronaut/asus_numberpad>
+- [c] <https://github.com/valoran-M/asus_driver_touchpad>
 
 ## Existing related projects
 
