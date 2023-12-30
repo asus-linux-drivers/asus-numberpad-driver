@@ -15,6 +15,8 @@ else
     echo "Added groups input, i2c, uinput, numberpad to current user"
 fi
 
+sudo chown :uinput /dev/uinput
+
 echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules >/dev/null
 
 sudo udevadm control --reload-rules
