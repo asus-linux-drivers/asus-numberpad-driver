@@ -19,8 +19,8 @@ sudo chown :uinput /dev/uinput
 
 echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules >/dev/null
 
-sudo udevadm control --reload-rules
+sudo udevadm control --reload-rules && sudo udevadm trigger --verbose --sysname-match=uinput
 
 if [[ $? != 0 ]]; then
-    echo "Something went wrong when reloading udev rules"
+    echo "Something went wrong when reloading or triggering uinput udev rules"
 fi
