@@ -12,17 +12,41 @@ echo
 LOGS_INSTALL_LOG_FILE_NAME=install-"$(date +"%d-%m-%Y-%H-%M-%S")".log
 LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
+
 {
+    # asyncore was removed in Python 3.12, but try the import instead of a
+    # version check in case the compatibility package is installed.
+    #
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/153
+    PYTHON_VERSION="$(python3 --version | cut -d' ' -f2)"
+    PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE="3.12.0"
+
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify libxml2-utils
+
+        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
+            sudo apt-get -y install python3-pyasyncore
+        fi
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib libxml2
+
+        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
+            sudo pacman --noconfirm --needed -S python3-pyasyncore
+        fi
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2
+
+        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
+            sudo dnf -y install python3-pyasyncore
+        fi
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         # yum was replaced with newer dnf above
         sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2
+    
+        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
+            sudo yum --y install python3-pyasyncore
+        fi
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
