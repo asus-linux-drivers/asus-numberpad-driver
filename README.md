@@ -137,7 +137,7 @@ $ bash uninstall_user_groups.sh
 
 **Everything is included in the install scripts**
 
-To see the exact commands for the package manager look [here](./install.sh) (for python dependencies take a look at [requirements.txt](./requirements.txt))
+To see the exact commands for the package manager look [here](./install.sh)
 
 ## Troubleshooting
 
