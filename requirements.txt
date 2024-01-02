@@ -1,4 +1,0 @@
-libevdev
-numpy
-inotify
-python-xlib
