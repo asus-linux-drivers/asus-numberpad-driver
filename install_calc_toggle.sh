@@ -76,7 +76,9 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             echo "Detected gnome-calculator"
         fi
 
-        if [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
+        if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ] && [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ]; then
+            echo "Not detected any supported calculator (gnome-calculator && io.elementary.calculator)"
+        elif [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
             echo "Setting up for io.elementary.calculator"
 
             sudo mkdir -p $INSTALL_DIR_PATH/scripts
@@ -115,8 +117,6 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             EXISTING_SHORTCUT_STRING=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
 
             echo "Toggling script for calculator app gnome-calculator has been installed."
-        else
-           echo "Automatic installing of toggling script for XF86Calculator key failed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
         fi
         ;;
     *)
