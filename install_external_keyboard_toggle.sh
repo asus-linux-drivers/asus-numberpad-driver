@@ -51,13 +51,13 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     sudo chmod +x "$INSTALL_DIR_PATH/udev/external_keyboard_is_connected.sh"
     sudo chmod +x "$INSTALL_DIR_PATH/udev/external_keyboard_is_disconnected.sh"
 
-    sudo udevadm control --reload-rules
+    sudo udevadm control --reload-rules && sudo udevadm trigger
 
     if [[ $? != 0 ]]; then
-        echo "Something went wrong when reloading udev rules"
+        echo "Something went wrong when reloading or triggering udev rules"
         exit 1
     else
-        echo "Udev rules reloaded"
+        echo "Udev rules reloaded and triggered"
     fi
     ;;
 *)
