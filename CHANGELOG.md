@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.2 (7.1.2023)
+
+### Feature
+
+- Trigger for udev rules when are changed to avoid reboot
+- Support for devices with vendor `ASUP`
+- Autodetection for model `Vivobook_ASUSLaptop X1404ZA_F1404ZA`
+
+### Fixed
+
+- Replaced `i2c-tools` with Python library `smbus2` (initiated by distro which does not have sbin in `$PATH`)
+- Added enabling and auto-load `uinput` kernel module
+- Uninstall udev rules
+- Checking whether layout contains only key events
+- Improved message when was not detected any supported calc app
+- Removed file `requirements.txt` because pip is not used
+- Fixed `asyncore`` dependency for who use Python version bigger or equal to 3.12.0
+- Grammar of multiple texts (John Rose)
+- Usage of `#!/usr/bin/env` for `bash/sh` instead of hardcoded path
+
 ## 4.1.5 (10.12.2023)
 
 ### Fixed
