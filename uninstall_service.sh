@@ -10,7 +10,7 @@ if [[ $? != 0 ]]
 then
     echo "Something went wrong when stopping the $SERVICE_INSTANCE_FILE_NAME"
 else
-    echo "Asus numberpad driver service $SERVICE_INSTANCE_FILE_NAME stopped"
+    echo "Service $SERVICE_INSTANCE_FILE_NAME stopped"
 fi
 
 systemctl --user disable "$SERVICE_INSTANCE_FILE_NAME"
@@ -18,7 +18,7 @@ if [[ $? != 0 ]]
 then
     echo "Something went wrong when disabling the $SERVICE_INSTANCE_FILE_NAME"
 else
-    echo "Asus numberpad driver service $SERVICE_INSTANCE_FILE_NAME disabled"
+    echo "Service $SERVICE_INSTANCE_FILE_NAME disabled"
 fi
 
 sudo rm -f "/usr/lib/systemd/user/$SERVICE_INSTALL_FILE_NAME"
@@ -26,7 +26,7 @@ if [[ $? != 0 ]]
 then
     echo "Something went wrong when removing the $SERVICE_INSTALL_FILE_NAME"
 else
-    echo "Asus numberpad driver service removed"
+    echo "Service $SERVICE_INSTANCE_FILE_NAME removed"
 fi
 
 systemctl --user daemon-reload

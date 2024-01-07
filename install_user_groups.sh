@@ -15,12 +15,32 @@ else
     echo "Added groups input, i2c, uinput, numberpad to current user"
 fi
 
+sudo modprobe uinput
+
+# check if the uinput module is successfully loaded
+if [[ $? != 0 ]]; then
+    echo "uinput module cannot be loaded"
+    exit 1
+else
+    echo "uinput module loaded"
+fi
+
 sudo chown :uinput /dev/uinput
 
-echo 'KERNEL=="uinput", GROUP="uinput", MODE:="0660"' | sudo tee /etc/udev/rules.d/99-input.rules >/dev/null
+echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660"' | sudo tee /usr/lib/udev/rules.d/99-asus-numberpad-driver-uinput.rules >/dev/null
+echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-numberpad-driver.conf >/dev/null
 
-sudo udevadm control --reload-rules && sudo udevadm trigger --verbose --sysname-match=uinput
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when adding uinput module to auto loaded modules"
+    exit 1
+else
+    echo "uinput module added to auto loaded modules"
+fi
+
+sudo udevadm control --reload-rules && sudo udevadm trigger --sysname-match=uinput
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when reloading or triggering uinput udev rules"
+else
+    echo "Udev rules reloaded and triggered"
 fi

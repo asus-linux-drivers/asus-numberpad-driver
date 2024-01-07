@@ -2,18 +2,21 @@
 
 source non_sudo_check.sh
 
-sudo rm -f /etc/udev/rules.d/99-input.rules
+sudo rm -f /usr/lib/udev/rules.d/99-asus-numberpad-driver-uinput.rules
 
 if [[ $? != 0 ]]; then
-    echo "Something went wrong when removing the input udev rule"
-    exit 1
+    echo "Something went wrong when removing the uinput udev rule"
 fi
 
-sudo udevadm control --reload-rules
+sudo rm -f /etc/modules-load.d/uinput-asus-numberpad-driver.conf
+if [[ $? != 0 ]]; then
+    echo "Something went wrong when removing the uinput conf"
+fi
+
+sudo udevadm control --reload-rules && sudo udevadm trigger --sysname-match=uinput
 
 if [[ $? != 0 ]]; then
-    echo "Something went wrong when reloading udev rules"
-    exit 1
+    echo "Something went wrong when reloading or triggering uinput udev rules"
 else
-    echo "Udev rules reloaded"
+    echo "Udev rules reloaded and triggered"
 fi

@@ -93,7 +93,13 @@ shopt -s extglob
 		fi
 	fi
 
-	echo "Asus numberpad driver removed"
+	sudo rm -f /etc/modules-load.d/i2c-dev-asus-numberpad-driver.conf
+	if [[ $? != 0 ]]
+	then
+	    echo "Something went wrong when removing the uinput conf"
+	fi
+
+	echo "Asus NumberPad Driver removed"
 
 	echo
 

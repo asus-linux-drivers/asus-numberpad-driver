@@ -17,6 +17,7 @@ from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, Asy
 import Xlib.display
 import Xlib.X
 import Xlib.XK
+from smbus2 import SMBus, i2c_msg
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -141,12 +142,13 @@ def config_get(key, key_default):
 def send_value_to_touchpad_via_i2c(value):
     global device_id
 
-    cmd = ["i2ctransfer", "-f", "-y", device_id, "w13@0x15", "0x05", "0x00", "0x3d", "0x03", "0x06", "0x00", "0x07", "0x00", "0x0d", "0x14", "0x03", value, "0xad"]
-
     try:
-        subprocess.call(cmd)
-    except subprocess.CalledProcessError as e:
-        log.error('Error during sending via i2c: \"%s\"', e.output)
+        with SMBus(int(device_id)) as bus:
+            data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00, 0x0d, 0x14, 0x03, int(value, 16), 0xad]
+            msg = i2c_msg.write(0x15, data)
+            bus.i2c_rdwr(msg)
+    except Exception as e:
+        log.error('Error during sending via i2c: \"%s\"', e)
 
 
 def parse_value_from_config(value):
@@ -342,6 +344,15 @@ while try_times > 0:
 
     sleep(try_sleep)
 
+# Open a handle to "/dev/i2c-x", representing the I2C bus
+try:
+    bus = SMBus()
+    bus.open(int(device_id))
+    bus.close()
+except:
+    log.error("Can't open the I2C bus connection (id: %s)", device_id)
+    sys.exit(1)
+
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
 d_t = Device(fd_t)
@@ -453,11 +464,11 @@ for key_to_enable in top_left_icon_slide_func_keys:
 
 
 def isEvent(event):
-    if getattr(event, "name", None) is not None and\
-            getattr(EV_KEY, event.name):
+    if hasattr(event, "name") and hasattr(EV_KEY, event.name):
         return True
     else:
         return False
+
 
 def isEventList(events):
     if type(events) is list:
@@ -738,7 +749,6 @@ def deactivate_numpad():
         ungrab_current_slot()
     elif enabled_touchpad_pointer == 3:
         set_touchpad_prop_tap_to_click(1)
-
 
     # inactivation can be doubled with another value 0x61 but purpose is
     # not discovered yet so is used only 0x00 and 0x60 is send for sure during activating 
