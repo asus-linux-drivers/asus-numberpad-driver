@@ -1854,5 +1854,5 @@ finally:
     fd_t.close()
     for thread in threads:
         thread.join()
-    logging.exception("Exiting with code 1")
+
     sys.exit(1)
