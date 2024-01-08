@@ -37,32 +37,11 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
-    sudo modprobe i2c-dev
-
-    # check if the i2c-dev module is successfully loaded
-    if [[ $? != 0 ]]; then
-        echo "i2c-dev module cannot be loaded. Make sure you have installed i2c-tools package"
-        exit 1
-    else
-        echo "i2c-dev module loaded"
-    fi
-
-    echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-numberpad-driver.conf >/dev/null
-
-    if [[ $? != 0 ]]; then
-        echo "Something went wrong when adding i2c-dev module to auto loaded modules"
-        exit 1
-    else
-        echo "i2c-dev module added to auto loaded modules"
-    fi
+    source install_user_groups.sh
 
     echo
 
     source install_device_check.sh
-
-    echo
-
-    source install_user_groups.sh
 
     echo
 
@@ -131,7 +110,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     read -r -p "Reboot is required. Do you want reboot now? [y/N]" response
     case "$response" in [yY][eE][sS]|[yY])
-        reboot
+        sudo /sbin/reboot
         ;;
     *)
         ;;
