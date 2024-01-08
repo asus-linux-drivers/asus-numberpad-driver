@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.2.2 (8.1.2023)
+
+### Fixed
+
+- At the end of install script call (optionally) reboot with full path `/sbin/reboot` for case when `/sbin` is not in `$PATH`
+- Added udev rule for sure `/dev/i2c-xy` is owned by `i2c` group and has right permissions
+
+### Refactored
+
+- Removed `sudo chown :uinput /dev/uinput` because the same effect has `udev` rule after applying
+
 ## 4.2.1 (8.1.2023)
 
 ### Fixed
