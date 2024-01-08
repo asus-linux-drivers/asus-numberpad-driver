@@ -1,6 +1,12 @@
 # Changelog
 
-## 4.2 (7.1.2023)
+## 4.2.1 (8.1.2023)
+
+### Fixed
+
+- Reverted removing of package `i2c-tools` as it caused permissions error
+
+## 4.2.0 (7.1.2023)
 
 ### Feature
 
