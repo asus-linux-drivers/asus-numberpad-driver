@@ -29,6 +29,7 @@ sudo chown :uinput /dev/uinput
 
 echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660"' | sudo tee /usr/lib/udev/rules.d/99-asus-numberpad-driver-uinput.rules >/dev/null
 echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-numberpad-driver.conf >/dev/null
+echo 'SUBSYSTEM=="i2c-dev", GROUP="i2c", MODE="0660"' | sudo tee /usr/lib/udev/rules.d/99-asus-numberpad-driver-i2c-dev.rules >/dev/null
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when adding uinput module to auto loaded modules"
