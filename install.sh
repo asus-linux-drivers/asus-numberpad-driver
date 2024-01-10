@@ -34,6 +34,22 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
             sudo pacman --noconfirm --needed -S python3-pyasyncore
         fi
+<<<<<<< HEAD
+=======
+
+        # because package python3-smbus2 is available only on AUR
+        #
+        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/156
+        if [[ $(yay 2>/dev/null)]]; then
+            yay -S python-smbus2
+        else
+            git clone https://aur.archlinux.org/python-smbus2.git ~/python-smbus2
+            cd ~/python-smbus2
+            # -i     it calls pacman -U <package>
+            # -s     instructs pacman to resolve dependencies and install missing packages
+            makepkg -si
+        fi
+>>>>>>> 5d19cf6 (WIP)
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2 python3-smbus2
 
