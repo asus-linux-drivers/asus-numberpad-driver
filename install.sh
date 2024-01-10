@@ -38,7 +38,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         # because package python3-smbus2 is available only on AUR
         #
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/156
-        if [[ $(yay 2>/dev/null))]]; then
+        if [[ $(yay 2>/dev/null)]]; then
             yay -S python-smbus2
         else
             git clone https://aur.archlinux.org/python-smbus2.git ~/python-smbus2
