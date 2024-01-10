@@ -15,10 +15,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
 {
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-pip python3-setuptools python3-virtualenv libxml2-utils
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-pip python-virtualenv libxml2
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
@@ -81,13 +81,8 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     # create Python3 virtual environment
     virtualenv --python=$(python3 --version | cut -d" " -f2) /usr/share/asus-numberpad-driver/.env
-    # because problem with this is venv is package which has to be installed e.g. on Ubuntu22.04 via python3.10-venv - specific version of Python in name - no way to automatize?
-    # why not this?
-    #
-    # python3 -m venv /usr/share/asus-numberpad-driver/.venv
-    #
     source /usr/share/asus-numberpad-driver/.env/bin/activate
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     deactivate
 
     echo
