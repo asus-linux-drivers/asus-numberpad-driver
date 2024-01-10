@@ -33,7 +33,7 @@
 - Checking whether layout contains only key events
 - Improved message when was not detected any supported calc app
 - Removed file `requirements.txt` because pip is not used
-- Fixed `asyncore`` dependency for who use Python version bigger or equal to 3.12.0
+- Fixed `asyncore` dependency for who use Python version bigger or equal to 3.12.0
 - Grammar of multiple texts (John Rose)
 - Usage of `#!/usr/bin/env` for `bash/sh` instead of hardcoded path
 
