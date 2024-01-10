@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.2.2 (10.1.2023)
+
+### Fixed
+
+- At the end of install script call (optionally) reboot with full path `/sbin/reboot` for case when `/sbin` is not in `$PATH`
+- Added udev rule for sure `/dev/i2c-xy` is owned by `i2c` group and has right permissions
+- Fixed `asyncore` dependency for who use Python version bigger or equal to 3.12.0
+
+### Refactored
+
+- Removed `sudo chown :uinput /dev/uinput` because the same effect has `udev` rule after applying
+
 ## 4.2.1 (8.1.2023)
 
 ### Fixed
@@ -22,7 +34,6 @@
 - Checking whether layout contains only key events
 - Improved message when was not detected any supported calc app
 - Removed file `requirements.txt` because pip is not used
-- Fixed `asyncore`` dependency for who use Python version bigger or equal to 3.12.0
 - Grammar of multiple texts (John Rose)
 - Usage of `#!/usr/bin/env` for `bash/sh` instead of hardcoded path
 
