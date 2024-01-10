@@ -1,4 +1,6 @@
 libevdev
 numpy
-inotify
+pyinotify
 python-xlib
+smbus2
+pyasyncore

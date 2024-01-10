@@ -14,55 +14,16 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
 
 {
-    # asyncore was removed in Python 3.12, but try the import instead of a
-    # version check in case the compatibility package is installed.
-    #
-    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/153
-    PYTHON_VERSION="$(python3 --version | cut -d' ' -f2)"
-    PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE="3.12.0"
-
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-libevdev python3-numpy python3-xlib python3-pyinotify libxml2-utils python3-smbus2
-
-        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
-            sudo apt-get -y install python3-pyasyncore
-        fi
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-pip python3-setuptools python3-virtualenv libxml2-utils
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S base-devel git ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib libxml2
-
-        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
-            sudo pacman --noconfirm --needed -S python3-pyasyncore
-        fi
-<<<<<<< HEAD
-=======
-
-        # because package python3-smbus2 is available only on AUR
-        #
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/156
-        if [[ $(yay 2>/dev/null)]]; then
-            yay -S python-smbus2
-        else
-            git clone https://aur.archlinux.org/python-smbus2.git ~/python-smbus2
-            cd ~/python-smbus2
-            # -i     it calls pacman -U <package>
-            # -s     instructs pacman to resolve dependencies and install missing packages
-            makepkg -si
-        fi
->>>>>>> 5d19cf6 (WIP)
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
-        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2 python3-smbus2
-
-        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
-            sudo dnf -y install python3-pyasyncore
-        fi
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         # yum was replaced with newer dnf above
-        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-libevdev python3-numpy python3-inotify python3-xlib libxml2 python3-smbus2
-
-        if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
-            sudo yum --y install python3-pyasyncore
-        fi
+        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
@@ -115,6 +76,19 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         echo "Default config will be autocreated during the first run and available for futher modifications here:"
         echo "$CONFIG_FILE_PATH"
     fi
+
+    echo
+
+    # create Python3 virtual environment
+    virtualenv --python=$(python3 --version | cut -d" " -f2) /usr/share/asus-numberpad-driver/.env
+    # because problem with this is venv is package which has to be installed e.g. on Ubuntu22.04 via python3.10-venv - specific version of Python in name - no way to automatize?
+    # why not this?
+    #
+    # python3 -m venv /usr/share/asus-numberpad-driver/.venv
+    #
+    source /usr/share/asus-numberpad-driver/.env/bin/activate
+    pip install -r requirements.txt
+    deactivate
 
     echo
 
