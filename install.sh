@@ -29,7 +29,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         fi
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib libxml2 python3-smbus2
+        sudo pacman --noconfirm --needed -S base-devel git ibus libevdev curl xorg-xinput i2c-tools python python-libevdev python-numpy python-pyinotify python-xlib libxml2
 
         if [ "$(printf '%s\n' "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" "$PYTHON_VERSION" | sort -V | head -n1)" = "$PYTHON_REQUIRED_VERSION_FOR_LIB_PYASYNCORE" ]; then 
             sudo pacman --noconfirm --needed -S python3-pyasyncore
