@@ -3,7 +3,7 @@ Description=Asus NumberPad Driver
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/env python3 /usr/share/asus-numberpad-driver/numberpad.py $LAYOUT_NAME $CONFIG_FILE_DIR_PATH
+ExecStart=/usr/share/asus-numberpad-driver/.env/bin/python3 /usr/share/asus-numberpad-driver/numberpad.py $LAYOUT_NAME $CONFIG_FILE_DIR_PATH
 StandardOutput=append:$ERROR_LOG_FILE_PATH
 StandardError=append:$ERROR_LOG_FILE_PATH
 TimeoutSec=5
