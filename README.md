@@ -28,6 +28,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 ## Features
 
 - Driver (including backlighting if hardware supported) installed for the current user (does not run under `$ sudo`)
+- Driver creates own virtual environment of currently installed version of `Python3`
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with the possibility of [creating custom layouts or improving existing ones (keys, sizes, paddings..)](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout)
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when `$ bash ./install.sh` is run, changes previously made in the config file will not be overwritten without user permission, similarly when `$ bash ./uninstall.sh` is run the config file will be kept. In either case, when the config file or parts of it do not exist they will be automatically created or completed with default values)
 - Automatic NumberPad layout detection via [an offline list of NumberPad layouts associated with specific laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts); when the users's laptop does not exist yet exist in the offline list and an internet connection is available, the search continues using the online laptop database [linux-hardware.org](https://linux-hardware.org) because the user's Touchpad may be associated with other laptop models already in the offline list
@@ -137,7 +138,7 @@ $ bash uninstall_user_groups.sh
 
 **Everything is included in the install scripts**
 
-To see the exact commands for the package manager look [here](./install.sh)
+To see the exact commands for the package manager look [here](./install.sh) (for python dependencies take a look at [requirements.txt](./requirements.txt))
 
 ## Troubleshooting
 
@@ -151,7 +152,18 @@ $ systemctl stop --user asus_numberpad_driver@<$USER>.service
 - To show debug logs run the following command in a terminal (**Do not forget to specify the numpad layout and the config file path**):
 
 ```bash
-# LOG=DEBUG ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
+# Debugging installed driver:
+#
+# $ LOG=DEBUG /usr/share/asus-numberpad-driver/.env/bin/python3 ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
+#
+# Or downloaded uninstalled yet driver:
+#
+# $ virtualenv --python=$(python3 --version | cut -d" " -f2) .env
+# $ source .env/bin/activate
+# $ pip3 install -r requirements.txt
+# $ $ LOG=DEBUG .env/bin/python3 ./numberpad.py
+# $ deactivate
+
 
 cd asus-numberpad-driver
 LOG=DEBUG ./numberpad.py "up5401ea" "" # now driver use root of repository as directory for config file named numberpad_dev which if does not exist will be autocreated with default values

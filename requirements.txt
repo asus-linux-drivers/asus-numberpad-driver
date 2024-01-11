@@ -1,0 +1,6 @@
+libevdev
+numpy
+pyinotify
+python-xlib
+smbus2
+pyasyncore
