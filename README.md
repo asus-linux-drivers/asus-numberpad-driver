@@ -152,7 +152,18 @@ $ systemctl stop --user asus_numberpad_driver@<$USER>.service
 - To show debug logs run the following command in a terminal (**Do not forget to specify the numpad layout and the config file path**):
 
 ```bash
-# LOG=DEBUG ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
+# Debugging installed driver:
+#
+# $ LOG=DEBUG /usr/share/asus-numberpad-driver/.env/bin/python3 ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
+#
+# Or downloaded uninstalled yet driver:
+#
+# $ virtualenv --python=$(python3 --version | cut -d" " -f2) .env
+# $ source .env/bin/activate
+# $ pip3 install -r requirements.txt
+# $ $ LOG=DEBUG .env/bin/python3 ./numberpad.py
+# $ deactivate
+
 
 cd asus-numberpad-driver
 LOG=DEBUG ./numberpad.py "up5401ea" "" # now driver use root of repository as directory for config file named numberpad_dev which if does not exist will be autocreated with default values
