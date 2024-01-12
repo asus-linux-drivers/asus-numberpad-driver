@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.3.0 (12.1.2023)
+
+### Refactored
+
+- Is created Python3 virtual environment for currently detected Python version specially for the driver
+
+### Fixed
+
+- Fixed problem with missing Python library `smbus` on Arch (by using pip package instead of distribution one inside Python3 virtual environment)
+- Fixed disabling & enabling Touchpad tapping on KDE via xinput (gsettings can not be used, works only for gnome)
+
 ## 4.2.2 (10.1.2023)
 
 ### Fixed
