@@ -674,7 +674,8 @@ def set_touchpad_prop_tap_to_click(value):
     # 1. priority - gsettings
     if gsettings_failure_count < gsettings_max_failure_count:
         gsettingsSetTouchpadTapToClick(value)
-        return
+        # why is return commented? and is always run also xinput below? Because on KDE is allowed set up without any error but nothing happens
+        # return
 
     # 2. priority - xinput
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
