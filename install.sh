@@ -80,9 +80,14 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     echo
 
     # create Python3 virtual environment
+    #
+    # does not work for 3.9-dev version:
+    #
+    # error: RuntimeError: failed to find interpreter for Builtin discover of python_spec='3.9.18+'
     virtualenv --python=$(python3 --version | cut -d" " -f2) /usr/share/asus-numberpad-driver/.env
     source /usr/share/asus-numberpad-driver/.env/bin/activate
     pip3 install --upgrade pip
+    pip3 install --upgrade setuptools
     pip3 install -r requirements.txt
     deactivate
 

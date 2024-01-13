@@ -52,14 +52,14 @@ keyboard shortcuts - for example in [my toggling script](https://github.com/asus
 
 ## Installation
 
-Get the latest dev version using `git`
+Get the latest dev version using `git`:
 
 ```bash
 $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
 ```
 
-or download the latest release (stable version) from [the release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install for current user
+or download the latest release (stable version) from [the release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install for current user and current Python3 ([How to install the driver with specific Python3 version using pyenv?](#faq)):
 
 ```bash
 $ bash install.sh
@@ -190,10 +190,28 @@ xdotool key XF86Calculator
 
 **How to start NumberPad without systemd service?**
 
-- directly after installation and answering `N` to question whether to install systemd service:
+- directly:
 
 ```
 /usr/share/asus-numberpad-driver/.env/bin/python3 /usr/share/asus-numberpad-driver/numberpad.py
+```
+
+**How to install the driver when is used pyenv for managing multiple Python versions?**
+
+```
+$ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
+$ cd asus-numberpad-driver
+
+# install & change to the Python version for which one do you want to install the driver
+$ CC=clang pyenv install 3.9.4
+$ pyenv global 3.9.4 # change as global
+$ # pyenv local 3.9.4 # will create file .python-version inside source dir so next (re)install will be used automatically saved Python version in this file
+
+# install the driver
+$ bash install.sh
+
+# change to the standardly (previously) used Python version
+$ pyenv global system
 ```
 
 **How can NumberPad be activated via CLI?**
