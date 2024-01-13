@@ -942,11 +942,11 @@ def set_tracking_id(value):
     try:
 
         if value > 0:
-            log.info("Started new slot")
+            log.debug("Started new slot")
             # not know yet
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
         else:
-            log.info("Ended existing slot")
+            log.debug("Ended existing slot")
             # can be misunderstanding when is touched padding (is printed previous key)
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
@@ -1627,7 +1627,7 @@ def listen_touchpad_events():
            e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
            e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
-            log.info('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
+            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
                 abs_mt_slot_y_values[abs_mt_slot_value]))
 
             if is_pressed_touchpad_top_right_icon():
