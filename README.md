@@ -154,22 +154,22 @@ $ systemctl stop --user asus_numberpad_driver@<$USER>.service
 ```bash
 # Debugging installed driver:
 #
-# $ LOG=DEBUG /usr/share/asus-numberpad-driver/.env/bin/python3 ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
+# $ G_MESSAGES_DEBUG=all LOG=DEBUG /usr/share/asus-numberpad-driver/.env/bin/python3 ./numberpad.py <REQUIRED:numpad layout file name without extension .py> <OPTIONAL:directory where is located config file with name: numberpad_dev, by default is taken CWD - current working directory, if inexistent the config file is created and filled with default values>
 #
-# Or downloaded uninstalled yet driver:
+# Or downloaded (uninstalled yet) driver:
 #
 # $ virtualenv --python=$(python3 --version | cut -d" " -f2) .env
 # $ source .env/bin/activate
 # $ pip3 install -r requirements.txt
-# $ $ LOG=DEBUG .env/bin/python3 ./numberpad.py
+# $ $ G_MESSAGES_DEBUG=all LOG=DEBUG .env/bin/python3 ./numberpad.py
 # $ deactivate
 
 
 cd asus-numberpad-driver
-LOG=DEBUG ./numberpad.py "up5401ea" "" # now driver use root of repository as directory for config file named numberpad_dev which if does not exist will be autocreated with default values
+G_MESSAGES_DEBUG=all LOG=DEBUG ./numberpad.py "up5401ea" "" # now driver use root of repository as directory for config file named numberpad_dev which if does not exist will be autocreated with default values
 
 cd asus-numberpad-driver
-LOG=DEBUG ./numberpad.py "up5401ea" "/usr/share/asus-numberpad-driver/" # now driver use installed config
+G_MESSAGES_DEBUG=all LOG=DEBUG ./numberpad.py "up5401ea" "/usr/share/asus-numberpad-driver/" # now driver use installed config
 ```
 
 - To show pressed keys:
