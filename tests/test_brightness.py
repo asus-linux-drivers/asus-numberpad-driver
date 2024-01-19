@@ -17,8 +17,8 @@ with open('/proc/bus/input/devices', 'r') as f:
         # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
 		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
-		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line) and "Touchpad" in line) or \
-			(("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and "Touchpad" in line) or \
+			(("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
 			touchpad_detected = 1
 
 		if touchpad_detected == 1:
@@ -31,7 +31,7 @@ with open('/proc/bus/input/devices', 'r') as f:
 				touchpad_detected = 2
 
 		# Look for the keyboard (numlock) # AT Translated Set OR Asus Keyboard
-		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP" in line) and "Keyboard" in line)):
+		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and "Keyboard" in line)):
             keyboard_detected = 1
 
 		if keyboard_detected == 1:
