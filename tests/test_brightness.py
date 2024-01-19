@@ -31,8 +31,8 @@ with open('/proc/bus/input/devices', 'r') as f:
 				touchpad_detected = 2
 
 		# Look for the keyboard (numlock) # AT Translated Set OR Asus Keyboard
-		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP") and "Keyboard" in line)):
-                	keyboard_detected = 1
+		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP" in line) and "Keyboard" in line)):
+            keyboard_detected = 1
 
 		if keyboard_detected == 1:
 			if "H: " in line:
