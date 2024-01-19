@@ -271,8 +271,9 @@ while try_times > 0:
             # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
             if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP") and "Touchpad" in line) or \
-                (("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP") and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+                (("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
 
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
@@ -294,7 +295,7 @@ while try_times > 0:
                               touchpad, line.strip())
 
             # Look for the keyboard
-            if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP") and "Keyboard" in line)):
+            if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP" in line) and "Keyboard" in line)):
                 keyboard_detected = 1
                 log.info(
                     'Detecting keyboard from string: \"%s\"', line.strip())
