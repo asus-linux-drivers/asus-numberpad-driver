@@ -140,12 +140,12 @@ def config_get(key, key_default):
 
 
 def send_value_to_touchpad_via_i2c(value):
-    global device_id
+    global device_id, device_addr
 
     try:
         with SMBus(int(device_id)) as bus:
             data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00, 0x0d, 0x14, 0x03, int(value, 16), 0xad]
-            msg = i2c_msg.write(0x15, data)
+            msg = i2c_msg.write(device_addr, data)
             bus.i2c_rdwr(msg)
     except Exception as e:
         log.error('Error during sending via i2c: \"%s\"', e)
@@ -256,6 +256,7 @@ d_k = None
 fd_k = None
 numlock_lock = threading.Lock()
 device_id: Optional[str] = None
+device_addr: Optional[int] = None
 
 # Look into the devices file #
 while try_times > 0:
@@ -278,6 +279,12 @@ while try_times > 0:
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
+
+                # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
+                if ("ASUF1416" in line or "ASUF1205" in line or "ASUF1204" in line):
+                  device_addr = 0x38
+                else:
+                  device_addr = 0x15
 
             if touchpad_detected == 1:
                 if "S: " in line:
@@ -317,7 +324,7 @@ while try_times > 0:
 
                     d_k = None
 
-            # Do not stop looking if touchpad and keyboard have been found 
+            # Do not stop looking if touchpad and keyboard have been found
             # because more drivers can be installed
             # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
@@ -537,7 +544,7 @@ sleep(1)
 
 def use_slide_func_for_top_right_icon():
     global numlock, top_right_icon_touch_start_time, numlock_touch_start_time
-    
+
     log.info("Func for touchpad right_icon slide function")
 
     top_right_icon_touch_start_time = 0
@@ -551,7 +558,7 @@ def use_bindings_for_touchpad_left_icon_slide_function():
 
     top_left_icon_touch_start_time = 0
     set_none_to_current_mt_slot()
-    
+
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
         key_events.append(InputEvent(custom_key, 1))
@@ -572,7 +579,7 @@ def is_pressed_touchpad_top_right_icon():
     if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
         abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
             return True
-  
+
     return False
 
 
@@ -729,7 +736,7 @@ def activate_numpad():
     send_value_to_touchpad_via_i2c("0x60")
     # activate NumberPad
     send_value_to_touchpad_via_i2c("0x01")
-     
+
     if default_backlight_level != "0x01" and not top_left_icon_brightness_func_disabled:
          send_value_to_touchpad_via_i2c(default_backlight_level)
 
@@ -737,7 +744,7 @@ def activate_numpad():
         brightness = backlight_levels.index(default_backlight_level)
     except ValueError:
         # so after start and then click on icon for increasing brightness
-        # will be used first indexed value in given array with index 0 (0 = -1 + 1) 
+        # will be used first indexed value in given array with index 0 (0 = -1 + 1)
         # (if exists)
         # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
         brightness = -1
@@ -784,7 +791,7 @@ def local_numlock_pressed():
     numlock_lock.acquire()
     #log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
 
-    is_touchpad_enabled = is_device_enabled(touchpad_name)                
+    is_touchpad_enabled = is_device_enabled(touchpad_name)
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
         return
 
@@ -876,7 +883,7 @@ def load_all_config_values():
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad_new = True
         if sys_numlock_enables_numpad is not sys_numlock_enables_numpad_new:
-            config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad_new, True, True)        
+            config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad_new, True, True)
 
     top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
@@ -980,7 +987,7 @@ def get_compose_key_start_events_for_unicode_string():
 
     keys = []
 
-    if string_with_unicode_hotkey is not None:      
+    if string_with_unicode_hotkey is not None:
 
         string_with_unicode_hotkey = string_with_unicode_hotkey.split("'")[1]
 
@@ -1216,7 +1223,7 @@ def is_not_finger_moved_to_another_key():
                     unpressed_numpad_key()
                 else:
                     # mark key as none when is one_touch_key_rotation
-                    # not allowed and are crossed init key borders so end of pointer moving will end with 
+                    # not allowed and are crossed init key borders so end of pointer moving will end with
                     # written number or character
                     abs_mt_slot_numpad_key[abs_mt_slot_value] = None
 
@@ -1277,7 +1284,7 @@ def pressed_touchpad_top_right_icon(value):
         numlock_touch_start_time = time()
 
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
-    else:        
+    else:
         if press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
             log.info("Un-touched with NumberPad activation top_right_icon (numlock) in time: %s", time())
 
@@ -1287,10 +1294,10 @@ def pressed_touchpad_top_right_icon(value):
             local_numlock_pressed()
         else:
             log.info("Un-touched without NumberPad activation top_right_icon (numlock) in time: %s", time())
-            
+
             top_right_icon_touch_start_time = 0
             numlock_touch_start_time = 0
-            
+
             set_none_to_current_mt_slot()
 
 
@@ -1367,7 +1374,7 @@ def is_slided_from_top_left_icon(e):
         log.info(activation_min_y)
 
         top_left_icon_touch_start_time = 0
-        
+
         set_none_to_current_mt_slot()
 
         return False
@@ -1419,7 +1426,7 @@ def takes_numlock_longer_then_set_up_activation_time():
 
 def stop_top_left_right_icon_slide_gestures():
     global top_left_icon_touch_start_time, top_right_icon_touch_start_time
-    
+
     top_left_icon_touch_start_time = 0
     top_right_icon_touch_start_time = 0
 
@@ -1490,7 +1497,7 @@ def listen_touchpad_events():
 
 
         # POINTER_BUTTON own handling instead of touchpad driver starts
-        #    
+        #
         # can not be excluded situation
         # when is send number or character together
         # with POINTER_BUTTON because can be send in slot firstly!
@@ -1504,7 +1511,7 @@ def listen_touchpad_events():
             continue
 
         # protection against situations when is clicked pointer button (LEFT, RIGHT, MIDDLE) and in config is set up send key when is released finger
-        # then this code cancel sending all key events unless is finger released 
+        # then this code cancel sending all key events unless is finger released
         if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
 
             if e.value == 0:
@@ -1516,7 +1523,7 @@ def listen_touchpad_events():
                     ungrab_current_slot()
 
                 continue
-            else:            
+            else:
                 log.info("Pressed touchpad pointer button")
                 key_pointer_button_is_touched = True
 
@@ -1551,7 +1558,7 @@ def listen_touchpad_events():
 
         if unsupported_abs_mt_slot == True:
             # slide gestures with multitouch True: second finger stops slide gesture
-            # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED 
+            # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED
             if multitouch:
                 stop_top_left_right_icon_slide_gestures()
 
@@ -1717,7 +1724,7 @@ def check_touchpad_status():
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
     if not is_touchpad_enabled:
-        numlock = False        
+        numlock = False
 
         sys_numlock = get_system_numlock()
         if sys_numlock and numpad_disables_sys_numlock:
@@ -1805,7 +1812,7 @@ def check_config_values_changes():
                     load_all_config_values()
                 else:
                     log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
-    
+
         except KeyboardInterrupt:
             break
 

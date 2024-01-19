@@ -11,7 +11,7 @@
 [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/compare)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20about-anything-1abc9c.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/new/choose)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fasus-linux-drivers%2Fasus-numberpad-driver&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)                    
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fasus-linux-drivers%2Fasus-numberpad-driver&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
 The driver is written in python and does not necessarily run as a systemd service ([How to start NumberPad without systemd service?](#faq)). It contains the common NumberPad layouts, you can pick up the right one during the install process. Default settings aim to be the most convenient for the majority. All possible customizations can be found [here](#configuration).
 
@@ -34,7 +34,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 - Automatic NumberPad layout detection via [an offline list of NumberPad layouts associated with specific laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts); when the users's laptop does not exist yet exist in the offline list and an internet connection is available, the search continues using the online laptop database [linux-hardware.org](https://linux-hardware.org) because the user's Touchpad may be associated with other laptop models already in the offline list
 - Activation/deactivation of NumberPad by pressing and holding the top-right icon or another spot associated with the key `KEY_NUMLOCK` (activation time by default is 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning at top right (by default, the end of slide should have covered at least 30% of Touchpad width and height)
-- When NumberPad is activated a customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system 
+- When NumberPad is activated a customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system
 keyboard shortcuts - for example in [my toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh); the first slide gesture activates the calculator app and the next one closes it, a slide covering by default at least 30% of the Touchpad width and height being required)
 - Support for various keyboard layouts (unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`) are sent via unicode shortcut `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
@@ -202,6 +202,10 @@ xdotool key XF86Calculator
 $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
 
+$ # pyenv install Ubuntu 22.04
+$ apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python3-openssl git
+$ curl https://pyenv.run | bash
+
 # install & change to the Python version for which one do you want to install the driver
 $ CC=clang pyenv install 3.9.4
 $ pyenv global 3.9.4 # change as global
@@ -324,7 +328,7 @@ drwx------ 16 ldrahnik ldrahnik 520 Jun  4 14:04 ..
 -rw-------  1 root     root       2 Jun  3 22:52 user
 ```
 
-to 
+to
 
 ```
 ldrahnik@Zenbook-UP5401EA:/run/user/1000/dconf$ ls -la
@@ -433,7 +437,7 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Key layout**                                |          |
 | `keys`                                        | Required |                   | map of keys as array of arrays, dimension has to be at least array of lenght 1 inside array<br><br>everything else that is not an event (e.g. `EV_KEY.KEY_KP7`) or array of events (are sent together! e.g. `[EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_KP5]]`) except `None` is sent as a unicode character `<left_shift>+<left_ctrl>+<U>+<0-F>` (use apostrophes!, e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`. It is also allowed to also use string of unicode characters e.g. `"±%"`)
-| `keys_ignore_offset`                          |          | `[]`              | map of keys which should be touchable even in an offset area<br><br>e.g. used in layout `gx551` with value `[0,0]` where is NumLock key on the top left and right icon as primary activation area for NumLock is not used     
+| `keys_ignore_offset`                          |          | `[]`              | map of keys which should be touchable even in an offset area<br><br>e.g. used in layout `gx551` with value `[0,0]` where is NumLock key on the top left and right icon as primary activation area for NumLock is not used
 **Top left icon**                             |          |                   | these functions are disabled when the option `top_left_icon_height` or `top_left_icon_width` is missing and the icon has to be touchable (`0` dimensions) |
 | `top_left_icon_width`                         |          |                   | width of the top left icon
 | `top_left_icon_height`                        |          |                   | height of the top left icon
@@ -485,7 +489,7 @@ distance_to_move_only_pointer = 250
 | `disable_due_inactivity_time`                 |          | `60.0` [s]            | NumberPad is automatically disabled when no event received during this interval<br><br>decimal numbers allowed
 | `touchpad_disables_numpad`                    |          | `1`            | when Touchpad is disabled is NumberPad is disabled aswell, valid value is `1` or `0` (e.g. via Fn+special key)<br><br>status is being attempted for the first time from `gsettings get org.gnome.desktop.peripherals.touchpad send-events`, can be tested via direct change `gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'` or simulation of Touchpad toggling via CLI `xdotool key XF86TouchpadToggle` or `xdotool key XF86TouchpadOn` and `xdotool key XF86TouchpadOff`, secondly the result of `xinput` is taken - in this case [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh) which has to be bound to a specific Touchpad key
 | `sys_numlock_enables_numpad`                  |          | `1`           | NumLock status obtained via active `LED_NUML` of keyboard device (by default NumberPad is enabled or disabled when the system NumLock is toggled)<br><br>System NumLock can be simulated `xdotool key Num_Lock`<br><br>`sys_numlock_enables_numpad` to be set to `1` automatically even when is in config file value is `0` (overwritten) in cases when no position key `EV_KEY.KEY_NUMLOCK` has been defined in the key layout and top right icon is not defined (size values `top_right_icon_width` and `top_right_icon_height`)
-| `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` at each inactivation of NumberPad `EV_KEY.KEY_NUMLOCK` is sent. This is useful to not send NumLock when a laptop is connected to an external keyboard and one wants to disable NumberPad on laptop keeping NumLock on the external keyboard enabled    
+| `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` at each inactivation of NumberPad `EV_KEY.KEY_NUMLOCK` is sent. This is useful to not send NumLock when a laptop is connected to an external keyboard and one wants to disable NumberPad on laptop keeping NumLock on the external keyboard enabled
 | `enabled_touchpad_pointer`                  |          | `3`           | valid values are `0`, `1`, `2`, `3` <br><br>when set to `1` the touchpad pointer can be used for moving and for clicking the left, right and middle pointer buttons when NumberPad is activated, `0` disables this usage and `2` allowes only pointer button clicks, `3` allowes only touchpad pointer movements without clicks (touchpad tap-to-click is disabled/enabled using `gnome` via `gsettings` and for `xinput` for `X11` with this order priority)
 | **Key layout**                                |          |
 | `activation_time`              |          | `1.0` [seconds]             | amount of time you have to hold `top_right_icon` or another predefined key `EV_KEY.KEY_NUMLOCK` for NumberPad activation/deactivation<br><br>decimal numbers allowed
@@ -496,10 +500,10 @@ distance_to_move_only_pointer = 250
 | **Top left icon**                             |          |                   | a customized function called when NumberPad activated and the `top_left_icon` is touched and the finger is slided towards the center and removed, moving by atleast as far as specified by the designed ratios of touchpad width > `top_left_icon_slide_func_activation_x_ratio` and height > `top_left_icon_slide_func_activation_y_ratio` and the array `top_left_icon_slide_func_keys` is not empty<br><br>e.g. when NumberPad is activated, `top_left_icon_brightness_function_disabled` is not `1`, array `backlight_levels` is not empty, the brightness function works in an endless loop of incrementing brightness in the interval `top_left_icon_activation_time`
 | `top_left_icon_activation_time`               |          | `1.0` [s]             | amount of time for touch `top_left_icon`<br><br>decimal numbers allowed
 | `top_left_icon_slide_func_activation_x_ratio` |          | `0.3` (30%)         | ratio of minimum width of slide to Touchpad width
-| `top_left_icon_slide_func_activation_y_ratio` |          | `0.3` (30%)         | ratio of minimum height of slide to Touchpad height  
+| `top_left_icon_slide_func_activation_y_ratio` |          | `0.3` (30%)         | ratio of minimum height of slide to Touchpad height
 | `top_left_icon_brightness_func_disabled`      |          | `0`            | valid value is `0` or `1`, allow forced disablement of brightness change function<br><br>brightness function is auto disabled when array `backlight_levels` is empty and when `top_left_icon_width` or `top_left_icon_width` is not set
-| **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate NumberPad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and removed, moving atleast as far as specified by the ratios of touchpad width > `top_right_icon_slide_func_activation_x_ratio` and height > `top_right_icon_slide_func_activation_y_ratio` |                                           
-| `top_right_icon_slide_func_activation_x_ratio`|          | `0.3` (30%)         | ratio of minimum width of slide to Touchpad width 
+| **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate NumberPad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and removed, moving atleast as far as specified by the ratios of touchpad width > `top_right_icon_slide_func_activation_x_ratio` and height > `top_right_icon_slide_func_activation_y_ratio` |
+| `top_right_icon_slide_func_activation_x_ratio`|          | `0.3` (30%)         | ratio of minimum width of slide to Touchpad width
 | `top_right_icon_slide_func_activation_y_ratio`|          | `0.3` (30%)         | ratio of minimum height of slide to Touchpad height
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hex format `0x00` (must be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
@@ -556,7 +560,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 [![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver)
 
-**Buy me a coffee** 
+**Buy me a coffee**
 
 Do you think my effort put into open source is useful for you / others? Please put a star in the GitHub repository. Every star makes me proud. Any contribution is also welcome. Would you like to reward me more? There now exists a way : you can invite me for a coffee! I would really appreciate that!
 
