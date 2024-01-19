@@ -361,10 +361,10 @@ $ reboot
 
 **Backlight was not activated**
 
-Below with **<device_id>** I mean i2c device which can be found by running the script from repository `$ bash install_device_check.sh`, then execute the command below (you have to change only the previous last hex value `<0x01>` with other possible values like is described below command):
+Below with **<device_id>** I mean i2c device which can be found by running the script from repository `$ bash install_device_check.sh`, **<device_addr>** is usually `0x15` except for devices `ASUF1416, ASUF1205, ASUF1204` is value `0x38`. Execute the command below (you have to change only the previous last hex value `<0x01>` with other possible values like is described below under the command):
 
 ```
-$ i2ctransfer -f -y <device_id> w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 <0x01> 0xad
+$ i2ctransfer -f -y <device_id> w13@<device_addr> 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 <0x01> 0xad
 ```
 
 Just manually try these values below as replacements for `<0x01>` but keep in mind that first has to be NumberPad activated and then you can try to change the level of brightness:
