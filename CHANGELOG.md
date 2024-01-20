@@ -1,6 +1,21 @@
 # Changelog
 
-## 4.3.0 (12.1.2023)
+## 4.4.0 (20.1.2024)
+
+### Feature
+
+- Support for NumberPad backlight of these laptops ASUF1416, ASUF1205, ASUF1204
+- Support for devices with vendor `ASUF`
+- Autodetection for model ROG Strix G16 G614JVR_G614JVR
+
+### Fixed
+
+- Fixed the driver for installing with specific Python3 via `pyenv`
+- Support for devices with vendor `ASUP`
+- Eliminated overspamming log file when is NumbePad not activated
+- `pip3` is upgraded before is used
+
+## 4.3.0 (12.1.2024)
 
 ### Refactored
 
@@ -11,7 +26,7 @@
 - Fixed problem with missing Python library `smbus` on Arch (by using pip package instead of distribution one inside Python3 virtual environment)
 - Fixed disabling & enabling Touchpad tapping on KDE via xinput (gsettings can not be used, works only for gnome)
 
-## 4.2.2 (10.1.2023)
+## 4.2.2 (10.1.2024)
 
 ### Fixed
 
@@ -23,13 +38,13 @@
 
 - Removed `sudo chown :uinput /dev/uinput` because the same effect has `udev` rule after applying
 
-## 4.2.1 (8.1.2023)
+## 4.2.1 (8.1.2024)
 
 ### Fixed
 
 - Reverted removing of package `i2c-tools` as it caused permissions error
 
-## 4.2.0 (7.1.2023)
+## 4.2.0 (7.1.2024)
 
 ### Feature
 
@@ -56,7 +71,7 @@
 
 ## 4.1.4 (23.11.2023)
 
-### Fixed 
+### Fixed
 
 - Removing driver folder during uninstalling
 
@@ -66,7 +81,7 @@
 
 - Autodetection for model `Zenbook UM3402YAR_UM3402YA`
 
-### Fixed 
+### Fixed
 
 - Fixed online autodetection
 - Fixed endless cycle activating & inactivating of NumberPad when was NumberPad disabled by disabling touchpad
