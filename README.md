@@ -462,7 +462,7 @@ Attributes which do not depend on a specific Numpad keyboard can be changed acco
 ```
 [main]
 numpad_disables_sys_numlock = 1
-disable_due_inactivity_time = 60
+disable_due_inactivity_time = 0
 touchpad_disables_numpad = 1
 key_repetitions = 0
 multitouch = 0
@@ -486,7 +486,7 @@ distance_to_move_only_pointer = 250
 | --------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **System**                                    |          |                   |
 | `enabled`                                     |          | `0`               | NumberPad running status (enabled/disabled)
-| `disable_due_inactivity_time`                 |          | `60.0` [s]            | NumberPad is automatically disabled when no event received during this interval<br><br>decimal numbers allowed
+| `disable_due_inactivity_time`                 |          | `0` [s]            | NumberPad is automatically disabled when no event received during this interval<br><br>decimal numbers allowed (e.g. `60.0` [s] is one minute, `0` set up by default disables this functionality)
 | `touchpad_disables_numpad`                    |          | `1`            | when Touchpad is disabled is NumberPad is disabled aswell, valid value is `1` or `0` (e.g. via Fn+special key)<br><br>status is being attempted for the first time from `gsettings get org.gnome.desktop.peripherals.touchpad send-events`, can be tested via direct change `gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'` or simulation of Touchpad toggling via CLI `xdotool key XF86TouchpadToggle` or `xdotool key XF86TouchpadOn` and `xdotool key XF86TouchpadOff`, secondly the result of `xinput` is taken - in this case [this script](https://github.com/ldrahnik/elementary-os-scripts/blob/master/toggle_touchpad.sh) which has to be bound to a specific Touchpad key
 | `sys_numlock_enables_numpad`                  |          | `1`           | NumLock status obtained via active `LED_NUML` of keyboard device (by default NumberPad is enabled or disabled when the system NumLock is toggled)<br><br>System NumLock can be simulated `xdotool key Num_Lock`<br><br>`sys_numlock_enables_numpad` to be set to `1` automatically even when is in config file value is `0` (overwritten) in cases when no position key `EV_KEY.KEY_NUMLOCK` has been defined in the key layout and top right icon is not defined (size values `top_right_icon_width` and `top_right_icon_height`)
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` at each inactivation of NumberPad `EV_KEY.KEY_NUMLOCK` is sent. This is useful to not send NumLock when a laptop is connected to an external keyboard and one wants to disable NumberPad on laptop keeping NumLock on the external keyboard enabled
