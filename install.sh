@@ -24,6 +24,8 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         # yum was replaced with newer dnf above
         sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
+    elif [[ $(sudo zypper help 2>/dev/null) ]]; then
+        sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
