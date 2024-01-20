@@ -17,10 +17,18 @@ if [[ $(type i2cdetect 2>/dev/null) ]]; then
 
         NUMBER=$(echo -n $INDEX | cut -d'-' -f2)
         NUMBERPAD_OFF_CMD="i2ctransfer -f -y $NUMBER w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
+        I2C_TEST_15=$($NUMBERPAD_OFF_CMD 2>&1)
 
-        I2C_TEST=$($NUMBERPAD_OFF_CMD 2>&1)
-        if [ -z "$I2C_TEST" ]; then
-            echo "success"
+        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
+        NUMBERPAD_OFF_CMD="i2ctransfer -f -y $NUMBER w13@0x38 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
+        I2C_TEST_38=$($NUMBERPAD_OFF_CMD 2>&1)
+
+        if [ -z "$I2C_TEST_15" ]; then
+            echo "success (adr 0x15)"
+            TOUCHPAD_WITH_NUMBERPAD_DETECTED=true
+            break
+        else if [ -z "$I2C_TEST_38" ]; then
+            echo "success (adr 0x38)"
             TOUCHPAD_WITH_NUMBERPAD_DETECTED=true
             break
         else
