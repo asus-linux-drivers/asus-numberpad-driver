@@ -83,9 +83,17 @@ backlight_levels = getattr(model_layout, "backlight_levels", [])
 # Config
 CONFIG_FILE_NAME = "numberpad_dev"
 CONFIG_SECTION = "main"
+CONFIG_IDLED = "idled"
+CONFIG_IDLED_DEFAULT = False
 CONFIG_ENABLED = "enabled"
 CONFIG_ENABLED_DEFAULT = False
 CONFIG_LAST_BRIGHTNESS = "brightness"
+CONFIG_IDLE_BRIGHTNESS = "idle_brightness"
+CONFIG_IDLE_BRIGHTNESS_DEFAULT = 10
+CONFIG_IDLE_ENABLED = "idle_enabled"
+CONFIG_IDLE_ENABLED_DEFAULT = 1
+CONFIG_IDLE_TIME = "idle_time"
+CONFIG_IDLE_TIME_DEFAULT = 1
 CONFIG_DEFAULT_BACKLIGHT_LEVEL = "default_backlight_level"
 CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT = "0x01"
 CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
@@ -721,6 +729,36 @@ def grab():
         log.error("Error of grabbing, %s", e)
 
 
+def cancel_idle_numpad():
+    global brightness
+
+    # previous brightness
+    #brightness = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
+
+    #try:
+    #  default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
+    #except:
+    #  pass
+
+    config_set(CONFIG_IDLED, False)
+
+    #config_set(CONFIG_LAST_BRIGHTNESS, brightness)
+
+    log.info("Cancelled numpad idle")
+
+
+def idle_numpad():
+    global brightness, idle_brightness, idle
+
+    # step is: 100 / 8 = 12.5 / 10 =
+    brightness = int((100 / len(backlight_levels)) / idle_brightness)
+
+    #config_set(CONFIG_LAST_BRIGHTNESS, brightness)
+    config_set(CONFIG_IDLED, True)
+
+    log.info("Numpad idled")
+
+
 def activate_numpad():
     global brightness, default_backlight_level, enabled_touchpad_pointer, top_left_icon_brightness_func_disabled
 
@@ -864,6 +902,10 @@ def load_all_config_values():
     global enabled_touchpad_pointer
     global press_key_when_is_done_untouch
     global distance_to_move_only_pointer
+    global idle_brightness
+    global idle_enabled
+    global idle_time
+    global idled
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -913,6 +955,11 @@ def load_all_config_values():
         support_for_maximum_abs_mt_slots = 1
 
     distance_to_move_only_pointer = float(config_get(CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER, CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER_DEFAULT))
+
+    idled = config_get(CONFIG_IDLED, CONFIG_IDLED_DEFAULT)
+    idle_brightness = float(config_get(CONFIG_IDLE_BRIGHTNESS, CONFIG_IDLE_BRIGHTNESS_DEFAULT))
+    idle_enabled = config_get(CONFIG_IDLE_ENABLED, CONFIG_IDLE_ENABLED_DEFAULT)
+    idle_time = int(config_get(CONFIG_IDLE_TIME, CONFIG_IDLE_TIME_DEFAULT))
 
     config_lock.release()
 
@@ -1488,6 +1535,9 @@ def listen_touchpad_events():
 
     for e in d_t.events():
 
+        if idled:
+          cancel_idle_numpad()
+
         last_event_time = time()
 
         current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
@@ -1758,14 +1808,25 @@ def check_touchpad_status_endless_cycle():
         log.info('Getting Device Enabled via xinput disabled because failed more then: \"%s\" times in row', getting_device_via_xinput_status_failure_count)
 
 
-def check_numpad_automatical_disable_due_inactivity():
-    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads
+def check_numpad_automatical_disable_or_idle_due_inactivity():
+    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads, idled, idle_time, idle_enabled
 
     while not stop_threads:
 
-        #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire will be called")
+        #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire will be called")
         numlock_lock.acquire()
-        #log.debug("check_numpad_automatical_disable_due_inactivity: numlock_lock.acquire called succesfully")
+        #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire called succesfully")
+
+        if\
+            idle_enabled and\
+            idle_time and\
+            not idled and\
+            last_event_time != 0 and\
+            time() > idle_time + last_event_time:
+
+            idle = True
+            idle_numpad()
+            log.info("Numpad idled")
 
         if\
             disable_due_inactivity_time and\
@@ -1835,7 +1896,7 @@ if d_t and touchpad_name:
     t = threading.Thread(target=check_touchpad_status_endless_cycle)
     threads.append(t)
 
-t = threading.Thread(target=check_numpad_automatical_disable_due_inactivity)
+t = threading.Thread(target=check_numpad_automatical_disable_or_idle_due_inactivity)
 threads.append(t)
 
 # check changes in config values
@@ -1863,6 +1924,8 @@ finally:
             log.info("System numlock deactivated")
 
         numlock = False
+        cancel_idle_numpad()
+        log.info("Cancelled idle")
         deactivate_numpad()
         log.info("Numpad deactivated")
     numlock_lock.release()

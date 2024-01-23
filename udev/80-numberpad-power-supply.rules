@@ -1,0 +1,2 @@
+SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", RUN+="/usr/share/asus-numberpad-driver/udev/power_supply_is_bat_mode.sh"
+SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", RUN+="/usr/share/asus-numberpad-driver/udev/power_supply_is_ac_mode.sh"

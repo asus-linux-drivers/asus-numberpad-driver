@@ -479,7 +479,12 @@ press_key_when_is_done_untouch = 1
 enabled = 0
 default_backlight_level = 0x01
 top_left_icon_brightness_func_disabled = 0
+brightness = 0x41
 distance_to_move_only_pointer = 250
+idled = 0
+idle_brightness = 30
+idle_time = 30
+idle_enabled = 0
 ```
 
 | Option                                        | Required | Default           | Description |
