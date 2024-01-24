@@ -23,6 +23,8 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
 
+is_idled: bool = False
+
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=os.environ.get('LOG', 'INFO')
@@ -733,7 +735,9 @@ def cancel_idle_numpad():
     global brightness
 
     # previous brightness
-    #brightness = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
+    brightness = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
+
+    send_value_to_touchpad_via_i2c(brightness)
 
     #try:
     #  default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
@@ -748,12 +752,17 @@ def cancel_idle_numpad():
 
 
 def idle_numpad():
-    global brightness, idle_brightness, idle
+    global brightness, idle_brightness, idle, backlight_levels
 
-    # step is: 100 / 8 = 12.5 / 10 =
-    brightness = int((100 / len(backlight_levels)) / idle_brightness)
+    # step is: 100 / 8 = 12.5 / CONFIG_IDLE_BRIGHTNESS_DEFAULT
+    brightness = int(((100 / len(backlight_levels)) / idle_brightness))
 
-    #config_set(CONFIG_LAST_BRIGHTNESS, brightness)
+    # because index of array starts with zero
+    if brightness >= 0:
+      send_value_to_touchpad_via_i2c(backlight_levels[brightness - 1])
+    else:
+      send_value_to_touchpad_via_i2c("0x00")
+
     config_set(CONFIG_IDLED, True)
 
     log.info("Numpad idled")
@@ -905,7 +914,8 @@ def load_all_config_values():
     global idle_brightness
     global idle_enabled
     global idle_time
-    global idled
+    #global idled TODO:
+    #global enabled
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -1531,11 +1541,12 @@ def listen_touchpad_events():
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
-        key_pointer_button_is_touched
+        key_pointer_button_is_touched, is_idled
 
     for e in d_t.events():
 
-        if idled:
+        if is_idled:
+          is_idled = False
           cancel_idle_numpad()
 
         last_event_time = time()
@@ -1809,7 +1820,7 @@ def check_touchpad_status_endless_cycle():
 
 
 def check_numpad_automatical_disable_or_idle_due_inactivity():
-    global disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads, idled, idle_time, idle_enabled
+    global is_idled, disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads, idled, idle_time, idle_enabled
 
     while not stop_threads:
 
@@ -1818,13 +1829,14 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
         #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire called succesfully")
 
         if\
+            numlock and\
             idle_enabled and\
             idle_time and\
-            not idled and\
+            not is_idled and\
             last_event_time != 0 and\
             time() > idle_time + last_event_time:
 
-            idle = True
+            is_idled = True
             idle_numpad()
             log.info("Numpad idled")
 
@@ -1923,9 +1935,11 @@ finally:
             send_numlock_key(0)
             log.info("System numlock deactivated")
 
-        numlock = False
+        is_idled = False
         cancel_idle_numpad()
         log.info("Cancelled idle")
+
+        numlock = False
         deactivate_numpad()
         log.info("Numpad deactivated")
     numlock_lock.release()
