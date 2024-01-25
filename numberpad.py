@@ -91,11 +91,11 @@ CONFIG_ENABLED = "enabled"
 CONFIG_ENABLED_DEFAULT = False
 CONFIG_LAST_BRIGHTNESS = "brightness"
 CONFIG_IDLE_BRIGHTNESS = "idle_brightness"
-CONFIG_IDLE_BRIGHTNESS_DEFAULT = 10
+CONFIG_IDLE_BRIGHTNESS_DEFAULT = 30
 CONFIG_IDLE_ENABLED = "idle_enabled"
 CONFIG_IDLE_ENABLED_DEFAULT = 1
 CONFIG_IDLE_TIME = "idle_time"
-CONFIG_IDLE_TIME_DEFAULT = 1
+CONFIG_IDLE_TIME_DEFAULT = 2 # TODO: 30
 CONFIG_DEFAULT_BACKLIGHT_LEVEL = "default_backlight_level"
 CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT = "0x01"
 CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
@@ -265,6 +265,7 @@ keyboard: Optional[str] = None
 d_k = None
 fd_k = None
 numlock_lock = threading.Lock()
+idle_lock = threading.Lock()
 device_id: Optional[str] = None
 device_addr: Optional[int] = None
 
@@ -764,8 +765,6 @@ def idle_numpad():
       send_value_to_touchpad_via_i2c("0x00")
 
     config_set(CONFIG_IDLED, True)
-
-    log.info("Numpad idled")
 
 
 def activate_numpad():
@@ -1828,6 +1827,10 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
         numlock_lock.acquire()
         #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire called succesfully")
 
+        #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire will be called")
+        idle_lock.acquire()
+        #log.debug("check_numpad_automatical_disable_or_idle_due_inactivity: numlock_lock.acquire called succesfully")
+
         if\
             numlock and\
             idle_enabled and\
@@ -1857,6 +1860,7 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
             log.info("Numpad deactivated")
 
         numlock_lock.release()
+        idle_lock.release()
 
         sleep(1)
 
