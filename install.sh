@@ -118,6 +118,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
+    source install_power_supply_saver.sh
+
+    echo
+
     echo "Installation finished succesfully"
 
     echo
