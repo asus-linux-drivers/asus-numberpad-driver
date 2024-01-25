@@ -20,11 +20,15 @@ echo "Power supply saver"
 
 echo
 
-echo "By default is idled only on battery mode after 10s. After 10s is decreased 30% of brightness."
+echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this rule can be enabled every detected change of power supply to battery."
 
 echo
 
-read -r -p "Do you want install the rule for idle functionality on battery mode? [y/N]" RESPONSE
+echo "Idle mode is configured to be enabled after 10s of inactivity and to decrease 30% of brightness."
+
+echo
+
+read -r -p "Do you want install the rule for idle functionality? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo

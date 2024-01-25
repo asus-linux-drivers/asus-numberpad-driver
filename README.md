@@ -47,6 +47,7 @@ keyboard shortcuts - for example in [my toggling script](https://github.com/asus
 - Protection against sending a NumberPad key when a pointer button (left, right, middle) is clicked (configuration value set to `press_key_when_is_done_untouch=1`)
 - Disabling the Touchpad (e.g. Fn+special key) disables by default the NumberPad as well (*this functionality presently supports only `xinput` from `xorg` and `gnome` via `gsettings`* - can be disabled)
 - An external keyboard is recognized and automatically connected subject to appropriate [configuration](https://github.com/asus-linux-drivers/asus-numberpad-driver#external-keyboard-configuration)
+- A power supply on battery mode is recognized and automatically is enabled idle functionality (after 10s and 30% brightness by default, configurable)
 - Repeating a continually depressed key (disabled by default)
 - Multitouch up to 5 fingers (disabled by default)
 
@@ -512,6 +513,11 @@ idle_enabled = 0
 | `top_right_icon_slide_func_activation_y_ratio`|          | `0.3` (30%)         | ratio of minimum height of slide to Touchpad height
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hex format `0x00` (must be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
+**Idle**                                   |          |                   |
+| `idled`                     |          | `0`            | state whether is NumberPad idled (not disabled but decreased brightness)
+| `idled_brightness`                     |          | `30` [%]            |  in percents decreased brightness in idle
+| `idle_time`                     |          | `10` [s]            |  after how many seconds of NumberPad inactivity will be triggered idle state
+| `idle_enabled`                     |          | `0`            |   whether is idle functionality enabled (use optionally installed `udev` rule which detects change of power supply mode to battery and enables idle functionality)
 
 ### External keyboard configuration
 
