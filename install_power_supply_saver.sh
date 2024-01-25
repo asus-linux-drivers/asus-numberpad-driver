@@ -17,11 +17,10 @@ if [ -z "$CONFIG_FILE_PATH" ]; then
 fi
 
 echo "Power supply saver"
-echo
 
 echo
 
-read -r -p "Do you want install the rule for power supply saver? [y/N]" RESPONSE
+read -r -p "Do you want install the rule for idle functionality on battery mode? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo

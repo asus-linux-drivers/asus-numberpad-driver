@@ -644,6 +644,7 @@ def pressed_touchpad_top_left_icon(e):
         set_none_to_current_mt_slot()
 
 
+# rotating in cycle - overflow means start from first brightness again
 def increase_brightness():
     global brightness, backlight_levels, config
 
@@ -733,21 +734,21 @@ def grab():
 
 
 def cancel_idle_numpad():
-    global brightness
+    global brightness, backlight_levels
 
-    # previous brightness
-    brightness = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
-
-    send_value_to_touchpad_via_i2c(brightness)
-
-    #try:
-    #  default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
-    #except:
-    #  pass
+    # set up previous brightness
+    try:
+      brightness_value = backlight_levels[brightness]
+      send_value_to_touchpad_via_i2c(brightness_value)
+    # may be not found! That means the driver was clearly installed and
+    # config file does not contains `brightness` key - because was not used increment
+    # or decrement function yet or even model does not support this functionality
+    # or config log was deleted
+    except:
+      send_value_to_touchpad_via_i2c("0x01")
+      pass
 
     config_set(CONFIG_IDLED, False)
-
-    #config_set(CONFIG_LAST_BRIGHTNESS, brightness)
 
     log.info("Cancelled numpad idle")
 
@@ -755,13 +756,17 @@ def cancel_idle_numpad():
 def idle_numpad():
     global brightness, idle_brightness, idle, backlight_levels
 
-    # step is: 100 / 8 = 12.5 / CONFIG_IDLE_BRIGHTNESS_DEFAULT
-    brightness = int(((100 / len(backlight_levels)) / idle_brightness))
+    # step is: CONFIG_IDLE_BRIGHTNESS_DEFAULT / (100 / 8 = 12.5) =
+    if len(backlight_levels):
+      idle_brightness_level_index = int(idle_brightness / (100 / len(backlight_levels)))
 
-    # because index of array starts with zero
-    if brightness >= 0:
-      send_value_to_touchpad_via_i2c(backlight_levels[brightness - 1])
+      # because index of array starts with zero
+      if idle_brightness_level_index > 0:
+        send_value_to_touchpad_via_i2c(backlight_levels[idle_brightness_level_index - 1])
+      else:
+        send_value_to_touchpad_via_i2c("0x00")
     else:
+      # brightness function is not supported then temporary disable entire brightness by `0x00`
       send_value_to_touchpad_via_i2c("0x00")
 
     config_set(CONFIG_IDLED, True)
@@ -950,7 +955,11 @@ def load_all_config_values():
         try:
             default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
         except:
-            pass
+            # idle functionality needs (if possible) to set up previous state of brightness and because I do not know at this moment how to read current brightness,
+            # we know only how to set up that so is necessary set default value to config if does not exist (and brightness levels are supported!!)
+            #
+            if len(backlight_levels) > 0:
+              config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[len(backlight_levels) - 1], True, True)
 
     top_left_icon_brightness_func_disabled = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT)
     if not backlight_levels or not top_left_icon_height or not top_left_icon_width:
@@ -1544,11 +1553,11 @@ def listen_touchpad_events():
 
     for e in d_t.events():
 
+        last_event_time = time()
+
         if is_idled:
           is_idled = False
           cancel_idle_numpad()
-
-        last_event_time = time()
 
         current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
         current_slot_y = abs_mt_slot_y_values[abs_mt_slot_value]
