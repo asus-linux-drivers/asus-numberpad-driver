@@ -95,7 +95,7 @@ CONFIG_IDLE_BRIGHTNESS_DEFAULT = 30
 CONFIG_IDLE_ENABLED = "idle_enabled"
 CONFIG_IDLE_ENABLED_DEFAULT = 1
 CONFIG_IDLE_TIME = "idle_time"
-CONFIG_IDLE_TIME_DEFAULT = 2 # TODO: 30
+CONFIG_IDLE_TIME_DEFAULT = 10
 CONFIG_DEFAULT_BACKLIGHT_LEVEL = "default_backlight_level"
 CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT = "0x01"
 CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
@@ -918,8 +918,6 @@ def load_all_config_values():
     global idle_brightness
     global idle_enabled
     global idle_time
-    #global idled TODO:
-    #global enabled
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
