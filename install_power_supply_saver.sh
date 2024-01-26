@@ -20,7 +20,7 @@ echo "Power supply saver"
 
 echo
 
-echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this rule can be enabled every detected change of power supply to battery."
+echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this rule can be enabled by every detected change of power supply mode to battery mode."
 
 echo
 
