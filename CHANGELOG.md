@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.4.1 (10.2.2024)
+
+### Feature
+
+- Idling (by default is brightness decreased after 10s by 30%)
+- Init `zypper` package manager support
+- By default is NumberPad not disabled due inactivity (the same behaviour as the Windows official driver)
+
 ## 4.4.0 (20.1.2024)
 
 ### Feature
@@ -12,7 +20,7 @@
 
 - Fixed the driver for installing with specific Python3 via `pyenv`
 - Support for devices with vendor `ASUP`
-- Eliminated overspamming log file when is NumbePad not activated
+- Eliminated overspamming log file when is NumberPad not activated
 - `pip3` is upgraded before is used
 
 ## 4.3.0 (12.1.2024)
