@@ -61,7 +61,7 @@ if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_T
 fi
 
 for OPTION in $(ls layouts); do
-    if [ "$OPTION" = "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE.py" ]; then   
+    if [ "$OPTION" = "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE.py" ]; then
         echo
         echo "Is the recommended layout wrong? In that case please create an issue with your laptop system name: $LAPTOP_NAME_FULL here: https://github.com/asus-linux-drivers/asus-numberpad-driver/issues."
         echo
@@ -76,6 +76,8 @@ for OPTION in $(ls layouts); do
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo
+
+            LAYOUT_AUTO_SUGGESTION=1
 
             LAYOUT_NAME=$DETECTED_LAYOUT_VIA_OFFLINE_TABLE
 

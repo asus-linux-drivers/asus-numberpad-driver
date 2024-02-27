@@ -32,6 +32,8 @@ echo
 read -r -p "Do you want install the rule for external keyboard? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
+    EXTERNAL_KEYBOARD_TOGGLE=1
+
     echo
 
     cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules" >/dev/null

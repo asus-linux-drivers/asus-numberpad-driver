@@ -31,6 +31,8 @@ echo
 read -r -p "Do you want install the rule for idle functionality? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
+    POWER_SUPPLY_SAVER=1
+
     echo
 
     cat "udev/80-numberpad-power-supply.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "/usr/lib/udev/rules.d/80-numberpad-power-supply.rules" >/dev/null

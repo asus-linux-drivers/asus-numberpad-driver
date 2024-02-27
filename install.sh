@@ -2,6 +2,8 @@
 
 source non_sudo_check.sh
 
+START_TIME=${EPOCHREALTIME::-6}
+
 LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
 
 source install_logs.sh
@@ -15,16 +17,21 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
 {
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="apt"
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="pacman"
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="dnf"
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="yum"
         # yum was replaced with newer dnf above
         sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     elif [[ $(sudo zypper help 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="zypper"
         sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
@@ -32,7 +39,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when installing packages"
+        source install_begin_send_anonymous_report.sh
         exit 1
+    else
+        source install_begin_send_anonymous_report.sh
     fi
 
     echo
@@ -72,6 +82,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
             fi
             ;;
         *)
+            source install_config_send_anonymous_report.sh
             ;;
         esac
     else
@@ -121,6 +132,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     source install_power_supply_saver.sh
 
     echo
+
+    END_TIME=${EPOCHREALTIME::-6}
+    source install_finished_send_anonymous_report.sh
 
     echo "Installation finished succesfully"
 
