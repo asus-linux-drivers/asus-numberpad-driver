@@ -18,7 +18,7 @@ INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 # $EXTERNAL_KEYBOARD_TOGGLE
 # $SERVICE
 # $LAYOUT_AUTO_SUGGESTION
-DRIVER_VERSION=$(git describe --tags)
+DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 
 CURL_PAYLOAD='{
     "client_id": "'${CLIENT_ID}'",
