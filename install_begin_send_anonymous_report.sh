@@ -14,7 +14,7 @@ source /etc/os-release
 LAPTOP=$(sudo dmidecode -s system-product-name)
 TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 XDG_SESSION_TYPE=$(echo $XDG_SESSION_TYPE)
-DRIVER_VERSION=$(git describe --tags)
+DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 
 CURL_PAYLOAD='{
     "client_id": "'${CLIENT_ID}'",
