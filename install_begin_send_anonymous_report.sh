@@ -3,7 +3,7 @@
 G_ID="G-R95GXWFECL"
 API_SECRET="1FTfPGoRTDCmK4Outb-4nQ"
 CLIENT_ID="365831413.1708860375"
-USER_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
+LAPTOP_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
 EVENT_NAME="install_begin"
 
 # begin
@@ -18,12 +18,13 @@ DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 
 CURL_PAYLOAD='{
     "client_id": "'${CLIENT_ID}'",
-    "user_id": "'${USER_ID}'",
+    "user_id": "'${LAPTOP_ID}'",
     "non_personalized_ads": true,
     "events": [
         {
             "name": "'${EVENT_NAME}'",
             "params": {
+                "laptop_id": "'${LAPTOP_ID}'",
                 "laptop": "'${LAPTOP}'",
                 "distribution": "'${PRETTY_NAME}'",
                 "package_manager": "'${PACKAGE_MANAGER}'",
