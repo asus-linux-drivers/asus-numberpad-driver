@@ -18,6 +18,8 @@ INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 # $EXTERNAL_KEYBOARD_TOGGLE
 # $SERVICE
 # $LAYOUT_AUTO_SUGGESTION
+LAPTOP=$(sudo dmidecode -s system-product-name)
+TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 
 CURL_PAYLOAD='{
@@ -37,6 +39,8 @@ CURL_PAYLOAD='{
                 "external_keyboard_toggle_installed": "'${EXTERNAL_KEYBOARD_TOGGLE}'",
                 "power_supply_saver_installed": "'${POWER_SUPPLY_SAVER}'",
                 "install_duration_seconds": "'${INSTALL_DURATION}'",
+                "touchpad": "'${TOUCHPAD}'",
+                "laptop": "'${LAPTOP}'",
                 "version": "'${DRIVER_VERSION}'"
             }
         }
