@@ -5,9 +5,9 @@ API_SECRET="1FTfPGoRTDCmK4Outb-4nQ"
 CLIENT_ID="365831413.1708860375"
 USER_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
 EVENT_NAME="install_finished"
+LAPTOP_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
 
 # finished
-
 INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 
 # $DETECTED_LAYOUT_VIA_OFFLINE_TABLE
@@ -24,12 +24,13 @@ DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 
 CURL_PAYLOAD='{
     "client_id": "'${CLIENT_ID}'",
-    "user_id": "'${USER_ID}'",
+    "user_id": "'${LAPTOP_ID}'",
     "non_personalized_ads": true,
     "events": [
         {
             "name": "'${EVENT_NAME}'",
             "params": {
+                "laptop_id": "'${LAPTOP_ID}'",
                 "layout_recommended": "'${DETECTED_LAYOUT_VIA_OFFLINE_TABLE}'",
                 "layout_recommended_installed": "'${LAYOUT_AUTO_SUGGESTION}'",
                 "layout": "'${LAYOUT_NAME}'",
