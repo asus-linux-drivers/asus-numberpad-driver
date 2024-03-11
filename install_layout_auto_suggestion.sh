@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-LAPTOP_NAME_FULL=$(sudo dmidecode -s system-product-name)
+LAPTOP_NAME_FULL=$(cat /sys/devices/virtual/dmi/id/product_name)
 LAPTOP_NAME=$(echo $LAPTOP_NAME_FULL | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
 
 DETECTED_LAPTOP_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f1)

@@ -18,7 +18,7 @@ INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 # $EXTERNAL_KEYBOARD_TOGGLE
 # $SERVICE
 # $LAYOUT_AUTO_SUGGESTION
-LAPTOP=$(sudo dmidecode -s system-product-name)
+LAPTOP=$(cat /sys/devices/virtual/dmi/id/product_name)
 TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
 

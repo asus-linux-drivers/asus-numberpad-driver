@@ -11,7 +11,7 @@ source /etc/os-release
 # $PRETTY_NAME
 
 # $PACKAGE_MANAGER
-LAPTOP=$(sudo dmidecode -s system-product-name)
+LAPTOP=$(cat /sys/devices/virtual/dmi/id/product_name)
 TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 XDG_SESSION_TYPE=$(echo $XDG_SESSION_TYPE)
 DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
