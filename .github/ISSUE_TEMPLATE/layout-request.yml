@@ -57,3 +57,8 @@ body:
   - type: textarea
     attributes:
       label: Additional Info
+
+  - type: checkboxes
+    attributes:
+      label: This layout doesn't currently exist and I have read the [Layout section](https://github.com/asus-linux-drivers/asus-numberpad-driver?tab=readme-ov-file#layouts)
+      required: true
