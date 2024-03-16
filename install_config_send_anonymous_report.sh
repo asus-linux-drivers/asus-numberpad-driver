@@ -74,6 +74,7 @@ CURL_PAYLOAD='{
                 "distance_to_move_only_pointer": "'${DISTANCE_TO_MOVE_ONLY_POINTER}'",
                 "idle_brightness": "'${IDLE_BRIGHTNESS}'",
                 "idle_enabled": "'${IDLE_ENABLED}'",
+                "idle_time": "'${IDLE_TIME}'",
                 "version": "'${DRIVER_VERSION}'"
             }
         }
