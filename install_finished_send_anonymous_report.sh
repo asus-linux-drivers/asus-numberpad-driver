@@ -18,6 +18,7 @@ INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 # $EXTERNAL_KEYBOARD_TOGGLE
 # $SERVICE
 # $LAYOUT_AUTO_SUGGESTION
+# $LAYOUT_AUTO_SUGGESTED_DIFFER_FROM_USED
 LAPTOP=$(cat /sys/devices/virtual/dmi/id/product_name)
 TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
@@ -33,6 +34,7 @@ CURL_PAYLOAD='{
                 "laptop_id": "'${LAPTOP_ID}'",
                 "layout_recommended": "'${DETECTED_LAYOUT_VIA_OFFLINE_TABLE}'",
                 "layout_recommended_installed": "'${LAYOUT_AUTO_SUGGESTION}'",
+                "layout_recommended_but_installed_another": "'${LAYOUT_AUTO_SUGGESTED_DIFFER_FROM_USED}'",
                 "layout": "'${LAYOUT_NAME}'",
                 "calc_toggl_wanted": "'${CALC_TOGGLE}'",
                 "calc_toggl_installed": "'${CALC_TOGGLE_SUPPORTED_CALC}'",
