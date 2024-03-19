@@ -25,21 +25,34 @@ if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_T
     USER_AGENT="user-agent-name-here"
     DEVICE_LIST_CURL_URL="https://linux-hardware.org/?view=search&vendorid=$VENDOR_ID&deviceid=$DEVICE_ID&typeid=input%2Fkeyboard"
     DEVICE_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$DEVICE_LIST_CURL_URL" )
-    DEVICE_URL=$(echo $DEVICE_LIST_CURL | xmllint --html --xpath '//td[@class="device"]//a[1]/@href' 2>/dev/null - | cut -f2 -d"\"")
-    LAPTOP_LIST_CURL_URL="https://linux-hardware.org$DEVICE_URL"
-    LAPTOP_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$LAPTOP_LIST_CURL_URL" )
-    LAPTOP_LIST=$(echo $LAPTOP_LIST_CURL | xmllint --html --xpath '//table[contains(@class, "computers_list")]//tr/td[3]/span/@title' 2>/dev/null -)
 
-    # create laptop array
+    # Probes identified by touchpad's VENDOR_ID & PRODUCT_ID may return probes grouped under multiple devices:
     #
-    # [0] = Zenbook UX3402ZA_UX3402ZA
-    # [1] = Zenbook UM5401QAB_UM5401QA
-    # ...
+    # e.g. returned ELAN, ASUE: https://linux-hardware.org/?view=search&vendorid=04F3&deviceid=3101&typeid=input%2Fkeyboard
     #
-    IFS='\"' read -r -a array <<< $(echo $LAPTOP_LIST)
+    # /?id=ps/2:04f3-3101-elan1406-00-04f3-3101-keyboard
+    # /?id=ps/2:04f3-3101-asue1406-00-04f3-3101-keyboard
+    DEVICE_URL_LIST=$(echo $DEVICE_LIST_CURL | xmllint --html --xpath '//td[@class="device"]//a[1]/@href' 2>/dev/null -)
+
+    IFS='\"' read -r -a array <<< $(echo $DEVICE_URL_LIST)
     for INDEX in "${!array[@]}"
     do
-        if [[ "${array[INDEX]}" != " title=" && "${array[INDEX]}" != "title=" ]]; then
+      if [[ "${array[INDEX]}" != " href=" && "${array[INDEX]}" != "href=" ]]; then
+
+        LAPTOP_LIST_CURL_URL="https://linux-hardware.org$DEVICE_URL"
+        LAPTOP_LIST_CURL=$(curl --user-agent "$USER_AGENT" "$LAPTOP_LIST_CURL_URL" )
+        LAPTOP_LIST=$(echo $LAPTOP_LIST_CURL | xmllint --html --xpath '//table[contains(@class, "computers_list")]//tr/td[3]/span/@title' 2>/dev/null -)
+
+        # create laptop array
+        #
+        # [0] = Zenbook UX3402ZA_UX3402ZA
+        # [1] = Zenbook UM5401QAB_UM5401QA
+        # ...
+        #
+        IFS='\"' read -r -a array <<< $(echo $LAPTOP_LIST)
+        for INDEX in "${!array[@]}"
+        do
+          if [[ "${array[INDEX]}" != " title=" && "${array[INDEX]}" != "title=" ]]; then
             LAPTOP_NAME="${array[INDEX]}"
 
             PROBE_LAPTOP=$( echo $LAPTOP_NAME | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
@@ -48,11 +61,13 @@ if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_T
             DETECTED_LAYOUT_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $PROBE_LAPTOP | head -1 | cut -d'=' -f2)
 
             if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
-                continue
+              continue
             else
-                break
+              break
             fi
-        fi
+          fi
+        done
+      fi
     done
 
     if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
