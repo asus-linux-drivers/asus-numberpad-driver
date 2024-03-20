@@ -24,11 +24,13 @@ body:
   - type: input
     attributes:
       label: Supported Devices
-      placeholder: device1, device2...
+      description: List all devices that have the same layout as the one you request. If you know of no else leave empty.
+      placeholder: ex. Asus Rog Scar 5, Asus Rog Scar 6
 
   - type: textarea
     attributes:
       label: Numpad Layout (photo/picture or code)
+      description: Attach a picture of the layout (just take a picture of how the numpad layout on the touchpad looks). You can see examples in the Layouts section in the README.
     validations:
       required: true
 
