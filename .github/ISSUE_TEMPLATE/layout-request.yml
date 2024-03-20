@@ -29,6 +29,7 @@ body:
   - type: textarea
     attributes:
       label: Numpad Layout (photo/picture or code)
+    validations:
       required: true
 
   - type: input
