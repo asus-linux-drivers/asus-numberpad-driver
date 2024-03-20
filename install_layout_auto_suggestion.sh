@@ -2,17 +2,18 @@
 
 source non_sudo_check.sh
 
-LAPTOP_NAME_FULL=$(cat /sys/devices/virtual/dmi/id/product_name)
+LAPTOP_NAME_FULL="ASUS EXPERTBOOK B5402FBA_B5402FBA" #$(cat /sys/devices/virtual/dmi/id/product_name)
 LAPTOP_NAME=$(echo $LAPTOP_NAME_FULL | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
 
 DETECTED_LAPTOP_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f1)
 DETECTED_LAYOUT_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f2)
 
 DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 2 -d ":" | head -1)
+DEVICE_ID="3230"
 
 if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
 
-    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
+    VENDOR_ID="04F3" #$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
 
     # When exist device 9009:00 should return other DEVICE_ID: 3101 of 'ELAN1406:00'
     #
