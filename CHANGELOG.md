@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.0.0 (23.3.2024)
+
+### Feature
+
+- Gathering anonymous data from users via GA (public dashboard https://lookerstudio.google.com/reporting/2bf9a72c-c675-4ff8-a3c6-2e1e8c1167b9)
+- Automatically suggest layout based on gathered data from users via GA
+- Added few laptops manually for layout be automatically suggested
+
+### Fixed
+
+- Idling disabled by default
+- Fixed auto suggestion when are found multiple devices (e.g. for UX582ZW returned ASUE, ELAN)
+- Dmidecode replaced with raw file access (package was not required to install and does not have any other usage)
+
 ## 4.4.1 (10.2.2024)
 
 ### Feature
