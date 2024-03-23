@@ -3,16 +3,25 @@
 source non_sudo_check.sh
 
 LAPTOP_NAME_FULL=$(cat /sys/devices/virtual/dmi/id/product_name)
+# LAPTOP_NAME_FULL="ROG Zephyrus Duo 15 SE GX551QR_GX551QR"
 LAPTOP_NAME=$(echo $LAPTOP_NAME_FULL | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
-
-DETECTED_LAPTOP_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f1)
-DETECTED_LAYOUT_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f2)
-
 DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 2 -d ":" | head -1)
+# DEVICE_ID="3145"
+VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
+# VENDOR_ID="04F3"
 
-if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
+# the base was provided by cz asus support and manually fixed + manually extended about missing laptops gathered from users by github issues and via GA
+SUGGESTED_LAYOUT=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | cut -d'=' -f2)
 
-    VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
+# gathered from users via GA
+if [[ -z "$SUGGESTED_LAYOUT" ]]; then
+  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $LAPTOP_NAME_FULL | head -1 | cut -d',' -f4)
+fi
+if [[ -z "$SUGGESTED_LAYOUT" ]]; then
+  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $VENDOR_ID | grep $DEVICE_ID | head -1 | cut -d',' -f4)
+fi
+
+if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
 
     # When exist device 9009:00 should return other DEVICE_ID: 3101 of 'ELAN1406:00'
     #
@@ -53,14 +62,14 @@ if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_T
         for INDEX in "${!array[@]}"
         do
           if [[ "${array[INDEX]}" != " title=" && "${array[INDEX]}" != "title=" ]]; then
-            LAPTOP_NAME="${array[INDEX]}"
+            PROBE_LAPTOP_NAME_FULL="${array[INDEX]}"
+            PROBE_LAPTOP_NAME=$( echo $PROBE_LAPTOP_NAME_FULL | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
 
-            PROBE_LAPTOP=$( echo $LAPTOP_NAME | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
-
-            DETECTED_LAPTOP_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $PROBE_LAPTOP | head -1 | cut -d'=' -f1)
-            DETECTED_LAYOUT_VIA_OFFLINE_TABLE=$(cat laptop_numberpad_layouts | grep $PROBE_LAPTOP | head -1 | cut -d'=' -f2)
-
-            if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
+            SUGGESTED_LAYOUT=$(cat laptop_numberpad_layouts | grep $PROBE_LAPTOP_NAME | head -1 | cut -d'=' -f2)
+            if [[ -z "$SUGGESTED_LAYOUT" ]]; then
+              SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $PROBE_LAPTOP_NAME_FULL | head -1 | cut -d',' -f4)
+            fi
+            if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
               continue
             else
               break
@@ -70,15 +79,13 @@ if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_T
       fi
     done
 
-    if [[ -z "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" || "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE" == "none" ]]; then
-        echo "Could not automatically detect numberpad layout for your laptop. Please create an issue with your laptop system name: $LAPTOP_NAME_FULL here: https://github.com/asus-linux-drivers/asus-numberpad-driver/issues."
+    if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
+        echo "Could not automatically detect NumberPad layout for your laptop."
     fi
 fi
 
 for OPTION in $(ls layouts); do
-    if [ "$OPTION" = "$DETECTED_LAYOUT_VIA_OFFLINE_TABLE.py" ]; then
-        echo
-        echo "Is the recommended layout wrong? In that case please create an issue with your laptop system name: $LAPTOP_NAME_FULL here: https://github.com/asus-linux-drivers/asus-numberpad-driver/issues."
+    if [ "$OPTION" = "$SUGGESTED_LAYOUT.py" ]; then
         echo
         echo "NumberPad layout"
         echo
@@ -87,14 +94,14 @@ for OPTION in $(ls layouts); do
         echo " - Standard. All keys are sent directly except the percent and hash characters (these use the unicode Ctrl+Shift+U shortcut) so that this layout should work for any keyboard language layout but still is not resistant to custom overbinding of keys, which is why the last variant exists"
         echo " - The unicode variant sends all keys as unicode characters except for BACKSPACE and ENTER. This layout is the most resistant to overbinding of keys but sends multiple keys instead of just one, unnecessarily heavy if you do not need it."
         echo
-        read -r -p "Automatically recommended numberpad layout for detected laptop: $LAPTOP_NAME_FULL is standard: $DETECTED_LAYOUT_VIA_OFFLINE_TABLE (associated to $DETECTED_LAPTOP_VIA_OFFLINE_TABLE). Do you want to use? [y/N]" RESPONSE
+        read -r -p "Automatically recommended numberpad layout for detected laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use standard variant of $SUGGESTED_LAYOUT? [y/N]" RESPONSE
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo
 
             LAYOUT_AUTO_SUGGESTION=1
 
-            LAYOUT_NAME=$DETECTED_LAYOUT_VIA_OFFLINE_TABLE
+            LAYOUT_NAME=$SUGGESTED_LAYOUT
 
             SPECIFIC_BRIGHTNESS_VALUES="$LAYOUT_NAME-$DEVICE_ID"
             if [ -f "layouts/$SPECIFIC_BRIGHTNESS_VALUES.py" ];
