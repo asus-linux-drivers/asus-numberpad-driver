@@ -15,10 +15,10 @@ SUGGESTED_LAYOUT=$(cat laptop_numberpad_layouts | grep $LAPTOP_NAME | head -1 | 
 
 # gathered from users via GA
 if [[ -z "$SUGGESTED_LAYOUT" ]]; then
-  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $LAPTOP_NAME_FULL | head -1 | cut -d',' -f4)
+  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $LAPTOP_NAME_FULL | sort -t , -k 6 -r | head -1 | cut -d',' -f4)
 fi
 if [[ -z "$SUGGESTED_LAYOUT" ]]; then
-  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $VENDOR_ID | grep $DEVICE_ID | head -1 | cut -d',' -f4)
+  SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep $VENDOR_ID | grep $DEVICE_ID | sort -t , -k 6 -r | head -1 | cut -d',' -f4)
 fi
 
 if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
