@@ -80,6 +80,7 @@ if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
     done
 
     if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
+        echo
         echo "Could not automatically detect NumberPad layout for your laptop."
     fi
 fi
