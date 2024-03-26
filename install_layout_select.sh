@@ -6,8 +6,6 @@ DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3
 
 if [ -z "$LAYOUT_NAME" ]; then
     echo
-    echo "Is the recommended layout wrong? In that case please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
-    echo
     echo "NumberPad layout"
     echo
     echo "3 variants of NumberPad layouts are predefined for each laptop:"
