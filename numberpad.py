@@ -1582,7 +1582,7 @@ def listen_touchpad_events():
         if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
 
             if e.value == 0:
-                log.info("Released touchpad pointer button")
+                log.debug("Released touchpad pointer button")
                 key_pointer_button_is_touched = False
                 set_none_to_all_mt_slots()
 
@@ -1591,7 +1591,7 @@ def listen_touchpad_events():
 
                 continue
             else:
-                log.info("Pressed touchpad pointer button")
+                log.debug("Pressed touchpad pointer button")
                 key_pointer_button_is_touched = True
 
         # TODO: co ten block pod tímhle, zkusit enabled_touchpad_pointer 2 zda funguje
