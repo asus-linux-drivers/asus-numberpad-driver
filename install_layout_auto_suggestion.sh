@@ -23,6 +23,8 @@ fi
 
 if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
 
+    LAYOUT_AUTO_SUGGESTION_ONLINE=1
+
     # When exist device 9009:00 should return other DEVICE_ID: 3101 of 'ELAN1406:00'
     #
     # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
@@ -82,6 +84,8 @@ if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
     if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
         echo
         echo "Could not automatically detect NumberPad layout for your laptop."
+    else
+        LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND=1
     fi
 fi
 
