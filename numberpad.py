@@ -1482,6 +1482,10 @@ def takes_numlock_longer_then_set_up_activation_time():
                  time() - numlock_touch_start_time)
         log.info("Activation time: %s", activation_time)
 
+        numlock_touch_start_time = 0
+        local_numlock_pressed()
+        set_none_to_current_mt_slot()
+
         return True
     else:
         return False
@@ -1639,15 +1643,10 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            if press_key_when_is_done_untouch == 0:
-                touched_key = get_touched_key()
-                top_right_icon = is_pressed_touchpad_top_right_icon()
-                if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
-
-                    numlock_touch_start_time = 0
-
-                    local_numlock_pressed()
-                    continue
+            touched_key = get_touched_key()
+            top_right_icon = is_pressed_touchpad_top_right_icon()
+            if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
+              continue
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
