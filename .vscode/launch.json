@@ -6,12 +6,15 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["up5401ea-unicode-31B9", ""]
+            "args": ["up5401ea-unicode-31B9", "", "${env:LOG=DEBUG}"],
+            "env": {
+              "LOG": "DEBUG"
+            }
         }
     ]
 }
