@@ -10,7 +10,7 @@ LAPTOP_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
 # finished
 INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 
-# $DETECTED_LAYOUT_VIA_OFFLINE_TABLE
+# $SUGGESTED_LAYOUT
 # $LAYOUT_NAME
 # $CALC_TOGGLE
 # $CALC_TOGGLE_SUPPORTED_CALC
@@ -34,7 +34,7 @@ CURL_PAYLOAD='{
             "name": "'${EVENT_NAME}'",
             "params": {
                 "laptop_id": "'${LAPTOP_ID}'",
-                "layout_recommended": "'${DETECTED_LAYOUT_VIA_OFFLINE_TABLE}'",
+                "layout_recommended": "'${SUGGESTED_LAYOUT}'",
                 "layout_recommended_installed": "'${LAYOUT_AUTO_SUGGESTION}'",
                 "layout_recommended_but_installed_another": "'${LAYOUT_AUTO_SUGGESTED_DIFFER_FROM_USED}'",
                 "layout": "'${LAYOUT_NAME}'",
