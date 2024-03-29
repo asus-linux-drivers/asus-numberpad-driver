@@ -16,9 +16,13 @@ SUGGESTED_LAYOUT=$(cat laptop_numberpad_layouts | grep "$LAPTOP_NAME" | head -1 
 # gathered from users via GA
 if [[ -z "$SUGGESTED_LAYOUT" ]]; then
   SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep "$LAPTOP_NAME_FULL" | sort -t , -k 6 -r | head -1 | cut -d',' -f4)
+else
+  LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME=1
 fi
 if [[ -z "$SUGGESTED_LAYOUT" ]]; then
   SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep "$VENDOR_ID" | grep "$DEVICE_ID" | sort -t , -k 6 -r | head -1 | cut -d',' -f4)
+else
+  LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME_FULL=1
 fi
 
 if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
@@ -70,10 +74,13 @@ if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
             SUGGESTED_LAYOUT=$(cat laptop_numberpad_layouts | grep "$PROBE_LAPTOP_NAME" | head -1 | cut -d'=' -f2)
             if [[ -z "$SUGGESTED_LAYOUT" ]]; then
               SUGGESTED_LAYOUT=$(cat laptop_touchpad_numberpad_layouts.csv | grep "$PROBE_LAPTOP_NAME_FULL" | head -1 | cut -d',' -f4)
+            else
+              LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME=1
             fi
             if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
               continue
             else
+              LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME_FULL=1
               break
             fi
           fi
@@ -87,6 +94,9 @@ if [[ -z "$SUGGESTED_LAYOUT" || "$SUGGESTED_LAYOUT" == "none" ]]; then
     else
         LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND=1
     fi
+else
+  LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND=1
+  LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_VENDOR_DEVICE_ID=1
 fi
 
 for OPTION in $(ls layouts); do

@@ -21,6 +21,12 @@ INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
 # $LAYOUT_AUTO_SUGGESTED_DIFFER_FROM_USED
 # $LAYOUT_AUTO_SUGGESTION_ONLINE
 # $LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND
+# $LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME
+# $LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME_FULL
+# $LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND
+# $LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME
+# $LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME_FULL
+# $LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_VENDOR_DEVICE_ID
 LAPTOP=$(cat /sys/devices/virtual/dmi/id/product_name)
 TOUCHPAD=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | head -1)
 DRIVER_VERSION=$(git fetch --tags && git describe --tags --abbrev=0)
@@ -48,7 +54,13 @@ CURL_PAYLOAD='{
                 "laptop": "'${LAPTOP}'",
                 "version": "'${DRIVER_VERSION}'",
                 "layout_auto_suggestion_online": "'${LAYOUT_AUTO_SUGGESTION_ONLINE}'",
-                "layout_auto_suggestion_online_found": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND}'"
+                "layout_auto_suggestion_online_found": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND}'",
+                "layout_auto_suggestion_online_found_by_laptop_name": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME}'",
+                "layout_auto_suggestion_online_found_by_laptop_name_full": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME_FULL}'"
+                "layout_auto_suggestion_offline_found": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND}'",
+                "layout_auto_suggestion_offline_found_by_laptop_name": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME}'",
+                "layout_auto_suggestion_offline_found_by_laptop_name_full": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME_FULL}'",
+                "layout_auto_suggestion_offline_found_by_vendor_device_id": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_VENDOR_DEVICE_ID}'"
             }
         }
     ]
