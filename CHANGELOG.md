@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.1.0 (30.3.2024)
+
+### Feature
+
+- Not wait for untouch to handle action of slide gestures and activation
+- Decreased necessary distance of touchpads width for slide gestures to success from `0.3` (1/3) ratio to `0.2` (1/5)
+- Log touchpad pointer press, unpress only during debugging to avoid log spam
+- Added sending info about usage of offline suggestions (GA)
+- Added sending info about usage of online suggestions (GA)
+- Updated offline table for auto suggestions from gathered data (GA)
+
+### Fixed
+
+- Fixed sending info about suggested layout (GA)
+- Fixed prioritizing rows with more events count in offline table for auto suggestions
+
 ## 5.0.0 (23.3.2024)
 
 ### Feature
