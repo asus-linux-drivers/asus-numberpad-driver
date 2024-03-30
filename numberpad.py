@@ -103,11 +103,11 @@ CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_activation_x_ratio"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.3
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.2
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.3
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_right_icon_slide_func_activation_x_ratio"
-CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.3
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.2
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_right_icon_slide_func_activation_y_ratio"
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.3
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
@@ -553,22 +553,8 @@ udev = dev.create_uinput_device()
 sleep(1)
 
 
-def use_slide_func_for_top_right_icon():
-    global numlock, top_right_icon_touch_start_time, numlock_touch_start_time
-
-    log.info("Func for touchpad right_icon slide function")
-
-    top_right_icon_touch_start_time = 0
-    numlock_touch_start_time = 0
-
-    local_numlock_pressed()
-
-
 def use_bindings_for_touchpad_left_icon_slide_function():
-    global udev, numlock, top_left_icon_slide_func_keys, top_left_icon_touch_start_time
-
-    top_left_icon_touch_start_time = 0
-    set_none_to_current_mt_slot()
+    global udev, top_left_icon_slide_func_keys
 
     key_events = []
     for custom_key in top_left_icon_slide_func_keys:
@@ -638,9 +624,11 @@ def pressed_touchpad_top_left_icon(e):
 
     if e.value == 1:
         top_left_icon_touch_start_time = time()
-        log.info("Touched top_left_icon in time: %s", time())
+        log.info("Touched top_left_icon area in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY_TOP_LEFT_ICON
     else:
+        top_left_icon_touch_start_time = 0
+        log.info("Un-touched top_left_icon area in time: %s", time())
         set_none_to_current_mt_slot()
 
 
@@ -1326,21 +1314,18 @@ def pressed_numlock_key(value):
         log.info("Touched numlock key (not top_right_icon) in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     else:
-        if press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
-            log.info("Un-touched with NumberPad activation numlock key (not top_right_icon) in time: %s", time())
-            numlock_touch_start_time = 0
-            local_numlock_pressed()
-        else:
-            log.info("Un-touched without NumberPad activation numlock key (not top_right_icon) in time: %s", time())
-            numlock_touch_start_time = 0
-            set_none_to_current_mt_slot()
+        numlock_touch_start_time = 0
+
+        set_none_to_current_mt_slot()
+
+        log.info("Un-touched numlock key (not top_right_icon) in time: %s", time())
 
 
 def pressed_touchpad_top_right_icon(value):
     global top_right_icon_touch_start_time, numlock_touch_start_time, abs_mt_slot_numpad_key
 
     if value == 1:
-        log.info("Touched top_right_icon (numlock) in time: %s", time())
+        log.info("Touched top_right_icon area (numlock) in time: %s", time())
 
         # is used for slide (that is why duplicated location for saving time())
         top_right_icon_touch_start_time = time()
@@ -1348,27 +1333,16 @@ def pressed_touchpad_top_right_icon(value):
 
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     else:
-        if press_key_when_is_done_untouch == 1 and takes_numlock_longer_then_set_up_activation_time():
-            log.info("Un-touched with NumberPad activation top_right_icon (numlock) in time: %s", time())
+        top_right_icon_touch_start_time = 0
+        numlock_touch_start_time = 0
 
-            top_right_icon_touch_start_time = 0
-            numlock_touch_start_time = 0
+        set_none_to_current_mt_slot()
 
-            local_numlock_pressed()
-        else:
-            log.info("Un-touched without NumberPad activation top_right_icon (numlock) in time: %s", time())
-
-            top_right_icon_touch_start_time = 0
-            numlock_touch_start_time = 0
-
-            set_none_to_current_mt_slot()
+        log.info("Un-touched top_right_icon area (representing numlock key) in time: %s", time())
 
 
 def is_slided_from_top_right_icon(e):
     global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time
-
-    if e.value != 0:
-        return
 
     if top_right_icon_touch_start_time == 0:
         return
@@ -1387,28 +1361,18 @@ def is_slided_from_top_right_icon(e):
         log.info(activation_min_x)
         log.info(activation_min_y)
 
-        return True
-    else:
-        log.info("Slided from top_right_icon taken NOT longer then is required. X, y:")
-        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
-        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
-        log.info("Required is min x, y:")
-        log.info(activation_min_x)
-        log.info(activation_min_y)
-
         top_right_icon_touch_start_time = 0
         numlock_touch_start_time = 0
 
         set_none_to_current_mt_slot()
 
+        return True
+    else:
         return False
 
 
 def is_slided_from_top_left_icon(e):
     global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
-
-    if e.value != 0:
-        return False
 
     if top_left_icon_touch_start_time == 0:
         return False
@@ -1427,19 +1391,12 @@ def is_slided_from_top_left_icon(e):
         log.info(activation_min_x)
         log.info(activation_min_y)
 
-        return True
-    else:
-        log.info("Slided from top_left_icon taken NOT longer then is required. X, y:")
-        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
-        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
-        log.info("Required is min x, y:")
-        log.info(activation_min_x)
-        log.info(activation_min_y)
-
         top_left_icon_touch_start_time = 0
 
         set_none_to_current_mt_slot()
 
+        return True
+    else:
         return False
 
 
@@ -1468,7 +1425,7 @@ def takes_top_left_icon_touch_longer_then_set_up_activation_time():
 
 
 def takes_numlock_longer_then_set_up_activation_time():
-    global activation_time, numlock_touch_start_time
+    global activation_time, numlock_touch_start_time, top_right_icon_touch_start_time
 
     if numlock_touch_start_time == 0:
         return
@@ -1478,9 +1435,12 @@ def takes_numlock_longer_then_set_up_activation_time():
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         press_duration > activation_time):
 
-        log.info("The numpad numlock was pressed longer than the activation time: %s",
+        log.info("The numpad numlock was pressed longer than the activation time and will be activated: %s",
                  time() - numlock_touch_start_time)
         log.info("Activation time: %s", activation_time)
+
+        numlock_touch_start_time = 0
+        top_right_icon_touch_start_time = 0
 
         return True
     else:
@@ -1594,8 +1554,6 @@ def listen_touchpad_events():
                 log.debug("Pressed touchpad pointer button")
                 key_pointer_button_is_touched = True
 
-        # TODO: co ten block pod tímhle, zkusit enabled_touchpad_pointer 2 zda funguje
-
         # enabled_touchpad_pointer value 2 only! is processed
         if numlock and enabled_touchpad_pointer == 2:
             if e.matches(EV_KEY.BTN_LEFT):
@@ -1639,15 +1597,12 @@ def listen_touchpad_events():
         if e.matches(EV_MSC.MSC_TIMESTAMP):
 
             # top right icon (numlock) activation
-            if press_key_when_is_done_untouch == 0:
-                touched_key = get_touched_key()
-                top_right_icon = is_pressed_touchpad_top_right_icon()
-                if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
+            touched_key = get_touched_key()
+            top_right_icon = is_pressed_touchpad_top_right_icon()
+            if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
 
-                    numlock_touch_start_time = 0
-
-                    local_numlock_pressed()
-                    continue
+              local_numlock_pressed()
+              continue
 
             # top left icon (brightness change) activation
             if numlock and is_pressed_touchpad_top_left_icon() and\
@@ -1675,6 +1630,13 @@ def listen_touchpad_events():
 
             is_not_finger_moved_to_another_key()
 
+            if numlock and is_slided_from_top_left_icon(e):
+                use_bindings_for_touchpad_left_icon_slide_function()
+                continue
+            elif is_slided_from_top_right_icon(e):
+                local_numlock_pressed()
+                continue
+
         if e.matches(EV_ABS.ABS_MT_POSITION_Y):
             abs_mt_slot_y_values[abs_mt_slot_value] = e.value
             if distance_to_move_only_pointer and \
@@ -1693,6 +1655,10 @@ def listen_touchpad_events():
 
             is_not_finger_moved_to_another_key()
 
+            if is_slided_from_top_right_icon(e):
+                local_numlock_pressed()
+                continue
+
         if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
             set_tracking_id(e.value)
 
@@ -1710,12 +1676,6 @@ def listen_touchpad_events():
                 continue
             elif numlock and is_pressed_touchpad_top_left_icon():
                 pressed_touchpad_top_left_icon(e)
-                continue
-            elif numlock and is_slided_from_top_left_icon(e):
-                use_bindings_for_touchpad_left_icon_slide_function()
-                continue
-            elif is_slided_from_top_right_icon(e):
-                use_slide_func_for_top_right_icon()
                 continue
 
             col = math.floor(
@@ -1739,6 +1699,7 @@ def listen_touchpad_events():
                 continue
 
             if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
+                log.debug('key unpress was already handled because slot is empty')
                 continue
 
             try:
