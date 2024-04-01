@@ -56,7 +56,7 @@ CURL_PAYLOAD='{
                 "layout_auto_suggestion_online": "'${LAYOUT_AUTO_SUGGESTION_ONLINE}'",
                 "layout_auto_suggestion_online_found": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND}'",
                 "layout_auto_suggestion_online_found_by_laptop_name": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME}'",
-                "layout_auto_suggestion_online_found_by_laptop_name_full": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME_FULL}'"
+                "layout_auto_suggestion_online_found_by_laptop_name_full": "'${LAYOUT_AUTO_SUGGESTION_ONLINE_FOUND_BY_LAPTOP_NAME_FULL}'",
                 "layout_auto_suggestion_offline_found": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND}'",
                 "layout_auto_suggestion_offline_found_by_laptop_name": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME}'",
                 "layout_auto_suggestion_offline_found_by_laptop_name_full": "'${LAYOUT_AUTO_SUGGESTION_OFFLINE_FOUND_BY_LAPTOP_NAME_FULL}'",
