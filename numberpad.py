@@ -17,7 +17,53 @@ from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, Asy
 import Xlib.display
 import Xlib.X
 import Xlib.XK
+from xkbcommon import xkb
+from pywayland.client import Display
+from pywayland.protocol.wayland import WlSeat
+import mmap
 from smbus2 import SMBus, i2c_msg
+
+keycodes_reflecting_current_layout_wayland = {
+    '1': EV_KEY.KEY_1.value,
+    '2': EV_KEY.KEY_2.value,
+    '3': EV_KEY.KEY_3.value,
+    '4': EV_KEY.KEY_4.value,
+    '5': EV_KEY.KEY_5.value,
+    '6': EV_KEY.KEY_6.value,
+    '7': EV_KEY.KEY_7.value,
+    '8': EV_KEY.KEY_8.value,
+    '9': EV_KEY.KEY_9.value,
+    'a': EV_KEY.KEY_A.value,
+    'b': EV_KEY.KEY_B.value,
+    'c': EV_KEY.KEY_C.value,
+    'd': EV_KEY.KEY_D.value,
+    'e': EV_KEY.KEY_E.value,
+    'f': EV_KEY.KEY_F.value,
+    'u': EV_KEY.KEY_U.value
+}
+
+
+def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
+    keymap_data = mmap.mmap(
+       fd, size, prot=mmap.PROT_READ, flags=mmap.MAP_PRIVATE
+    )
+    xkb_context = xkb.Context()
+    keymap = xkb_context.keymap_new_from_buffer(keymap_data, length=size - 1)
+    keymap_data.close()
+    min_keycode = keymap.min_keycode()
+    max_keycode = keymap.max_keycode()
+    keyboard_state = keymap.state_new()
+    for keycode in range(min_keycode, max_keycode):
+        char = keyboard_state.key_get_string(keycode + 8)
+        if char in keycodes_reflecting_current_layout_wayland:
+            keycodes_reflecting_current_layout_wayland[char] = keycode
+
+
+def wl_registry_handler(registry, id_, interface, version):
+  if interface == "wl_seat":
+    seat = registry.bind(id_, WlSeat, version)
+    keyboard = seat.get_keyboard()
+    keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -397,11 +443,26 @@ row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 def get_keycode_of_ascii_char(char):
-    display_var = os.environ.get('DISPLAY')
-    display = Xlib.display.Display(display_var)
-    keysym = Xlib.XK.string_to_keysym(char)
-    keycode = display.keysym_to_keycode(keysym) - 8
-    return keycode
+    # x11
+    try:
+        display_var = os.environ.get('DISPLAY')
+        display = Xlib.display.Display(display_var)
+        keysym = Xlib.XK.string_to_keysym(char)
+        keycode = display.keysym_to_keycode(keysym) - 8
+        return keycode
+    except:
+        # wayland
+        display_var = os.environ.get('WAYLAND_DISPLAY')
+        display = Display(display_var)
+        display.connect()
+        registry = display.get_registry()
+        registry.dispatcher["global"] = wl_registry_handler
+        display.dispatch(block=True)
+        display.roundtrip()
+        display.disconnect()
+
+        keycode = keycodes_reflecting_current_layout_wayland[char]
+        return keycode
 
 
 def get_key_which_reflects_current_layout(char, reset_udev=True):
@@ -469,9 +530,9 @@ enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_E,
     EV_KEY.KEY_F
 ]
-# enable equivalent key of "U" for currently used keyboard layout
+# enable equivalent key of "u" for currently used keyboard layout
 try:
-    get_key_which_reflects_current_layout("U", False)
+    get_key_which_reflects_current_layout("u", False)
 except:
     pass
 
@@ -1068,7 +1129,7 @@ def get_compose_key_start_events_for_unicode_string():
             pass
     else:
         try:
-            U_key = get_key_which_reflects_current_layout("U")
+            U_key = get_key_which_reflects_current_layout("u")
         except:
             U_key = EV_KEY.KEY_U
 
