@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-START_TIME=${EPOCHREALTIME::-6}
+START_TIME=${EPOCHREALTIME::-7}
 
 LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
 
@@ -133,7 +133,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
-    END_TIME=${EPOCHREALTIME::-6}
+    END_TIME=${EPOCHREALTIME::-7}
     source install_finished_send_anonymous_report.sh
 
     echo "Installation finished succesfully"
