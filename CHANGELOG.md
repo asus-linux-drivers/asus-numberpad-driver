@@ -1,5 +1,12 @@
 # Changelog
 
+### 5.1.1 (4.4.2024)
+
+### Fixed
+
+- Fixed sending info about suggested layout
+- Fixed calculating duration of installation (decimal point was not removed before substracting)
+
 ## 5.1.0 (30.3.2024)
 
 ### Feature
