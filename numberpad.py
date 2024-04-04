@@ -43,6 +43,34 @@ chars_associated_to_keycodes_reflecting_current_layout_wayland = {
 }
 
 
+# necessary when are new keys enabled
+def reset_udev_device():
+    global dev, udev
+
+    log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
+    udev = dev.create_uinput_device()
+    log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
+
+    # Sleep for a little bit so udev, libinput, Xorg, Wayland, ... all have had
+    # a chance to see the device and initialize it. Otherwise the event
+    # will be sent by the kernel but nothing is ready to listen to the
+    # device yet
+    sleep(1)
+
+
+def enable_key(char, reset_udev=True):
+    global enabled_keys_for_unicode_shortcut, chars_associated_to_keycodes_reflecting_current_layout_wayland, dev
+
+    keycode = get_keycode_of_ascii_char(char)
+    key = EV_KEY.codes[int(keycode)]
+
+    if key not in enabled_keys_for_unicode_shortcut and keycode not in chars_associated_to_keycodes_reflecting_current_layout_wayland.values():
+        enabled_keys_for_unicode_shortcut.append(key)
+        dev.enable(key)
+        if reset_udev:
+            reset_udev_device()
+
+
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keymap_data = mmap.mmap(
        fd, size, prot=mmap.PROT_READ, flags=mmap.MAP_PRIVATE
@@ -53,10 +81,20 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     min_keycode = keymap.min_keycode()
     max_keycode = keymap.max_keycode()
     keyboard_state = keymap.state_new()
+
+    enabled_keys = len(enabled_keys_for_unicode_shortcut)
     for keycode in range(min_keycode, max_keycode):
         char = keyboard_state.key_get_string(keycode + 8)
-        if char in chars_associated_to_keycodes_reflecting_current_layout_wayland:
+
+        if char in chars_associated_to_keycodes_reflecting_current_layout_wayland and chars_associated_to_keycodes_reflecting_current_layout_wayland[char] != keycode:
             chars_associated_to_keycodes_reflecting_current_layout_wayland[char] = keycode
+
+            key_to_enable = EV_KEY.codes[int(keycode)]
+            enable_key(key_to_enable, False)
+
+    # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
+    if len(enabled_keys_for_unicode_shortcut) > enabled_keys:
+        reset_udev_device()
 
 
 def wl_registry_handler(registry, id_, interface, version):
@@ -451,15 +489,18 @@ def get_keycode_of_ascii_char_x11(char):
     return keycode
 
 
+wayland_display = None
+
 def load_keycodes_for_ascii_chars_for_wayland():
+    global wayland_display
+
     wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
-    display = Display(display_var)
-    display.connect()
-    registry = display.get_registry()
+    wayland_display = Display(wayland_display_var)
+    wayland_display.connect()
+    registry = wayland_display.get_registry()
     registry.dispatcher["global"] = wl_registry_handler
-    display.dispatch(block=True)
-    display.roundtrip()
-    display.disconnect()
+    wayland_display.dispatch(block=True)
+    wayland_display.roundtrip()
 
 
 def get_keycode_of_ascii_char_wayland(char):
@@ -483,30 +524,19 @@ def get_keycode_of_ascii_char(char):
 
 
 def get_key_which_reflects_current_layout(char, reset_udev=True):
-    global enabled_keys_for_unicode_shortcut, udev, dev
 
     keycode = get_keycode_of_ascii_char(char)
     key = EV_KEY.codes[int(keycode)]
-    if key not in enabled_keys_for_unicode_shortcut:
-        enabled_keys_for_unicode_shortcut.append(key)
-        dev.enable(key)
-        if reset_udev:
-            log.info("Old device at {} ({})".format(udev.devnode, udev.syspath))
-            udev = dev.create_uinput_device()
-            log.info("New device at {} ({})".format(udev.devnode, udev.syspath))
 
-            # Sleep for a little bit so udev, libinput, Xorg, Wayland, ... all have had
-            # a chance to see the device and initialize it. Otherwise the event
-            # will be sent by the kernel but nothing is ready to listen to the
-            # device yet
-            sleep(1)
+    enable_key(key, reset_udev)
 
     return key
 
 
 # Create a new keyboard device to send numpad events
 dev = Device()
-dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
+dev.name = "foo"
+#dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
 dev.enable(EV_KEY.BTN_LEFT)
 dev.enable(EV_KEY.BTN_RIGHT)
 dev.enable(EV_KEY.BTN_MIDDLE)
@@ -559,13 +589,6 @@ for key in enabled_keys_for_unicode_shortcut:
 
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
-
-load_keycodes_for_ascii_chars_for_wayland()
-
-# pre-enable dynamic keys for unicode sending
-for key_to_enable in chars_associated_to_keycodes_reflecting_current_layout_wayland:
-    dev.enable(key_to_enable)
-
 
 def isEvent(event):
     if hasattr(event, "name") and hasattr(EV_KEY, event.name):
@@ -1972,6 +1995,9 @@ threads.append(t)
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 
+t = threading.Thread(target=load_keycodes_for_ascii_chars_for_wayland)
+threads.append(t)
+
 # start all threads
 for thread in threads:
     thread.start()
@@ -2004,6 +2030,10 @@ finally:
     # then clean up
     stop_threads=True
     fd_t.close()
+
+    if wayland_display:
+        wayland_display.disconnect()
+
     for thread in threads:
         thread.join()
 
