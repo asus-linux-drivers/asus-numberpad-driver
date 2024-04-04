@@ -10,7 +10,7 @@ sudo usermod -a -G "i2c,input,uinput,numberpad" $USER
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when adding the groups to current user"
-    #exit 1
+    exit 1
 else
     echo "Added groups input, i2c, uinput, numberpad to current user"
 fi
@@ -20,7 +20,7 @@ sudo modprobe uinput
 # check if the uinput module is successfully loaded
 if [[ $? != 0 ]]; then
     echo "uinput module cannot be loaded"
-    #exit 1
+    exit 1
 else
     echo "uinput module loaded"
 fi
