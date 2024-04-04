@@ -8,7 +8,7 @@ if [[ $(type i2cdetect 2>/dev/null) ]]; then
 
     if [ -z "$INTERFACES" ]; then
         echo "No i2c interface can be found. Make sure you have installed libevdev packages"
-        #exit 1
+        exit 1
     fi
 
     TOUCHPAD_WITH_NUMBERPAD_DETECTED=false
@@ -40,7 +40,7 @@ if [[ $(type i2cdetect 2>/dev/null) ]]; then
         echo "The detection was successful. Touchpad with numberpad found: $INDEX"
     else
         echo "The detection was not successful. Touchpad with numberpad not found"
-        #exit 1
+        exit 1
     fi
 else
     echo "The i2cdetect tool not found to proceed initial test whether any i2c device react like NumberPad"
