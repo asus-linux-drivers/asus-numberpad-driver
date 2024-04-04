@@ -23,7 +23,7 @@ from pywayland.protocol.wayland import WlSeat
 import mmap
 from smbus2 import SMBus, i2c_msg
 
-keycodes_reflecting_current_layout_wayland = {
+chars_associated_to_keycodes_reflecting_current_layout_wayland = {
     '1': EV_KEY.KEY_1.value,
     '2': EV_KEY.KEY_2.value,
     '3': EV_KEY.KEY_3.value,
@@ -55,8 +55,8 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keyboard_state = keymap.state_new()
     for keycode in range(min_keycode, max_keycode):
         char = keyboard_state.key_get_string(keycode + 8)
-        if char in keycodes_reflecting_current_layout_wayland:
-            keycodes_reflecting_current_layout_wayland[char] = keycode
+        if char in chars_associated_to_keycodes_reflecting_current_layout_wayland:
+            chars_associated_to_keycodes_reflecting_current_layout_wayland[char] = keycode
 
 
 def wl_registry_handler(registry, id_, interface, version):
@@ -64,6 +64,7 @@ def wl_registry_handler(registry, id_, interface, version):
     seat = registry.bind(id_, WlSeat, version)
     keyboard = seat.get_keyboard()
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
+
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -442,27 +443,43 @@ col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
 
-def get_keycode_of_ascii_char(char):
-    # x11
-    try:
-        display_var = os.environ.get('DISPLAY')
-        display = Xlib.display.Display(display_var)
-        keysym = Xlib.XK.string_to_keysym(char)
-        keycode = display.keysym_to_keycode(keysym) - 8
-        return keycode
-    except:
-        # wayland
-        display_var = os.environ.get('WAYLAND_DISPLAY')
-        display = Display(display_var)
-        display.connect()
-        registry = display.get_registry()
-        registry.dispatcher["global"] = wl_registry_handler
-        display.dispatch(block=True)
-        display.roundtrip()
-        display.disconnect()
+def get_keycode_of_ascii_char_x11(char):
+    display_var = os.environ.get('DISPLAY')
+    display = Xlib.display.Display(display_var)
+    keysym = Xlib.XK.string_to_keysym(char)
+    keycode = display.keysym_to_keycode(keysym) - 8
+    return keycode
 
-        keycode = keycodes_reflecting_current_layout_wayland[char]
-        return keycode
+
+def load_keycodes_for_ascii_chars_for_wayland():
+    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
+    display = Display(display_var)
+    display.connect()
+    registry = display.get_registry()
+    registry.dispatcher["global"] = wl_registry_handler
+    display.dispatch(block=True)
+    display.roundtrip()
+    display.disconnect()
+
+
+def get_keycode_of_ascii_char_wayland(char):
+  global chars_associated_to_keycodes_reflecting_current_layout_wayland
+
+  keycode = chars_associated_to_keycodes_reflecting_current_layout_wayland[char]
+  return keycode
+
+
+def get_keycode_of_ascii_char(char):
+
+    # wayland
+    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
+    if wayland_display_var:
+        return get_keycode_of_ascii_char_wayland(char)
+
+    # x11
+    display_var = os.environ.get('DISPLAY')
+    if display_var:
+        return get_keycode_of_ascii_char_x11(char)
 
 
 def get_key_which_reflects_current_layout(char, reset_udev=True):
@@ -496,13 +513,14 @@ dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
 # predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
 
+# pre-enable static keys for unicode sending (all keys may not be used because are rebinded or keyboard (e.g. FR) is not used)
 enabled_keys_for_unicode_shortcut = [
     EV_KEY.KEY_LEFTSHIFT,
     EV_KEY.KEY_LEFTCTRL,
     EV_KEY.KEY_SPACE,
     EV_KEY.KEY_ENTER,
     EV_KEY.KEY_U, # standart is U
-    EV_KEY.KEY_S, # for FR is S
+    EV_KEY.KEY_S, # for FR is U under S (pre-set because FR keyboard is frequented)
     EV_KEY.KEY_0,
     EV_KEY.KEY_1,
     EV_KEY.KEY_2,
@@ -540,6 +558,12 @@ for key in enabled_keys_for_unicode_shortcut:
     dev.enable(key)
 
 for key_to_enable in top_left_icon_slide_func_keys:
+    dev.enable(key_to_enable)
+
+load_keycodes_for_ascii_chars_for_wayland()
+
+# pre-enable dynamic keys for unicode sending
+for key_to_enable in chars_associated_to_keycodes_reflecting_current_layout_wayland:
     dev.enable(key_to_enable)
 
 
