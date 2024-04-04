@@ -58,13 +58,48 @@ def reset_udev_device():
     sleep(1)
 
 
-def enable_key(char, reset_udev=True):
-    global enabled_keys_for_unicode_shortcut, chars_associated_to_keycodes_reflecting_current_layout_wayland, dev
+def get_keycode_of_ascii_char_x11(char):
+    display_var = os.environ.get('DISPLAY')
+    display = Xlib.display.Display(display_var)
+    keysym = Xlib.XK.string_to_keysym(char)
+    keycode = display.keysym_to_keycode(keysym) - 8
+    return keycode
+
+
+def get_keycode_of_ascii_char_wayland(char):
+  global chars_associated_to_keycodes_reflecting_current_layout_wayland
+
+  keycode = chars_associated_to_keycodes_reflecting_current_layout_wayland[char]
+  return keycode
+
+
+def get_keycode_of_ascii_char(char):
+
+    # wayland
+    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
+    if wayland_display_var:
+        return get_keycode_of_ascii_char_wayland(char)
+
+    # x11
+    display_var = os.environ.get('DISPLAY')
+    if display_var:
+        return get_keycode_of_ascii_char_x11(char)
+
+
+def get_key_which_reflects_current_layout(char, reset_udev=True):
 
     keycode = get_keycode_of_ascii_char(char)
     key = EV_KEY.codes[int(keycode)]
 
-    if key not in enabled_keys_for_unicode_shortcut and keycode not in chars_associated_to_keycodes_reflecting_current_layout_wayland.values():
+    enable_key(key, reset_udev)
+
+    return key
+
+
+def enable_key(key, reset_udev=True):
+    global enabled_keys_for_unicode_shortcut, dev
+
+    if key not in enabled_keys_for_unicode_shortcut:
         enabled_keys_for_unicode_shortcut.append(key)
         dev.enable(key)
         if reset_udev:
@@ -103,6 +138,18 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard = seat.get_keyboard()
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
+wayland_display = None
+
+def load_keycodes_for_ascii_chars_for_wayland():
+    global wayland_display
+
+    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
+    wayland_display = Display(wayland_display_var)
+    wayland_display.connect()
+    registry = wayland_display.get_registry()
+    registry.dispatcher["global"] = wl_registry_handler
+    wayland_display.dispatch(block=True)
+    wayland_display.roundtrip()
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -481,58 +528,6 @@ col_width = (maxx_numpad - minx_numpad) / col_count
 row_height = (maxy_numpad - miny_numpad) / row_count
 
 
-def get_keycode_of_ascii_char_x11(char):
-    display_var = os.environ.get('DISPLAY')
-    display = Xlib.display.Display(display_var)
-    keysym = Xlib.XK.string_to_keysym(char)
-    keycode = display.keysym_to_keycode(keysym) - 8
-    return keycode
-
-
-wayland_display = None
-
-def load_keycodes_for_ascii_chars_for_wayland():
-    global wayland_display
-
-    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
-    wayland_display = Display(wayland_display_var)
-    wayland_display.connect()
-    registry = wayland_display.get_registry()
-    registry.dispatcher["global"] = wl_registry_handler
-    wayland_display.dispatch(block=True)
-    wayland_display.roundtrip()
-
-
-def get_keycode_of_ascii_char_wayland(char):
-  global chars_associated_to_keycodes_reflecting_current_layout_wayland
-
-  keycode = chars_associated_to_keycodes_reflecting_current_layout_wayland[char]
-  return keycode
-
-
-def get_keycode_of_ascii_char(char):
-
-    # wayland
-    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
-    if wayland_display_var:
-        return get_keycode_of_ascii_char_wayland(char)
-
-    # x11
-    display_var = os.environ.get('DISPLAY')
-    if display_var:
-        return get_keycode_of_ascii_char_x11(char)
-
-
-def get_key_which_reflects_current_layout(char, reset_udev=True):
-
-    keycode = get_keycode_of_ascii_char(char)
-    key = EV_KEY.codes[int(keycode)]
-
-    enable_key(key, reset_udev)
-
-    return key
-
-
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = "foo"
@@ -659,7 +654,6 @@ for col in keys:
 # device yet
 udev = dev.create_uinput_device()
 sleep(1)
-
 
 def use_bindings_for_touchpad_left_icon_slide_function():
     global udev, top_left_icon_slide_func_keys
