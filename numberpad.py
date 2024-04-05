@@ -107,6 +107,8 @@ def enable_key(key, reset_udev=True):
 
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
+    global enabled_keys_for_unicode_shortcut, chars_associated_to_keycodes_reflecting_current_layout_wayland
+
     keymap_data = mmap.mmap(
        fd, size, prot=mmap.PROT_READ, flags=mmap.MAP_PRIVATE
     )
