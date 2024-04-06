@@ -1347,23 +1347,19 @@ def is_slided_from_top_right_icon(e):
     if top_right_icon_touch_start_time == 0:
         return
 
-    activation_min_x = top_right_icon_slide_func_activation_x_ratio * maxx
-    activation_min_y = top_right_icon_slide_func_activation_y_ratio * maxy
+    activation_threshold_x = maxx - top_right_icon_slide_func_activation_x_ratio * maxx
+    activation_threshold_y = maxy - top_right_icon_slide_func_activation_y_ratio * maxy
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
-        abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
-        abs_mt_slot_y_values[abs_mt_slot_value] > maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
+        abs_mt_slot_x_values[abs_mt_slot_value] < activation_threshold_x and\
+        abs_mt_slot_y_values[abs_mt_slot_value] > activation_threshold_y:
 
-        log.info("Slided from top_right_icon taken longer then is required. X, y:")
-        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
-        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
-        log.info("Required is min x, y:")
-        log.info(activation_min_x)
-        log.info(activation_min_y)
+        log.info("Slide from top_right_icon exceeded the activation threshold for x and y.")
+        log.info("Activation x %.2f (top left corner is 0; required < %.2f / %.2f)", abs_mt_slot_x_values[abs_mt_slot_value], activation_threshold_x, maxx)
+        log.info("Activation y %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_y_values[abs_mt_slot_value], activation_threshold_y, maxy)
 
         top_right_icon_touch_start_time = 0
         numlock_touch_start_time = 0
-
         set_none_to_current_mt_slot()
 
         return True
@@ -1375,24 +1371,20 @@ def is_slided_from_top_left_icon(e):
     global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
 
     if top_left_icon_touch_start_time == 0:
-        return False
+        return
 
-    activation_min_x = top_left_icon_slide_func_activation_x_ratio * maxx
-    activation_min_y = top_left_icon_slide_func_activation_y_ratio * maxy
+    activation_threshold_x = top_left_icon_slide_func_activation_x_ratio * maxx
+    activation_threshold_y = top_left_icon_slide_func_activation_y_ratio * maxy
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
-        abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_x_ratio * maxx and\
-        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_y_ratio * maxy:
+        abs_mt_slot_x_values[abs_mt_slot_value] > activation_threshold_x and\
+        abs_mt_slot_y_values[abs_mt_slot_value] > activation_threshold_y:
 
-        log.info("Slided from top_left_icon taken longer then is required. X, y:")
-        log.info(abs_mt_slot_x_values[abs_mt_slot_value])
-        log.info(abs_mt_slot_y_values[abs_mt_slot_value])
-        log.info("Required is min x, y:")
-        log.info(activation_min_x)
-        log.info(activation_min_y)
+        log.info("Slide from top_left_icon exceeded the activation threshold for x and y.")
+        log.info("Activation x %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_x_values[abs_mt_slot_value], activation_threshold_x, maxx)
+        log.info("Activation y %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_y_values[abs_mt_slot_value], activation_threshold_y, maxy)
 
         top_left_icon_touch_start_time = 0
-
         set_none_to_current_mt_slot()
 
         return True
