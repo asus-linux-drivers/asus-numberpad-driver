@@ -25,7 +25,6 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
         NEW_SHORTCUT_INDEX=0
         filtered_existing_shortcut_string="["
-        filtered_existing_shortcut_count=0
 
         if [[ "$EXISTING_SHORTCUT_STRING" != "@as []" ]]; then
             IFS=', ' read -ra existing_shortcut_array <<< "$EXISTING_SHORTCUT_STRING"
@@ -41,7 +40,6 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
                 # filter out already added the same shortcuts by this driver (can be caused by running install script multiple times so clean and then add only 1 new - we want no duplicates)
                 command=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
                 if [[ "$command" != "'bash /usr/share/asus-numberpad-driver/scripts/calculator_toggle.sh'" ]]; then
-                    #echo "Found something else on index $shortcut_index"
                     if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
                         filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
                     else
@@ -49,7 +47,6 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
                     fi
                 else
                     echo "Found already existing duplicated shortcut for toggling calculator, will be removed"
-                    ((filtered_existing_shortcut_count=filtered_existing_shortcut_count+1))
                     gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/
                 fi
             done
@@ -57,7 +54,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
             filtered_existing_shortcut_string="$filtered_existing_shortcut_string"']'
 
-            if [[ $filtered_existing_shortcut_count != 0 ]]; then
+            if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
                 new_shortcut_string=${filtered_existing_shortcut_string::-2}", /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$NEW_SHORTCUT_INDEX/']"
             else
                 # after filtering duplicated shortcuts array of shortcuts is completely empty
