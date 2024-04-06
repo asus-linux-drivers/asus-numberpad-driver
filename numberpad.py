@@ -1348,7 +1348,7 @@ def is_slided_from_top_right_icon(e):
         return
 
     activation_threshold_x = maxx - top_right_icon_slide_func_activation_x_ratio * maxx
-    activation_threshold_y = maxy - top_right_icon_slide_func_activation_y_ratio * maxy
+    activation_threshold_y = top_right_icon_slide_func_activation_y_ratio * maxy
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         abs_mt_slot_x_values[abs_mt_slot_value] < activation_threshold_x and\
