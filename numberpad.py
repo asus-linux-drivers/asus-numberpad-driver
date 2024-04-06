@@ -119,7 +119,7 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keyboard_state = keymap.state_new()
 
     enabled_keys = len(enabled_keys_for_unicode_shortcut)
-    for keycode in keymap:
+    for keycode in keyboard_state.get_keymap():
         char = keyboard_state.key_get_string(keycode + 8)
 
         if char in chars_associated_to_keycodes_reflecting_current_layout_wayland and chars_associated_to_keycodes_reflecting_current_layout_wayland[char] != keycode:
