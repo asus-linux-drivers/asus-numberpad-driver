@@ -115,12 +115,11 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     xkb_context = xkb.Context()
     keymap = xkb_context.keymap_new_from_buffer(keymap_data, length=size - 1)
     keymap_data.close()
-    min_keycode = keymap.min_keycode()
-    max_keycode = keymap.max_keycode()
+
     keyboard_state = keymap.state_new()
 
     enabled_keys = len(enabled_keys_for_unicode_shortcut)
-    for keycode in range(min_keycode, max_keycode):
+    for keycode in keymap:
         char = keyboard_state.key_get_string(keycode + 8)
 
         if char in chars_associated_to_keycodes_reflecting_current_layout_wayland and chars_associated_to_keycodes_reflecting_current_layout_wayland[char] != keycode:
