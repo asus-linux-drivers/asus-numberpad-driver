@@ -11,7 +11,7 @@ right_offset = 200
 left_offset = 200
 bottom_offset = 80
 
-# please create an issue in case values does not work
+# please create an issue in case values do not work
 backlight_levels = [
     "0x41",
     "0x42",

@@ -12,8 +12,9 @@ left_offset = 40
 bottom_offset = 80
 
 keys = [
-    ["7", "8", "9", "/", EV_KEY.KEY_BACKSPACE],
-    ["4", "5", "6", "*", EV_KEY.KEY_BACKSPACE],
-    ["1", "2", "3", "-", EV_KEY.KEY_KPENTER],
-    ["0", "0", ".", "+", EV_KEY.KEY_KPENTER]
+    ["equal", "percent", EV_KEY.KEY_BACKSPACE, EV_KEY.KEY_BACKSPACE],
+    ["7", "8", "9", "slash"],
+    ["4", "5", "6", "asterisk"],
+    ["1", "2", "3", "mminus"],
+    ["0", "period", EV_KEY.KEY_KPENTER, "plus"]
 ]

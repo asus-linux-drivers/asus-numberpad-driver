@@ -23,25 +23,27 @@ from pywayland.protocol.wayland import WlSeat
 import mmap
 from smbus2 import SMBus, i2c_msg
 
-chars_associated_to_keycodes_reflecting_current_layout_wayland = {
-    '1': EV_KEY.KEY_1.value,
-    '2': EV_KEY.KEY_2.value,
-    '3': EV_KEY.KEY_3.value,
-    '4': EV_KEY.KEY_4.value,
-    '5': EV_KEY.KEY_5.value,
-    '6': EV_KEY.KEY_6.value,
-    '7': EV_KEY.KEY_7.value,
-    '8': EV_KEY.KEY_8.value,
-    '9': EV_KEY.KEY_9.value,
-    'a': EV_KEY.KEY_A.value,
-    'b': EV_KEY.KEY_B.value,
-    'c': EV_KEY.KEY_C.value,
-    'd': EV_KEY.KEY_D.value,
-    'e': EV_KEY.KEY_E.value,
-    'f': EV_KEY.KEY_F.value,
-    'u': EV_KEY.KEY_U.value
-}
+enabled_evdev_keys = []
 
+chars_associated_to_evdev_keys_reflecting_current_layout = {
+    '0': EV_KEY.KEY_0,
+    '1': EV_KEY.KEY_1,
+    '2': EV_KEY.KEY_2,
+    '3': EV_KEY.KEY_3,
+    '4': EV_KEY.KEY_4,
+    '5': EV_KEY.KEY_5,
+    '6': EV_KEY.KEY_6,
+    '7': EV_KEY.KEY_7,
+    '8': EV_KEY.KEY_8,
+    '9': EV_KEY.KEY_9,
+    'a': EV_KEY.KEY_A,
+    'b': EV_KEY.KEY_B,
+    'c': EV_KEY.KEY_C,
+    'd': EV_KEY.KEY_D,
+    'e': EV_KEY.KEY_E,
+    'f': EV_KEY.KEY_F,
+    'u': EV_KEY.KEY_U
+}
 
 # necessary when are new keys enabled
 def reset_udev_device():
@@ -57,8 +59,8 @@ def reset_udev_device():
     # device yet
     sleep(1)
 
-
 def get_keycode_of_ascii_char_x11(char):
+    char = "%"
     display_var = os.environ.get('DISPLAY')
     display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
@@ -66,19 +68,18 @@ def get_keycode_of_ascii_char_x11(char):
     return keycode
 
 
-def get_keycode_of_ascii_char_wayland(char):
-  global chars_associated_to_keycodes_reflecting_current_layout_wayland
+def get_evdev_key_for_char_wayland(char):
+  global chars_associated_to_evdev_keys_reflecting_current_layout
 
-  keycode = chars_associated_to_keycodes_reflecting_current_layout_wayland[char]
-  return keycode
+  return chars_associated_to_evdev_keys_reflecting_current_layout[char]
 
 
-def get_keycode_of_ascii_char(char):
+def get_evdev_key_for_char(char):
 
     # wayland
     wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
     if wayland_display_var:
-        return get_keycode_of_ascii_char_wayland(char)
+        return get_evdev_key_for_char_wayland(char)
 
     # x11
     display_var = os.environ.get('DISPLAY')
@@ -86,28 +87,68 @@ def get_keycode_of_ascii_char(char):
         return get_keycode_of_ascii_char_x11(char)
 
 
-def get_key_which_reflects_current_layout(char, reset_udev=True):
-
-    keycode = get_keycode_of_ascii_char(char)
-    key = EV_KEY.codes[int(keycode)]
-
+def get_evdev_key_which_reflects_current_layout(char, reset_udev=True):
+    key = get_evdev_key_for_char(char)
     enable_key(key, reset_udev)
-
     return key
 
 
 def enable_key(key, reset_udev=True):
-    global enabled_keys_for_unicode_shortcut, dev
+    global enabled_evdev_keys, dev
 
-    if key not in enabled_keys_for_unicode_shortcut:
-        enabled_keys_for_unicode_shortcut.append(key)
+    if key not in enabled_evdev_keys:
+        enabled_evdev_keys.append(key)
         dev.enable(key)
         if reset_udev:
             reset_udev_device()
 
 
+def mod_name_to_evdev_key(mod_name):
+    mods_to_evdev_keys = {
+        'Control': EV_KEY.KEY_LEFTCTRL,  # could be even EV_KEY.KEY_RIGHTCTRL
+        'Shift': EV_KEY.KEY_LEFTSHIFT,  # could be even EV_KEY.KEY_RIGHTSHIFT
+        'Lock': EV_KEY.KEY_CAPSLOCK,
+        'Mod1': '', # TODO:
+        'Mod2': '', # TODO:
+        'Mod3': '', # TODO:
+        'Mod4': '', # TODO:
+        'Mod5': '', # TODO:
+        'NumLock': EV_KEY.KEY_NUMLOCK,
+        'Alt': EV_KEY.KEY_LEFTALT, # could be even EV_KEY.KEY_RIGHTALT
+        'LevelThree': '', # TODO:
+        'LAlt': EV_KEY.KEY_LEFTALT,
+        'RAlt': EV_KEY.KEY_RIGHTALT,
+        'RControl': EV_KEY.KEY_RIGHTCTRL,
+        'LControl': EV_KEY.KEY_LEFTCTRL,
+        'ScrollLock': EV_KEY.KEY_SCROLLLOCK,
+        'LevelFive': '', # TODO:
+        'AltGr': '', # TODO:
+        'Meta': EV_KEY.KEY_RIGHTMETA,
+        'Super': EV_KEY.KEY_LEFTMETA, # could be even EV_KEY.KEY_RIGHTMETA,
+        'Hyper': ''# TODO:
+    }
+    return mods_to_evdev_keys[mod_name]
+
+
+def isEvent(event):
+    if hasattr(event, "name") and hasattr(EV_KEY, event.name):
+        return True
+    else:
+        return False
+
+
+def isEventList(events):
+    if type(events) is list:
+        for event in events:
+            if not isEvent(event):
+                return False
+        return True
+    else:
+        return False
+
+
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
-    global enabled_keys_for_unicode_shortcut, chars_associated_to_keycodes_reflecting_current_layout_wayland
+    global enabled_keys_for_unicode_shortcut, get_evdev_key_which_reflects_current_layout
 
     keymap_data = mmap.mmap(
        fd, size, prot=mmap.PROT_READ, flags=mmap.MAP_PRIVATE
@@ -117,19 +158,168 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keymap_data.close()
 
     keyboard_state = keymap.state_new()
+    num_mods = keymap.num_mods()
 
-    enabled_keys = len(enabled_keys_for_unicode_shortcut)
-    for keycode in keyboard_state.get_keymap():
-        char = keyboard_state.key_get_string(keycode + 8)
+    enabled_keys = len(enabled_evdev_keys)
 
-        if char in chars_associated_to_keycodes_reflecting_current_layout_wayland and chars_associated_to_keycodes_reflecting_current_layout_wayland[char] != keycode:
-            chars_associated_to_keycodes_reflecting_current_layout_wayland[char] = keycode
+    for char in chars_associated_to_evdev_keys_reflecting_current_layout:
 
-            key_to_enable = EV_KEY.codes[int(keycode)]
-            enable_key(key_to_enable, False)
+        for keycode in keymap:
+
+            keysym = xkb.keysym_from_name(char)
+
+            num_layouts = keymap.num_layouts_for_key(keycode)
+            for layout in range(0, num_layouts):
+
+                num_levels = keymap.num_levels_for_key(keycode, layout)
+
+                for level in range(0, num_levels):
+                    mod_masks_for_level = keymap.key_get_mods_for_level(keycode, layout, level)
+
+                    if len(mod_masks_for_level) < 1:
+                        continue
+
+                    keysyms = keymap.key_get_syms_by_level(keycode, layout, level)
+
+                    if len(keysyms) != 1 or keysyms[0] != keysym:
+                        continue
+
+                    for mod_mask_index in range(0, len(mod_masks_for_level)):
+
+                        mod_evdev_keys = []
+                        for mod_index in range(0, num_mods):
+                            if (mod_masks_for_level[mod_mask_index] & (1 << mod_index) == 0):
+                                continue
+
+                            mod_name = keymap.mod_get_name(mod_index)
+                            mod_as_evdev_key = mod_name_to_evdev_key(mod_name)
+                            mod_evdev_keys.append(mod_as_evdev_key)
+
+                            if not mod_as_evdev_key:
+                                continue
+
+                            enable_key(mod_as_evdev_key, False)
+ 
+                        if char in chars_associated_to_evdev_keys_reflecting_current_layout and chars_associated_to_evdev_keys_reflecting_current_layout[char] != keycode:
+
+                            layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+                            if layout_is_active:
+                                if len(mod_evdev_keys) > 0:
+                                    chars_associated_to_evdev_keys_reflecting_current_layout[char] = [EV_KEY.codes[int(keycode - 8)]] + mod_evdev_keys
+                                else:
+                                    chars_associated_to_evdev_keys_reflecting_current_layout[char] = EV_KEY.codes[int(keycode - 8)]
+
+                            key_to_enable = EV_KEY.codes[int(keycode - 8)]
+                            enable_key(key_to_enable, False)
+
+        #keysym = xkb.keysym_from_name(char)
+        #name = xkb.keysym_get_name(keysym)
+        #
+        #if keysym == 37: # 37 je percent char
+        #    print(keysym)
+            #print(name)
+
+        #if not char:
+       #     continue
+
+        #if char == "percent":
+        #consumed_mods = keyboard_state.key_get_consumed_mods(keycode)
+        #if consumed_mods > 0:
+            #print("char: `" + char + "`, consumed mods mask: " + str(consumed_mods))
+            #for mod_index in range(0, keymap.num_mods()):
+
+                #if (consumed_mods & (1 << mod_index) == 0):
+                    #continue
+
+                #mod_name = keymap.mod_get_name(mod_index)
+                #print(mod_name)
+                #is_consumed = keyboard_state.mod_index_is_consumed(keycode, mod_index)
+        #print(char)
+
+        #if char == "$":
+            #layout = keyboard_state.key_get_layout(keycode)
+            #levels = keymap.num_levels_for_key(keycode, layout)
+            #print(levels)
+            #if levels > 1:
+                #print("wjeee")
+            #key_level = keyboard_state.key_get_level(keycode, layout)
+            #print(key_level)
+            #print("----" + str(keysyms[0]))
+
+            #num_modifiers = keymap.num_mods()
+            #mod_name = keymap.mod_get_name(0)
+       # for mod_index in range(0, keymap.num_mods()):
+       #     mod_name = keymap.mod_get_name(mod_index)
+#            fd = lib.xkb_keymap_key_get_mods_for_level(keymap, keycode, layout, 0)
+       #     is_consumed = keyboard_state.mod_index_is_consumed(keycode, mod_index)
+            #keyboard_state.key_get_consumed_mods(mod_name)
+            #if mod_name == "Shift":
+       #     if is_consumed:
+       #         print("----" + mod_name, is_consumed)
+            #print(is_consumed)
+        #mod_index = keymap.mod_get_index(mod_name)
+        #continue
+        #keysyms = keyboard_state.key_get_syms(keycode)
+        #first_keysym = keysyms[0]
+        #name = "1"
+        #lib.xkb_keysym_get_name(first_keysym, name, len(name))
+        #lib.xkb_state_new(keymap._keymap)
+        #foo = lib.xkb_state_new(keymap)
+        #_state = ffi.gc(foo, _keepref(lib, lib.xkb_state_unref))
+        #fdfd = lib.xkb_state_key_get_one_sym(_state, keycode)
+        #layout = keyboard_state.key_get_layout(keycode)
+        #level = 0
+        #keyboard_state.xkb_keymap_key_get_mods_for_level(keymap, keycode, layout, level)
+        #if len(keysyms) > 1:
+        #    print("fdfd")
+        #try:
+        #    layout = keyboard_state.key_get_layout(keycode)
+       # except:
+        #    print("")
+        #print(layout)
+        #try:
+       #     level = keyboard_state.key_get_level(first_keysym, layout)
+       #     if level > 0:
+       #         print("fdfd")
+       # except:
+       #    level = "unknown"
+        #print("-----" + str(level))
+        #keysyms = keyboard_state.key_get_syms(keycode + 8)
+
+            #shift = EV_KEY.KEY_LEFTSHIFT
+
+            #key_events = []
+            #key_eventss = []
+            #key_to_enable = EV_KEY.KEY_KP3
+            #EV_KEY.codes[int(keycode)]
+            #key_eventss.append(InputEvent(shift, 1))
+            #key_eventss.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+            #key_events.append(InputEvent(key_to_enable, 1))
+            #key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+            #key_events.append(InputEvent(key_to_enable, 0))
+            #key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+            #key_events.append(InputEvent(shift, 0))
+            #key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+
+            #try:
+            #    udev.send_events(key_eventss)
+            #    udev.send_events(key_events)
+                #log.info("Used bindings for touchpad left_icon slide function")
+            #except OSError as e:
+            #    log.error("Cannot send event, %s", e)
+
+       # if char in chars_associated_to_keycodes_reflecting_current_layout_wayland and chars_associated_to_keycodes_reflecting_current_layout_wayland[char] != keycode:
+       #     chars_associated_to_keycodes_reflecting_current_layout_wayland[char] = keycode
+
+        #    key_to_enable = EV_KEY.codes[int(keycode)]
+            #print(key_to_enable)
+        #    enable_key(key_to_enable, False)
+
+    # TODO: only testing
+    print(chars_associated_to_evdev_keys_reflecting_current_layout)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
-    if len(enabled_keys_for_unicode_shortcut) > enabled_keys:
+    if len(enabled_evdev_keys) > enabled_keys:
         reset_udev_device()
 
 
@@ -211,6 +401,12 @@ keys = getattr(model_layout, "keys", [])
 if not len(keys) > 0 or not len(keys[0]) > 0:
     log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
+
+for row in keys:
+    for key in row:
+        if not isEvent(key) and not isEventList(key) and not key in chars_associated_to_evdev_keys_reflecting_current_layout:
+            chars_associated_to_evdev_keys_reflecting_current_layout[key] = None
+
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 backlight_levels = getattr(model_layout, "backlight_levels", [])
 
@@ -487,7 +683,7 @@ while try_times > 0:
                 # keyboard is optional, no sys.exit(1)!
             if touchpad_detected != 2:
                 log.error("Can't find touchpad (code: %s)", touchpad_detected)
-                sys.exit(1)
+                #sys.exit(1)
             if touchpad_detected == 2 and not device_id.isnumeric():
                 log.error("Can't find device id")
                 sys.exit(1)
@@ -503,30 +699,30 @@ try:
     bus.close()
 except:
     log.error("Can't open the I2C bus connection (id: %s)", device_id)
-    sys.exit(1)
+    #sys.exit(1)
 
 # Start monitoring the touchpad
-fd_t = open('/dev/input/event' + str(touchpad), 'rb')
-d_t = Device(fd_t)
+#fd_t = open('/dev/input/event' + str(touchpad), 'rb')
+#d_t = Device(fd_t)
 
 # Retrieve touchpad dimensions
-ai = d_t.absinfo[EV_ABS.ABS_X]
-(minx, maxx) = (ai.minimum, ai.maximum)
-minx_numpad = minx + left_offset
-maxx_numpad = maxx - right_offset
-ai = d_t.absinfo[EV_ABS.ABS_Y]
-(miny, maxy) = (ai.minimum, ai.maximum)
-miny_numpad = miny + top_offset
-maxy_numpad = maxy - bottom_offset
-log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
-          maxx_numpad, miny_numpad, maxy_numpad)
+#ai = d_t.absinfo[EV_ABS.ABS_X]
+#(minx, maxx) = (ai.minimum, ai.maximum)
+#minx_numpad = minx + left_offset
+#maxx_numpad = maxx - right_offset
+#ai = d_t.absinfo[EV_ABS.ABS_Y]
+#(miny, maxy) = (ai.minimum, ai.maximum)
+#miny_numpad = miny + top_offset
+#maxy_numpad = maxy - bottom_offset
+#log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+#log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+          #maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-col_count = len(max(keys, key=len))
-row_count = len(keys)
-col_width = (maxx_numpad - minx_numpad) / col_count
-row_height = (maxy_numpad - miny_numpad) / row_count
+#col_count = len(max(keys, key=len))
+#row_count = len(keys)
+#col_width = (maxx_numpad - minx_numpad) / col_count
+#row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 # Create a new keyboard device to send numpad events
@@ -537,70 +733,19 @@ dev.enable(EV_KEY.BTN_LEFT)
 dev.enable(EV_KEY.BTN_RIGHT)
 dev.enable(EV_KEY.BTN_MIDDLE)
 dev.enable(EV_KEY.KEY_NUMLOCK)
-# predefined for all possible unicode characters <leftshift>+<leftctrl>+<U>+<0-F>
 
-# pre-enable static keys for unicode sending (all keys may not be used because are rebinded or keyboard (e.g. FR) is not used)
-enabled_keys_for_unicode_shortcut = [
-    EV_KEY.KEY_LEFTSHIFT,
-    EV_KEY.KEY_LEFTCTRL,
-    EV_KEY.KEY_SPACE,
-    EV_KEY.KEY_ENTER,
-    EV_KEY.KEY_U, # standart is U
-    EV_KEY.KEY_S, # for FR is U under S (pre-set because FR keyboard is frequented)
-    EV_KEY.KEY_0,
-    EV_KEY.KEY_1,
-    EV_KEY.KEY_2,
-    EV_KEY.KEY_3,
-    EV_KEY.KEY_4,
-    EV_KEY.KEY_5,
-    EV_KEY.KEY_6,
-    EV_KEY.KEY_7,
-    EV_KEY.KEY_8,
-    EV_KEY.KEY_9,
-    EV_KEY.KEY_KP0,
-    EV_KEY.KEY_KP1,
-    EV_KEY.KEY_KP2,
-    EV_KEY.KEY_KP3,
-    EV_KEY.KEY_KP4,
-    EV_KEY.KEY_KP5,
-    EV_KEY.KEY_KP6,
-    EV_KEY.KEY_KP7,
-    EV_KEY.KEY_KP8,
-    EV_KEY.KEY_KP9,
-    EV_KEY.KEY_A,
-    EV_KEY.KEY_B,
-    EV_KEY.KEY_C,
-    EV_KEY.KEY_D,
-    EV_KEY.KEY_E,
-    EV_KEY.KEY_F
-]
-# enable equivalent key of "u" for currently used keyboard layout
-try:
-    get_key_which_reflects_current_layout("u", False)
-except:
-    pass
-
-for key in enabled_keys_for_unicode_shortcut:
-    dev.enable(key)
+# for x11 pre-enable keys for current keyboard layout (wayland have handler for keymap)
+display_var = os.environ.get('DISPLAY')
+if display_var:
+    for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+        try:
+            key = get_evdev_key_which_reflects_current_layout(char, False)
+            chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+        except:
+            pass
 
 for key_to_enable in top_left_icon_slide_func_keys:
     dev.enable(key_to_enable)
-
-def isEvent(event):
-    if hasattr(event, "name") and hasattr(EV_KEY, event.name):
-        return True
-    else:
-        return False
-
-
-def isEventList(events):
-    if type(events) is list:
-        for event in events:
-            if not isEvent(event):
-                return False
-        return True
-    else:
-        return False
 
 
 def is_device_enabled(device_name):
@@ -656,6 +801,10 @@ for col in keys:
 udev = dev.create_uinput_device()
 sleep(1)
 
+# TODO: remove testing purpose only
+load_keycodes_for_ascii_chars_for_wayland()
+
+
 def use_bindings_for_touchpad_left_icon_slide_function():
     global udev, top_left_icon_slide_func_keys
 
@@ -674,7 +823,7 @@ def use_bindings_for_touchpad_left_icon_slide_function():
 
 
 def is_pressed_touchpad_top_right_icon():
-    global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value
+    global top_right_icon_width, top_right_icon_height, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_value, maxx
 
     if abs_mt_slot_x_values[abs_mt_slot_value] >= maxx - top_right_icon_width and\
         abs_mt_slot_y_values[abs_mt_slot_value] <= top_right_icon_height:
@@ -1332,6 +1481,14 @@ def unpressed_numpad_key(replaced_by_key=None):
             ungrab_current_slot()
 
 
+def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
+
+    if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
+        return numpad_layout_key
+    else:
+        return chars_associated_to_evdev_keys_reflecting_current_layout[numpad_layout_key]
+
+
 def get_touched_key():
     global abs_mt_slot_x_values, abs_mt_slot_y_values, keys_ignore_offset
 
@@ -1346,7 +1503,8 @@ def get_touched_key():
         if row < 0 or col < 0:
             return None
 
-        return keys[row][col]
+        return get_evdev_key_for_numpad_layout_key(keys[row][col])
+
     except IndexError:
         return None
 
@@ -1445,7 +1603,7 @@ def pressed_touchpad_top_right_icon(value):
 
 
 def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time, maxx, maxy
 
     if top_right_icon_touch_start_time == 0:
         return
@@ -1610,7 +1768,7 @@ def listen_touchpad_events():
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
-        key_pointer_button_is_touched, is_idled
+        key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad
 
     for e in d_t.events():
 
@@ -1807,7 +1965,7 @@ def listen_touchpad_events():
 
             try:
 
-                key = keys[row][col]
+                key = get_evdev_key_for_numpad_layout_key[row][col]
 
                 # Numpad is not activated
                 if not numlock and key != EV_KEY.KEY_NUMLOCK:
