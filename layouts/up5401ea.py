@@ -26,6 +26,6 @@ backlight_levels = [
 keys = [
     ["7", "8", "9", "slash", EV_KEY.KEY_BACKSPACE],
     ["4", "5", "6", "asterisk", EV_KEY.KEY_BACKSPACE],
-    ["1", "2", "3", "minus", "percent"],
+    ["1", "2", "3", "minus", "¥"],
     ["0", "period", EV_KEY.KEY_KPENTER, "plus", "equal"]
 ]

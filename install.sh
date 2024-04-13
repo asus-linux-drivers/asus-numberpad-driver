@@ -18,21 +18,21 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 {
     if [[ $(sudo apt-get install 2>/dev/null) ]]; then
         PACKAGE_MANAGER="apt"
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
         PACKAGE_MANAGER="pacman"
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon-dev
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
         PACKAGE_MANAGER="dnf"
-        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-dev
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         PACKAGE_MANAGER="yum"
         # yum was replaced with newer dnf above
-        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2
+        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-dev
     elif [[ $(sudo zypper help 2>/dev/null) ]]; then
         PACKAGE_MANAGER="zypper"
-        sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2
+        sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-dev
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
