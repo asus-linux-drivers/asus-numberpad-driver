@@ -187,6 +187,60 @@ def isEventList(events):
         return False
 
 
+def load_evdev_key_for_wayland(char, keyboard_state):
+    keymap = keyboard_state.get_keymap()
+    num_mods = keymap.num_mods()
+
+    for keycode in keymap:
+
+        keysym = xkb.keysym_from_name(char)
+
+        num_layouts = keymap.num_layouts_for_key(keycode)
+        for layout in range(0, num_layouts):
+
+            num_levels = keymap.num_levels_for_key(keycode, layout)
+
+            for level in range(0, num_levels):
+                mod_masks_for_level = keymap.key_get_mods_for_level(keycode, layout, level)
+
+                if len(mod_masks_for_level) < 1:
+                    continue
+
+                keysyms = keymap.key_get_syms_by_level(keycode, layout, level)
+
+                if len(keysyms) != 1 or keysyms[0] != keysym:
+                    continue
+
+                for mod_mask_index in range(0, len(mod_masks_for_level)):
+
+                    mod_evdev_keys = []
+                    for mod_index in range(0, num_mods):
+                        if (mod_masks_for_level[mod_mask_index] & (1 << mod_index) == 0):
+                            continue
+
+                        mod_name = keymap.mod_get_name(mod_index)
+                        # TODO: recursively load evdev key for modifier? move this part of function as x11?
+
+                        mod_as_evdev_key = load_evdev_key_for_wayland(mod_name_to_evdev_keyname(mod_name), keyboard_state)
+                        mod_evdev_keys.append(mod_as_evdev_key)
+
+                        if not mod_as_evdev_key:
+                            continue
+
+                    if len(mod_evdev_keys) > 0:
+                        key = mod_evdev_keys + [EV_KEY.codes[int(keycode - 8)]]
+                    else:
+                        key = EV_KEY.codes[int(keycode - 8)]
+
+                    layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+                    if layout_is_active:
+                        chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+
+                    enable_key(key)
+
+                    return key
+
+
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     global chars_associated_to_evdev_keys_reflecting_current_layout
 
@@ -198,57 +252,11 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keymap_data.close()
 
     keyboard_state = keymap.state_new()
-    num_mods = keymap.num_mods()
 
     enabled_keys = len(enabled_evdev_keys)
 
     for char in chars_associated_to_evdev_keys_reflecting_current_layout:
-
-        for keycode in keymap:
-
-            keysym = xkb.keysym_from_name(char)
-
-            num_layouts = keymap.num_layouts_for_key(keycode)
-            for layout in range(0, num_layouts):
-
-                num_levels = keymap.num_levels_for_key(keycode, layout)
-
-                for level in range(0, num_levels):
-                    mod_masks_for_level = keymap.key_get_mods_for_level(keycode, layout, level)
-
-                    if len(mod_masks_for_level) < 1:
-                        continue
-
-                    keysyms = keymap.key_get_syms_by_level(keycode, layout, level)
-
-                    if len(keysyms) != 1 or keysyms[0] != keysym:
-                        continue
-
-                    for mod_mask_index in range(0, len(mod_masks_for_level)):
-
-                        mod_evdev_keys = []
-                        for mod_index in range(0, num_mods):
-                            if (mod_masks_for_level[mod_mask_index] & (1 << mod_index) == 0):
-                                continue
-
-                            mod_name = keymap.mod_get_name(mod_index)
-                            # TODO: recursively load evdev key for modifier? move this part of function as x11?
-                            mod_as_evdev_key = mod_name_to_evdev_key(mod_name)
-                            mod_evdev_keys.append(mod_as_evdev_key)
-
-                            if not mod_as_evdev_key:
-                                continue
-
-                        if len(mod_evdev_keys) > 0:
-                            key = [mod_evdev_keys + EV_KEY.codes[int(keycode - 8)]]
-                        else:
-                            key = EV_KEY.codes[int(keycode - 8)]
-
-                        layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
-                        if layout_is_active:
-                          chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
-
-                        enable_key(key)
+        load_evdev_key_for_wayland(char, keyboard_state)        
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
     if len(enabled_evdev_keys) > enabled_keys:
@@ -344,6 +352,7 @@ top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
 top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
+# TODO: calc key dynamically
 top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
     EV_KEY.KEY_CALC
 ])
@@ -707,40 +716,40 @@ try:
     bus.close()
 except:
     log.error("Can't open the I2C bus connection (id: %s)", device_id)
-    sys.exit(1)
+    #sys.exit(1)
 
 # Start monitoring the touchpad
-fd_t = open('/dev/input/event' + str(touchpad), 'rb')
-d_t = Device(fd_t)
+#fd_t = open('/dev/input/event' + str(touchpad), 'rb')
+#d_t = Device(fd_t)
 
 # Retrieve touchpad dimensions
-ai = d_t.absinfo[EV_ABS.ABS_X]
-(minx, maxx) = (ai.minimum, ai.maximum)
-minx_numpad = minx + left_offset
-maxx_numpad = maxx - right_offset
-ai = d_t.absinfo[EV_ABS.ABS_Y]
-(miny, maxy) = (ai.minimum, ai.maximum)
-miny_numpad = miny + top_offset
-maxy_numpad = maxy - bottom_offset
-log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
-          maxx_numpad, miny_numpad, maxy_numpad)
+#ai = d_t.absinfo[EV_ABS.ABS_X]
+#(minx, maxx) = (ai.minimum, ai.maximum)
+#minx_numpad = minx + left_offset
+#maxx_numpad = maxx - right_offset
+#ai = d_t.absinfo[EV_ABS.ABS_Y]
+#(miny, maxy) = (ai.minimum, ai.maximum)
+#miny_numpad = miny + top_offset
+#maxy_numpad = maxy - bottom_offset
+#log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+#log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+          #maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-col_count = len(max(keys, key=len))
-row_count = len(keys)
-col_width = (maxx_numpad - minx_numpad) / col_count
-row_height = (maxy_numpad - miny_numpad) / row_count
+#col_count = len(max(keys, key=len))
+#row_count = len(keys)
+#col_width = (maxx_numpad - minx_numpad) / col_count
+#row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 # Create a new keyboard device to send numpad events
 dev = Device()
-dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
+dev.name = 'foo' # touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
+# left, right, middle keys dynamically
 enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
-enable_key(EV_KEY.KEY_NUMLOCK)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
 display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
@@ -751,6 +760,8 @@ if not display_wayland_var and display_var:
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
+
+load_keymap_listener_wayland()
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
@@ -905,9 +916,11 @@ def increase_brightness():
 def send_numlock_key(value):
     global udev
 
+    numlock_key = get_evdev_key_for_char('Num_Lock')
+
     events = [
         InputEvent(EV_MSC.MSC_SCAN, 70053),
-        InputEvent(EV_KEY.KEY_NUMLOCK, value),
+        InputEvent(numlock_key, value),
         InputEvent(EV_SYN.SYN_REPORT, 0)
     ]
 
@@ -1174,6 +1187,7 @@ def load_all_config_values():
     one_touch_key_rotation = config_get(CONFIG_ONE_TOUCH_KEY_ROTATION, CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT)
     activation_time = float(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
+    # TODO: NumLock key dynamically
     key_numlock_is_used = any(EV_KEY.KEY_NUMLOCK in x for x in keys)
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad_new = True
@@ -1458,6 +1472,7 @@ def is_not_finger_moved_to_another_key():
 
     if touched_key_when_pressed == EV_KEY_TOP_LEFT_ICON:
         pass
+    # TODO: NumLock key dynamically
     elif touched_key_when_pressed == EV_KEY.KEY_NUMLOCK:
         pass
     elif numlock:
@@ -1510,6 +1525,7 @@ def pressed_numlock_key(value):
     if value == 1:
         numlock_touch_start_time = time()
         log.info("Touched numlock key (not top_right_icon) in time: %s", time())
+        # TODO: numlock key dynamically
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     else:
         numlock_touch_start_time = 0
@@ -1529,6 +1545,7 @@ def pressed_touchpad_top_right_icon(value):
         top_right_icon_touch_start_time = time()
         numlock_touch_start_time = time()
 
+        # TODO: numlock key dynamically
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY.KEY_NUMLOCK
     else:
         top_right_icon_touch_start_time = 0
@@ -1548,6 +1565,7 @@ def is_slided_from_top_right_icon(e):
     activation_min_x = top_right_icon_slide_func_activation_x_ratio * maxx
     activation_min_y = top_right_icon_slide_func_activation_y_ratio * maxy
 
+    # TODO: numlock key dynamically
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
         abs_mt_slot_y_values[abs_mt_slot_value] > maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
@@ -1630,6 +1648,7 @@ def takes_numlock_longer_then_set_up_activation_time():
 
     press_duration = time() - numlock_touch_start_time
 
+    # TODO: numlock key dynamically
     if (abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY.KEY_NUMLOCK and\
         press_duration > activation_time):
 
@@ -1673,6 +1692,7 @@ def pressed_pointer_button(key, msc, value):
 
 
 def is_key_pointer_button(key):
+    # TODO: keys dynamically
     result = key == EV_KEY.BTN_LEFT or key == EV_KEY.BTN_RIGHT or key == EV_KEY.BTN_MIDDLE
     return result
 
@@ -1754,6 +1774,7 @@ def listen_touchpad_events():
 
         # enabled_touchpad_pointer value 2 only! is processed
         if numlock and enabled_touchpad_pointer == 2:
+            # TODO: keys dynamically
             if e.matches(EV_KEY.BTN_LEFT):
                 if(current_slot_x <= (maxx / 100) * 35):
                     pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
@@ -1797,6 +1818,7 @@ def listen_touchpad_events():
             # top right icon (numlock) activation
             touched_key = get_touched_key()
             top_right_icon = is_pressed_touchpad_top_right_icon()
+            # TODO: numlock key dynamically
             if (top_right_icon or touched_key == EV_KEY.KEY_NUMLOCK) and takes_numlock_longer_then_set_up_activation_time():
 
               local_numlock_pressed()
@@ -1906,12 +1928,14 @@ def listen_touchpad_events():
                 key = get_evdev_key_for_numpad_layout_key(key_layout)
 
                 # Numpad is not activated
+                # TODO: numlock key dynamically
                 if not numlock and key != EV_KEY.KEY_NUMLOCK:
                     continue
 
                 if key is None:
                     continue
 
+                # TODO: numlock key dynamically
                 if key == EV_KEY.KEY_NUMLOCK:
                     pressed_numlock_key(e.value)
                     continue
