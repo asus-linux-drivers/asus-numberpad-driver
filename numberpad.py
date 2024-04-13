@@ -25,6 +25,7 @@ from smbus2 import SMBus, i2c_msg
 
 enabled_evdev_keys = []
 
+# default are for unicode shortcut
 chars_associated_to_evdev_keys_reflecting_current_layout = {
     '0': EV_KEY.KEY_0,
     '1': EV_KEY.KEY_1,
@@ -42,14 +43,7 @@ chars_associated_to_evdev_keys_reflecting_current_layout = {
     'd': EV_KEY.KEY_D,
     'e': EV_KEY.KEY_E,
     'f': EV_KEY.KEY_F,
-    'u': EV_KEY.KEY_U,
-    'A': EV_KEY.KEY_A,
-    'B': EV_KEY.KEY_B,
-    'C': EV_KEY.KEY_C,
-    'D': EV_KEY.KEY_D,
-    'E': EV_KEY.KEY_E,
-    'F': EV_KEY.KEY_F,
-    'U': EV_KEY.KEY_U
+    'u': EV_KEY.KEY_U
 }
 
 
@@ -68,8 +62,10 @@ def reset_udev_device():
     sleep(1)
 
 
-def enable_key(key_or_key_combination):
-    global enabled_evdev_keys, dev
+def enable_key(key_or_key_combination, reset_udev = False):
+    global enabled_evdev_keys, dev, udev
+
+    enabled_keys_count = len(enabled_evdev_keys)
 
     if isEvent(key_or_key_combination):
       if key_or_key_combination not in enabled_evdev_keys:
@@ -82,6 +78,10 @@ def enable_key(key_or_key_combination):
           enabled_evdev_keys.append(key)
           dev.enable(key)
 
+    # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
+    if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
+      reset_udev_device()
+
 
 def load_evdev_keys_for_x11(reset_udev = True):
   global chars_associated_to_evdev_keys_reflecting_current_layout, enabled_evdev_keys
@@ -89,28 +89,31 @@ def load_evdev_keys_for_x11(reset_udev = True):
   enabled_keys_count = len(enabled_evdev_keys)
 
   for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+
     display_var = os.environ.get('DISPLAY')
     display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
     if keysym == 0:
-      return None
+      continue
     keycode = display.keysym_to_keycode(keysym)
     key = EV_KEY.codes[int(keycode) - 8]
 
     # bare
     if display.keycode_to_keysym(keycode, 0) == keysym:
-      chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+      pass
     # shift
     elif display.keycode_to_keysym(keycode, 1) == keysym:
-      chars_associated_to_evdev_keys_reflecting_current_layout[char] = [EV_KEY.KEY_LEFTSHIFT, key]
+      key = [EV_KEY.KEY_LEFTSHIFT, key]
     # altgr
     elif display.keycode_to_keysym(keycode, 2) == keysym:
-      chars_associated_to_evdev_keys_reflecting_current_layout[char] = [EV_KEY.KEY_RIGHTALT, key]
+      key = [EV_KEY.KEY_RIGHTALT, key]
     # shift altgr
     elif display.keycode_to_keysym(keycode, 3) == keysym:
-      chars_associated_to_evdev_keys_reflecting_current_layout[char] = [EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_RIGHTALT, key]
+      key = [EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_RIGHTALT, key]
 
-    enable_key(chars_associated_to_evdev_keys_reflecting_current_layout[char])
+    chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+
+    enable_key(key)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
   if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
@@ -258,6 +261,7 @@ def load_keymap_listener_wayland():
     wayland_display.roundtrip()
 
 
+# TODO: not tested
 def load_keymap_listener_x11():
     global display
 
@@ -267,9 +271,11 @@ def load_keymap_listener_x11():
     while True:
       event = display.next_event()
       if event.type == Xlib.X.MapNotify:
-          # TODO: not tested
+
           display.refresh_keyboard_mapping(event)
-          load_evdev_keys_for_x11()
+
+          load_evdev_keys_for_x11(True)
+          get_compose_key_start_events_for_unicode_string(True)
 
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
@@ -517,6 +523,63 @@ def gsettingsGetUnicodeHotkey():
     return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey')
 
 
+def get_compose_key_start_events_for_unicode_string(reset_udev = True):
+    global gsettings_failure_count, gsettings_max_failure_count, mods_to_evdev_keys
+
+    string_with_unicode_hotkey = gsettingsGetUnicodeHotkey()
+
+    keys = []
+
+    if string_with_unicode_hotkey is not None and True is False: # testing purpose only
+
+        string_with_unicode_hotkey = string_with_unicode_hotkey.split("'")[1]
+        key_modifiers = re.findall("<(.*?)>", string_with_unicode_hotkey)
+
+        for key_modifier in key_modifiers:
+            try:
+                key_evdev = mod_name_to_evdev_key(key_modifier)
+                keys.append(key_evdev)
+                enable_key(key_evdev, reset_udev)
+            except:
+                log.error("Error during trying to find key for modifier of found compose shortcut {}".format(key_modifier))
+                pass
+
+        try:
+            first_number_index = string_with_unicode_hotkey.rfind('>') + 1
+            key_evdev = get_evdev_key_for_char(string_with_unicode_hotkey[first_number_index])
+            keys.append(key_evdev)
+            enable_key("u")
+        except:
+            pass
+    else:
+        U_key = get_evdev_key_for_char("u")
+        enable_key(U_key, reset_udev)
+
+        keys.append(EV_KEY.KEY_LEFTCTRL)
+        enable_key(EV_KEY.KEY_LEFTCTRL, reset_udev)
+
+        keys.append(EV_KEY.KEY_LEFTSHIFT)
+        enable_key(EV_KEY.KEY_LEFTSHIFT, reset_udev)
+
+        keys.append(U_key)
+        enable_key(U_key, reset_udev)
+
+
+    events = []
+
+    for key in keys:
+        inputEvent = InputEvent(key, 1)
+        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
+        events.append(inputEvent)
+
+    for key in keys:
+        inputEvent = InputEvent(key, 0)
+        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
+        events.append(inputEvent)
+
+    return events
+
+
 # Figure out devices from devices file
 touchpad: Optional[str] = None
 touchpad_name: Optional[str] = None
@@ -658,16 +721,23 @@ row_height = (maxy_numpad - miny_numpad) / row_count
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
-enable_key(EV_MSC.MSC_SCAN)
+#enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 enable_key(EV_KEY.KEY_NUMLOCK)
+# for unicode shortcut
+enable_key(EV_KEY.KEY_LEFTSHIFT)
+enable_key(EV_KEY.KEY_LEFTCTRL)
+enable_key(EV_KEY.KEY_SPACE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
 display_var = os.environ.get('DISPLAY')
 if display_var:
   load_evdev_keys_for_x11(False)
+
+# necessary for custom shortcuts
+get_compose_key_start_events_for_unicode_string(False)
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -1200,55 +1270,6 @@ def get_compose_key_end_events_for_unicode_string():
         space_unpressed,
         InputEvent(EV_SYN.SYN_REPORT, 0)
     ]
-
-    return events
-
-
-def get_compose_key_start_events_for_unicode_string():
-    global gsettings_failure_count, gsettings_max_failure_count, mods_to_evdev_keys
-
-    string_with_unicode_hotkey = gsettingsGetUnicodeHotkey()
-
-    keys = []
-
-    if string_with_unicode_hotkey is not None:
-
-        string_with_unicode_hotkey = string_with_unicode_hotkey.split("'")[1]
-        key_modifiers = re.findall("<(.*?)>", string_with_unicode_hotkey)
-
-        for key_modifier in key_modifiers:
-            try:
-                key_evdev = mod_name_to_evdev_key(key_modifier)
-                keys.append(key_evdev)
-            except:
-                log.error("Error during trying to find key for modifier of found compose shortcut {}".format(key_modifier))
-                pass
-
-        try:
-            first_number_index = string_with_unicode_hotkey.rfind('>') + 1
-            key_evdev = get_evdev_key_for_char(string_with_unicode_hotkey[first_number_index])
-            keys.append(key_evdev)
-        except:
-            pass
-    else:
-        U_key = get_evdev_key_for_char("u")
-
-        keys.append(EV_KEY.KEY_LEFTCTRL)
-        keys.append(EV_KEY.KEY_LEFTSHIFT)
-        keys.append(U_key)
-
-
-    events = []
-
-    for key in keys:
-        inputEvent = InputEvent(key, 1)
-        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
-        events.append(inputEvent)
-
-    for key in keys:
-        inputEvent = InputEvent(key, 0)
-        events.append(InputEvent(EV_MSC.MSC_SCAN, inputEvent.code.value))
-        events.append(inputEvent)
 
     return events
 
@@ -1876,7 +1897,6 @@ def listen_touchpad_events():
                 if not numlock and key != EV_KEY.KEY_NUMLOCK:
                     continue
 
-                # TODO: tady vypadne Unicode na continue, musi pokracovat
                 if key is None:
                     continue
 
