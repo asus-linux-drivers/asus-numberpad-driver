@@ -25,25 +25,61 @@ from smbus2 import SMBus, i2c_msg
 
 enabled_evdev_keys = []
 
-# default are for unicode shortcut
+mods_to_evdev_key_names = {
+    'Control': 'Control_L',
+    'Shift': 'Shift_L',
+    'Lock': 'Caps_Lock',
+    'Mod1': '', # TODO:
+    'Mod2': '', # TODO:
+    'Mod3': '', # TODO:
+    'Mod4': '', # TODO:
+    'Mod5': '', # TODO:
+    'NumLock': 'Num_Lock',
+    'Alt': 'Alt_L',
+    'LevelThree': '', # TODO:
+    'LAlt': 'Alt_L',
+    'RAlt': 'Alt_R',
+    'RControl': 'Control_R',
+    'LControl': 'Control_L',
+    'ScrollLock': 'Scroll_Lock',
+    'LevelFive': '', # TODO:
+    'AltGr': 'Control_R',
+    'Meta': 'Meta_L',
+    'Super': 'Meta_L',
+    'Hyper': ''# TODO:
+}
+
+
+def mod_name_to_evdev_keyname(mod_name):
+    global mods_to_evdev_key_names
+
+    return mods_to_evdev_key_names[mod_name]
+
+
+# default are for unicode shortcuts + is loaded layout
 chars_associated_to_evdev_keys_reflecting_current_layout = {
-    '0': EV_KEY.KEY_0,
-    '1': EV_KEY.KEY_1,
-    '2': EV_KEY.KEY_2,
-    '3': EV_KEY.KEY_3,
-    '4': EV_KEY.KEY_4,
-    '5': EV_KEY.KEY_5,
-    '6': EV_KEY.KEY_6,
-    '7': EV_KEY.KEY_7,
-    '8': EV_KEY.KEY_8,
-    '9': EV_KEY.KEY_9,
-    'a': EV_KEY.KEY_A,
-    'b': EV_KEY.KEY_B,
-    'c': EV_KEY.KEY_C,
-    'd': EV_KEY.KEY_D,
-    'e': EV_KEY.KEY_E,
-    'f': EV_KEY.KEY_F,
-    'u': EV_KEY.KEY_U
+    '0': '',
+    '1': '',
+    '2': '',
+    '3': '',
+    '4': '',
+    '5': '',
+    '6': '',
+    '7': '',
+    '8': '',
+    '9': '',
+    'a': '',
+    'b': '',
+    'c': '',
+    'd': '',
+    'e': '',
+    'f': '',
+    # unicode shortcut start sequence
+    mod_name_to_evdev_keyname('Shift'): '',
+    mod_name_to_evdev_keyname('Control'): '',
+    'u': '',
+    # unicode shortcut end sequence
+    'space': ''
 }
 
 
@@ -83,18 +119,15 @@ def enable_key(key_or_key_combination, reset_udev = False):
       reset_udev_device()
 
 
-def load_evdev_keys_for_x11(reset_udev = True):
-  global chars_associated_to_evdev_keys_reflecting_current_layout, enabled_evdev_keys
-
-  enabled_keys_count = len(enabled_evdev_keys)
-
-  for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+def load_evdev_key_for_x11(char):
 
     display_var = os.environ.get('DISPLAY')
     display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
+
     if keysym == 0:
-      continue
+      return
+
     keycode = display.keysym_to_keycode(keysym)
     key = EV_KEY.codes[int(keycode) - 8]
 
@@ -103,17 +136,28 @@ def load_evdev_keys_for_x11(reset_udev = True):
       pass
     # shift
     elif display.keycode_to_keysym(keycode, 1) == keysym:
-      key = [EV_KEY.KEY_LEFTSHIFT, key]
+      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), key]
     # altgr
     elif display.keycode_to_keysym(keycode, 2) == keysym:
-      key = [EV_KEY.KEY_RIGHTALT, key]
+      key = [load_evdev_key_for_x11('Alt_R'), key]
     # shift altgr
     elif display.keycode_to_keysym(keycode, 3) == keysym:
-      key = [EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_RIGHTALT, key]
+      key = [load_evdev_key_for_x11('Shift'), load_evdev_key_for_x11('Alt_R'), key]
 
     chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
 
     enable_key(key)
+
+    return key
+
+
+def load_evdev_keys_for_x11(reset_udev = True):
+  global chars_associated_to_evdev_keys_reflecting_current_layout, enabled_evdev_keys
+
+  enabled_keys_count = len(enabled_evdev_keys)
+
+  for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+    load_evdev_key_for_x11(char)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
   if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
@@ -124,36 +168,6 @@ def get_evdev_key_for_char(char):
     global chars_associated_to_evdev_keys_reflecting_current_layout
 
     return chars_associated_to_evdev_keys_reflecting_current_layout[char]
-
-mods_to_evdev_keys = {
-    'Control': EV_KEY.KEY_LEFTCTRL,  # could be even EV_KEY.KEY_RIGHTCTRL
-    'Shift': EV_KEY.KEY_LEFTSHIFT,  # could be even EV_KEY.KEY_RIGHTSHIFT
-    'Lock': EV_KEY.KEY_CAPSLOCK,
-    'Mod1': '', # TODO:
-    'Mod2': '', # TODO:
-    'Mod3': '', # TODO:
-    'Mod4': '', # TODO:
-    'Mod5': '', # TODO:
-    'NumLock': EV_KEY.KEY_NUMLOCK,
-    'Alt': EV_KEY.KEY_LEFTALT, # could be even EV_KEY.KEY_RIGHTALT
-    'LevelThree': '', # TODO:
-    'LAlt': EV_KEY.KEY_LEFTALT,
-    'RAlt': EV_KEY.KEY_RIGHTALT,
-    'RControl': EV_KEY.KEY_RIGHTCTRL,
-    'LControl': EV_KEY.KEY_LEFTCTRL,
-    'ScrollLock': EV_KEY.KEY_SCROLLLOCK,
-    'LevelFive': '', # TODO:
-    'AltGr': EV_KEY.KEY_RIGHTALT,
-    'Meta': EV_KEY.KEY_RIGHTMETA,
-    'Super': EV_KEY.KEY_LEFTMETA, # could be even EV_KEY.KEY_RIGHTMETA,
-    'Hyper': ''# TODO:
-}
-
-
-def mod_name_to_evdev_key(mod_name):
-    global mods_to_evdev_keys
-
-    return mods_to_evdev_keys[mod_name]
 
 
 def isEvent(event):
@@ -218,6 +232,7 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
                                 continue
 
                             mod_name = keymap.mod_get_name(mod_index)
+                            # TODO: recursively load evdev key for modifier? move this part of function as x11?
                             mod_as_evdev_key = mod_name_to_evdev_key(mod_name)
                             mod_evdev_keys.append(mod_as_evdev_key)
 
@@ -275,7 +290,6 @@ def load_keymap_listener_x11():
           display.refresh_keyboard_mapping(event)
 
           load_evdev_keys_for_x11(True)
-          get_compose_key_start_events_for_unicode_string(True)
 
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
@@ -530,14 +544,14 @@ def get_compose_key_start_events_for_unicode_string(reset_udev = True):
 
     keys = []
 
-    if string_with_unicode_hotkey is not None and True is False: # testing purpose only
+    if string_with_unicode_hotkey is not None:
 
         string_with_unicode_hotkey = string_with_unicode_hotkey.split("'")[1]
         key_modifiers = re.findall("<(.*?)>", string_with_unicode_hotkey)
 
         for key_modifier in key_modifiers:
             try:
-                key_evdev = mod_name_to_evdev_key(key_modifier)
+                key_evdev = get_evdev_key_for_char(mod_name_to_evdev_keyname(key_modifier))
                 keys.append(key_evdev)
                 enable_key(key_evdev, reset_udev)
             except:
@@ -548,21 +562,22 @@ def get_compose_key_start_events_for_unicode_string(reset_udev = True):
             first_number_index = string_with_unicode_hotkey.rfind('>') + 1
             key_evdev = get_evdev_key_for_char(string_with_unicode_hotkey[first_number_index])
             keys.append(key_evdev)
-            enable_key("u")
+            enable_key(key_evdev)
         except:
             pass
     else:
-        U_key = get_evdev_key_for_char("u")
-        enable_key(U_key, reset_udev)
 
-        keys.append(EV_KEY.KEY_LEFTCTRL)
-        enable_key(EV_KEY.KEY_LEFTCTRL, reset_udev)
+        control_key = get_evdev_key_for_char(mod_name_to_evdev_keyname('Control'))
+        keys.append(control_key)
+        enable_key(control_key, reset_udev)
 
-        keys.append(EV_KEY.KEY_LEFTSHIFT)
-        enable_key(EV_KEY.KEY_LEFTSHIFT, reset_udev)
+        shift_key = get_evdev_key_for_char(mod_name_to_evdev_keyname('Shift'))
+        keys.append(shift_key)
+        enable_key(shift_key, reset_udev)
 
-        keys.append(U_key)
-        enable_key(U_key, reset_udev)
+        u_key = get_evdev_key_for_char("u")
+        keys.append(u_key)
+        enable_key(u_key, reset_udev)
 
 
     events = []
@@ -721,23 +736,18 @@ row_height = (maxy_numpad - miny_numpad) / row_count
 # Create a new keyboard device to send numpad events
 dev = Device()
 dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
-#enable_key(EV_MSC.MSC_SCAN)
+enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 enable_key(EV_KEY.KEY_NUMLOCK)
-# for unicode shortcut
-enable_key(EV_KEY.KEY_LEFTSHIFT)
-enable_key(EV_KEY.KEY_LEFTCTRL)
-enable_key(EV_KEY.KEY_SPACE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
+display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
 display_var = os.environ.get('DISPLAY')
-if display_var:
+if not display_wayland_var and display_var:
   load_evdev_keys_for_x11(False)
 
-# necessary for custom shortcuts
-get_compose_key_start_events_for_unicode_string(False)
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -1259,8 +1269,10 @@ def set_tracking_id(value):
 
 def get_compose_key_end_events_for_unicode_string():
 
-    space_pressed = InputEvent(EV_KEY.KEY_SPACE, 1)
-    space_unpressed = InputEvent(EV_KEY.KEY_SPACE, 0)
+    space_key = get_evdev_key_for_char('space')
+
+    space_pressed = InputEvent(space_key, 1)
+    space_unpressed = InputEvent(space_key, 0)
 
     events = [
         InputEvent(EV_MSC.MSC_SCAN, space_pressed.code.value),
@@ -2074,12 +2086,13 @@ threads.append(t)
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 
-if wayland_display:
+display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
+if display_wayland_var:
   t = threading.Thread(target=load_keymap_listener_wayland)
   threads.append(t)
 
-display = Xlib.display.Display(display_var)
-if display:
+display_var = os.environ.get('DISPLAY')
+if not display_wayland_var and display_var:
   t = threading.Thread(target=load_keymap_listener_x11)
   threads.append(t)
 
