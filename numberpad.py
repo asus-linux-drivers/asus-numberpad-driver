@@ -288,7 +288,7 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
 display_wayland = None
-display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
+display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 
 display = None
 display_var = os.environ.get('DISPLAY')
@@ -2116,7 +2116,7 @@ threads.append(t)
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 
-display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
+display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 if display_wayland_var:
   t = threading.Thread(target=load_keymap_listener_wayland)
   threads.append(t)
