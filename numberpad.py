@@ -46,7 +46,7 @@ mods_to_evdev_key_names = {
     'AltGr': 'Control_R',
     'Meta': 'Meta_L',
     'Super': 'Meta_L',
-    'Hyper': ''# TODO:
+    'Hyper': 'Hyper_L'
 }
 
 
@@ -122,6 +122,8 @@ def enable_key(key_or_key_combination, reset_udev = False):
 
 
 def load_evdev_key_for_x11(char):
+
+    char = "Hyper_L"
 
     display_var = os.environ.get('DISPLAY')
     display = Xlib.display.Display(display_var)
