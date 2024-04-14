@@ -13,7 +13,7 @@ bottom_offset = 80
 
 keys = [
     ["7", "8", "9", "/"],
-    ["4", "5", "6", "*", EV_KEY.KEY_BACKSPACE],
-    ["1", "2", "3", "-", EV_KEY.KEY_KPENTER],
-    ["0", "0", ".", "+", EV_KEY.KEY_KPENTER]
+    ["4", "5", "6", "*", "BackSpace"],
+    ["1", "2", "3", "-", "Return"],
+    ["0", "0", ".", "+", "Return"]
 ]

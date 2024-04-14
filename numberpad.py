@@ -56,7 +56,7 @@ def mod_name_to_evdev_keyname(mod_name):
     return mods_to_evdev_key_names[mod_name]
 
 
-# default are for unicode shortcuts + is loaded layout during start
+# default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
 chars_associated_to_evdev_keys_reflecting_current_layout = {
     'Num_Lock': '',
     # unicode shortcut - for hex value
@@ -290,7 +290,7 @@ def load_keymap_listener_x11():
     global display
 
     display_var = os.environ.get('DISPLAY')
-    display = Xlib.display.Display(1)
+    display = Xlib.display.Display(display_var)
 
     while True:
       event = display.next_event()

@@ -7,8 +7,8 @@ keys = [
     [EV_KEY.KEY_NUMLOCK, "/", "*", "-"],
     ["7", "8", "9", "+"],
     ["4", "5", "6", "+"],
-    ["1", "2", "3", EV_KEY.KEY_KPENTER],
-    ["0", "0", ".", EV_KEY.KEY_KPENTER]
+    ["1", "2", "3", "Return"],
+    ["0", "0", ".", "Return"]
 ]
 
 keys_ignore_offset = [
