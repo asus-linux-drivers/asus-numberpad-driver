@@ -123,8 +123,6 @@ def enable_key(key_or_key_combination, reset_udev = False):
 
 def load_evdev_key_for_x11(char):
 
-    char = "Hyper_L"
-
     display_var = os.environ.get('DISPLAY')
     display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
