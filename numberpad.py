@@ -160,7 +160,7 @@ def load_evdev_key_for_x11(char):
       key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('AltGr')), key]
     # shift altgr
     elif display.keycode_to_keysym(keycode, 3) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), mod_name_to_evdev_keyname('AltGr'), key]
+      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), load_evdev_key_for_x11(mod_name_to_evdev_keyname('AltGr')), key]
 
     chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
 
