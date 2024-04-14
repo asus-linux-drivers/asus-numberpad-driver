@@ -122,10 +122,14 @@ def enable_key(key_or_key_combination, reset_udev = False):
 
 
 def load_evdev_key_for_x11(char):
+    global display
 
-    display_var = os.environ.get('DISPLAY')
-    display = Xlib.display.Display(display_var)
     keysym = Xlib.XK.string_to_keysym(char)
+
+    #mods = display.get_modifier_mapping()
+    #mod1 = mods[Xlib.X.Mod1MapIndex]
+
+    # TODO: pro X11 - co kdybych tam měl: 1. Shift: Shift nebo 2. Shift: ShiftMapIndex a 3. Xlib.X.Mod1MapIndex? Co na to Wayland? Jak tam resit keycodes pro tyhle modifiers dynamicky?
 
     if keysym == 0:
       return
@@ -270,27 +274,32 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard = seat.get_keyboard()
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
-wayland_display = None
+display_wayland = None
+display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
 
+display = None
+display_var = os.environ.get('DISPLAY')
+
+if display_var:
+  try:
+    display = Xlib.display.Display(display_var)
+  except:
+    pass
 
 def load_keymap_listener_wayland():
-    global wayland_display
+    global display_wayland_var, display_wayland
 
-    wayland_display_var = os.environ.get('WAYLAND_DISPLAY')
-    wayland_display = Display(wayland_display_var)
-    wayland_display.connect()
-    registry = wayland_display.get_registry()
+    display_wayland = Display(display_wayland_var)
+    display_wayland.connect()
+    registry = display_wayland.get_registry()
     registry.dispatcher["global"] = wl_registry_handler
-    wayland_display.dispatch(block=True)
-    wayland_display.roundtrip()
+    display_wayland.dispatch(block=True)
+    display_wayland.roundtrip()
 
 
 # TODO: not tested - xev display events
 def load_keymap_listener_x11():
     global display
-
-    display_var = os.environ.get('DISPLAY')
-    display = Xlib.display.Display(display_var)
 
     while True:
       event = display.next_event()
@@ -752,8 +761,6 @@ enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
-display_wayland_var = os.environ.get('DISPLAY_WAYLAND')
-display_var = os.environ.get('DISPLAY')
 if not display_wayland_var and display_var:
   load_evdev_keys_for_x11(False)
 
@@ -2140,8 +2147,11 @@ finally:
     stop_threads=True
     fd_t.close()
 
-    if wayland_display:
-        wayland_display.disconnect()
+    if display_wayland:
+        display_wayland.disconnect()
+
+    if display:
+        display.close()
 
     for thread in threads:
         thread.join()
