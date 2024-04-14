@@ -104,11 +104,7 @@ for OPTION in $(ls layouts); do
         echo
         echo "NumberPad layout"
         echo
-        echo "2 variants of NumberPad layouts are predefined for each laptop:"
-        echo " - Standard. All keys are sent directly except not found (are defined like percent, numbersign, period etc.), which is why the last unicode variant exists"
-        echo " - The unicode variant sends all keys as unicode characters except for BACKSPACE and ENTER. This layout is the most resistant to overbinding of keys but sends multiple keys instead of just one, unnecessarily heavy if you do not need it."
-        echo
-        read -r -p "Automatically recommended numberpad layout for detected laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use standard variant of $SUGGESTED_LAYOUT? [y/N]" RESPONSE
+        read -r -p "Automatically recommended NumberPad layout for laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use $SUGGESTED_LAYOUT? [y/N]" RESPONSE
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo
