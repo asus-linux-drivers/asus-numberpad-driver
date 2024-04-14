@@ -104,7 +104,7 @@ for OPTION in $(ls layouts); do
         echo
         echo "NumberPad layout"
         echo
-        read -r -p "Automatically recommended NumberPad layout for laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use $SUGGESTED_LAYOUT? [y/N]" RESPONSE
+        read -r -p "Automatically recommended NumberPad layout for laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use $SUGGESTED_LAYOUT? (photo of recommended NumberPad layout can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#$SUGGESTED_LAYOUT) [y/N]" RESPONSE
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo
