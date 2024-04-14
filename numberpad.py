@@ -25,6 +25,24 @@ from smbus2 import SMBus, i2c_msg
 
 enabled_evdev_keys = []
 
+# TODO:
+# Dynamically load Shift, Control, Lock - do not use hard-cored Shift_L etc.
+#
+# X11:
+#
+# mods = display.get_modifier_mapping()
+# mod1_is_shift = mods[Xlib.X.Mod1MapIndex]
+# ref: https://github.com/crvv/coc_unbreakable/blob/99aefc71b5af238ccd7f3d87b7e51937f4628816/pykeyboard/x11.py#L402
+#
+# Wayland:
+#
+# IDK
+#
+#
+# 1. Shift: Shift and inside function have special implementation for code above
+# 2. Shift: ShiftMapIndex
+# 3. Xlib.X.Mod1MapIndex
+#
 mods_to_evdev_key_names = {
     'Control': 'Control_L',
     'Shift': 'Shift_L',
@@ -125,11 +143,6 @@ def load_evdev_key_for_x11(char):
     global display
 
     keysym = Xlib.XK.string_to_keysym(char)
-
-    #mods = display.get_modifier_mapping()
-    #mod1 = mods[Xlib.X.Mod1MapIndex]
-
-    # TODO: pro X11 - co kdybych tam měl: 1. Shift: Shift nebo 2. Shift: ShiftMapIndex a 3. Xlib.X.Mod1MapIndex? Co na to Wayland? Jak tam resit keycodes pro tyhle modifiers dynamicky?
 
     if keysym == 0:
       return
@@ -362,7 +375,6 @@ top_left_icon_width = getattr(model_layout, "top_left_icon_width", 0)
 top_left_icon_height = getattr(model_layout, "top_left_icon_height", 0)
 top_right_icon_width = getattr(model_layout, "top_right_icon_width", 0)
 top_right_icon_height = getattr(model_layout, "top_right_icon_height", 0)
-# TODO: calc key dynamically
 top_left_icon_slide_func_keys = getattr(model_layout, "top_left_icon_slide_func_keys", [
     EV_KEY.KEY_CALC
 ])
