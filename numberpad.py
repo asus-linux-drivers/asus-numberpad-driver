@@ -25,51 +25,48 @@ from smbus2 import SMBus, i2c_msg
 
 enabled_evdev_keys = []
 
-# TODO:
-# Dynamically load Shift, Control, Lock - do not use hard-cored Shift_L etc.
-#
-# X11:
-#
-# mods = display.get_modifier_mapping()
-# mod1_is_shift = mods[Xlib.X.Mod1MapIndex]
-# ref: https://github.com/crvv/coc_unbreakable/blob/99aefc71b5af238ccd7f3d87b7e51937f4628816/pykeyboard/x11.py#L402
-#
-# Wayland:
-#
-# IDK
-#
-#
-# 1. Shift: Shift and inside function have special implementation for code above
-# 2. Shift: ShiftMapIndex
-# 3. Xlib.X.Mod1MapIndex
-#
-mods_to_evdev_key_names = {
-    'Control': 'Control_L',
-    'Shift': 'Shift_L',
-    'Lock': 'Caps_Lock',
-    'Mod1': '', # TODO:
-    'Mod2': '', # TODO:
-    'Mod3': '', # TODO:
-    'Mod4': '', # TODO:
-    'Mod5': '', # TODO:
-    'NumLock': 'Num_Lock',
-    'Alt': 'Alt_L',
-    'LevelThree': '', # TODO:
-    'LAlt': 'Alt_L',
-    'RAlt': 'Alt_R',
-    'RControl': 'Control_R',
-    'LControl': 'Control_L',
-    'ScrollLock': 'Scroll_Lock',
-    'LevelFive': '', # TODO:
-    'AltGr': 'Control_R',
-    'Meta': 'Meta_L',
-    'Super': 'Meta_L',
-    'Hyper': 'Hyper_L'
-}
-
-
 def mod_name_to_evdev_keyname(mod_name):
-    global mods_to_evdev_key_names
+    # TODO:
+    # Dynamically load Shift, Control, Lock - do not use hard-cored Shift_L etc.
+    #
+    # X11:
+    #
+    # mods = display.get_modifier_mapping()
+    # mod1_is_shift = mods[Xlib.X.Mod1MapIndex]
+    # ref: https://github.com/crvv/coc_unbreakable/blob/99aefc71b5af238ccd7f3d87b7e51937f4628816/pykeyboard/x11.py#L402
+    #
+    # Wayland:
+    #
+    # IDK
+    #
+    #
+    # 1. Shift: Shift and inside function have special implementation for code above
+    # 2. Shift: ShiftMapIndex
+    # 3. Xlib.X.Mod1MapIndex
+    #
+    mods_to_evdev_key_names = {
+        'Control': 'Control_L',
+        'Shift': 'Shift_L',
+        'Lock': 'Caps_Lock',
+        'Mod1': '', # TODO:
+        'Mod2': '', # TODO:
+        'Mod3': '', # TODO:
+        'Mod4': '', # TODO:
+        'Mod5': '', # TODO:
+        'NumLock': 'Num_Lock',
+        'Alt': 'Alt_L',
+        'LevelThree': '', # TODO:
+        'LAlt': 'Alt_L',
+        'RAlt': 'Alt_R',
+        'RControl': 'Control_R',
+        'LControl': 'Control_L',
+        'ScrollLock': 'Scroll_Lock',
+        'LevelFive': '', # TODO:
+        'AltGr': 'Alt_R',
+        'Meta': 'Meta_L',
+        'Super': 'Meta_L',
+        'Hyper': 'Hyper_L'
+    }
 
     return mods_to_evdev_key_names[mod_name]
 
@@ -99,7 +96,9 @@ chars_associated_to_evdev_keys_reflecting_current_layout = {
     mod_name_to_evdev_keyname('Control'): '',
     'u': '',
     # unicode shortcut - end sequence
-    'space': ''
+    'space': '',
+    # modifiers for each level (Shift is already included)
+    mod_name_to_evdev_keyname('AltGr'): '',
 }
 
 
@@ -158,10 +157,10 @@ def load_evdev_key_for_x11(char):
       key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), key]
     # altgr
     elif display.keycode_to_keysym(keycode, 2) == keysym:
-      key = [load_evdev_key_for_x11('Alt_R'), key]
+      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('AltGr')), key]
     # shift altgr
     elif display.keycode_to_keysym(keycode, 3) == keysym:
-      key = [load_evdev_key_for_x11('Shift'), load_evdev_key_for_x11('Alt_R'), key]
+      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), mod_name_to_evdev_keyname('AltGr'), key]
 
     chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
 
@@ -310,18 +309,22 @@ def load_keymap_listener_wayland():
     display_wayland.roundtrip()
 
 
+keymap_lock = threading.Lock()
+
 # TODO: not tested - xev display events
 def load_keymap_listener_x11():
     global display
 
     while True:
       event = display.next_event()
-      if event.type == Xlib.X.KeymapNotify:
+      if event.type == Xlib.X.MappingNotify and event.count > 0:
+
+          keymap_lock.acquire()
 
           display.refresh_keyboard_mapping(event)
-
           load_evdev_keys_for_x11(True)
-
+          print(chars_associated_to_evdev_keys_reflecting_current_layout) # TODO: testing, need to be removed
+          keymap_lock.release()
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
