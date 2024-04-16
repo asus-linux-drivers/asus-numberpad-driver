@@ -22,6 +22,7 @@ from pywayland.client import Display
 from pywayland.protocol.wayland import WlSeat
 import mmap
 from smbus2 import SMBus, i2c_msg
+import ast
 
 enabled_evdev_keys = []
 
@@ -313,10 +314,11 @@ keymap_lock = threading.Lock()
 
 # TODO: not tested - xev display events
 def load_keymap_listener_x11():
-    global display
+    global stop_threads, display
 
-    while True:
+    while not stop_threads:
       event = display.next_event()
+      print(event)
       if event.type == Xlib.X.MappingNotify and event.count > 0:
 
           keymap_lock.acquire()
@@ -552,8 +554,8 @@ def gsettingsGet(path, name):
     if gsettings_failure_count < gsettings_max_failure_count:
         try:
             cmd = ['gsettings', 'get', path, name]
-            propData = subprocess.check_output(cmd)
-            return propData.decode()
+            result = subprocess.check_output(cmd).rstrip()
+            return result
         except:
             log.exception('gsettings get failed')
             gsettings_failure_count+=1
@@ -562,13 +564,13 @@ def gsettingsGet(path, name):
 
 
 def gsettingsGetTouchpadSendEvents():
-    return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events')
+    return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events').decode().rstrip()
 
 def gsettingsSetTouchpadTapToClick(value):
     gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
 
 def gsettingsGetUnicodeHotkey():
-    return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey')
+    return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey').decode().rstrip()
 
 
 def get_compose_key_start_events_for_unicode_string(reset_udev = True):
@@ -1998,6 +2000,53 @@ def check_touchpad_status():
     numlock_lock.release()
 
 
+gnome_current_layout = None
+
+def check_gnome_layout():
+    global stop_threads, gnome_current_layout
+
+    while not stop_threads:
+
+        mru_sources = gsettingsGet('org.gnome.desktop.input-sources', 'mru-sources')
+        mru_sources_evaluated = ast.literal_eval(mru_sources.decode().split(" ")[1])
+
+        if not mru_sources_evaluated:
+
+            current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
+            current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
+
+
+            #print(current_evaluated)
+
+            sources = gsettingsGet('org.gnome.desktop.input-sources', 'sources')
+            sources_evaluated = ast.literal_eval(sources.decode())
+
+            if len(sources_evaluated) > current_evaluated:
+                layout = sources_evaluated[current_evaluated][1].split("+")[0]
+
+                # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
+                if gnome_current_layout == None:
+                    gnome_current_layout = layout
+
+                elif gnome_current_layout != layout:
+
+                    try:
+                        cmd = ['setxkbmap', layout, '-display', display_var]
+
+                        log.debug(cmd)
+                        subprocess.call(cmd)
+
+                        gnome_current_layout = layout
+                    except:
+                        log.exception('setxkbmap set failed')
+
+        else:
+            # TODO:
+            pass
+
+        sleep(1)
+
+
 def check_system_numlock_status():
     global stop_threads
 
@@ -2128,6 +2177,10 @@ display_var = os.environ.get('DISPLAY')
 if not display_wayland_var and display_var:
   t = threading.Thread(target=load_keymap_listener_x11)
   threads.append(t)
+
+t = threading.Thread(target=check_gnome_layout)
+threads.append(t)
+
 
 # start all threads
 for thread in threads:
