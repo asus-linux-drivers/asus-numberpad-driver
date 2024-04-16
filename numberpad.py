@@ -28,6 +28,11 @@ xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
 display_var = os.environ.get('DISPLAY')
 display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 
+display_wayland = None
+display = None
+
+threads = []
+stop_threads = False
 enabled_evdev_keys = []
 
 def mod_name_to_evdev_keyname(mod_name):
@@ -75,9 +80,6 @@ def mod_name_to_evdev_keyname(mod_name):
 
     return mods_to_evdev_key_names[mod_name]
 
-
-gnome_current_layout = "us" # TODO; remove testing purpose
-gnome_current_layout_index = 0 # TODO: remove testing purpose
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
 chars_associated_to_evdev_keys_reflecting_current_layout = {
@@ -248,7 +250,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
                     mod_evdev_keys = []
                     for mod_index in range(0, num_mods):
-                        
+
                         if (mod_masks_for_level[mod_mask_index] & (1 << mod_index) == 0):
                             continue
 
@@ -315,9 +317,6 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard = seat.get_keyboard()
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
-display_wayland = None
-display = None
-
 if xdg_session_type == "x11":
   try:
     display = Xlib.display.Display(display_var)
@@ -346,10 +345,9 @@ def load_keymap_listener_x11():
       if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
 
           keymap_lock.acquire()
-
           display.refresh_keyboard_mapping(event)
           load_evdev_keys_for_x11(True)
-          print(chars_associated_to_evdev_keys_reflecting_current_layout) # TODO: testing, need to be removed
+          log.debug(chars_associated_to_evdev_keys_reflecting_current_layout)
           keymap_lock.release()
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
@@ -751,7 +749,7 @@ while try_times > 0:
                 # keyboard is optional, no sys.exit(1)!
             if touchpad_detected != 2:
                 log.error("Can't find touchpad (code: %s)", touchpad_detected)
-                #sys.exit(1)
+                sys.exit(1)
             if touchpad_detected == 2 and not device_id.isnumeric():
                 log.error("Can't find device id")
                 sys.exit(1)
@@ -767,35 +765,35 @@ try:
     bus.close()
 except:
     log.error("Can't open the I2C bus connection (id: %s)", device_id)
-    #sys.exit(1)
+    sys.exit(1)
 
 # Start monitoring the touchpad
-#fd_t = open('/dev/input/event' + str(touchpad), 'rb')
-#d_t = Device(fd_t)
+fd_t = open('/dev/input/event' + str(touchpad), 'rb')
+d_t = Device(fd_t)
 
 # Retrieve touchpad dimensions
-#ai = d_t.absinfo[EV_ABS.ABS_X]
-#minx, maxx) = (ai.minimum, ai.maximum)
-#minx_numpad = minx + left_offset
-#maxx_numpad = maxx - right_offset
-#ai = d_t.absinfo[EV_ABS.ABS_Y]
-#(miny, maxy) = (ai.minimum, ai.maximum)
-#miny_numpad = miny + top_offset
-#maxy_numpad = maxy - bottom_offset
-#log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-#log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
-          #maxx_numpad, miny_numpad, maxy_numpad)
+ai = d_t.absinfo[EV_ABS.ABS_X]
+minx, maxx = (ai.minimum, ai.maximum)
+minx_numpad = minx + left_offset
+maxx_numpad = maxx - right_offset
+ai = d_t.absinfo[EV_ABS.ABS_Y]
+(miny, maxy) = (ai.minimum, ai.maximum)
+miny_numpad = miny + top_offset
+maxy_numpad = maxy - bottom_offset
+log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+          maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-#col_count = len(max(keys, key=len))
-#row_count = len(keys)
-#col_width = (maxx_numpad - minx_numpad) / col_count
-#row_height = (maxy_numpad - miny_numpad) / row_count
+col_count = len(max(keys, key=len))
+row_count = len(keys)
+col_width = (maxx_numpad - minx_numpad) / col_count
+row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 # Create a new keyboard device to send numpad events
 dev = Device()
-dev.name = "foo" # touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
+dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
 enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
@@ -812,20 +810,22 @@ for key_to_enable in top_left_icon_slide_func_keys:
 if xdg_session_type == "wayland":
     load_keymap_listener_wayland()
 
-print(chars_associated_to_evdev_keys_reflecting_current_layout)
-
-stop_threads = False
-
 def check_gnome_layout():
     global stop_threads, gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
 
     while not stop_threads:
 
         mru_sources = gsettingsGet('org.gnome.desktop.input-sources', 'mru-sources')
-        mru_sources_evaluated = ast.literal_eval(mru_sources.decode())
+        try:
+          mru_sources_evaluated = ast.literal_eval(mru_sources.decode())
+        except:
+          mru_sources_evaluated = []
 
         sources = gsettingsGet('org.gnome.desktop.input-sources', 'sources')
-        sources_evaluated = ast.literal_eval(sources.decode())
+        try:
+          sources_evaluated = ast.literal_eval(sources.decode())
+        except:
+          sources_evaluated = []
 
         if len(mru_sources_evaluated) > 0:
 
@@ -861,9 +861,12 @@ def check_gnome_layout():
         else:
 
             current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
-            current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
+            try:
+              current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
+            except:
+              current_evaluate = None
 
-            if len(sources_evaluated) > current_evaluated:
+            if current_evaluated and current_evaluated < len(sources_evaluated):
                 layout = sources_evaluated[current_evaluated][1].split("+")[0]
 
                 # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
@@ -884,8 +887,6 @@ def check_gnome_layout():
 
         sleep(1)
 
-load_keymap_listener_x11()
-check_gnome_layout() # TODO: remove testing purpose only
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
@@ -2208,8 +2209,6 @@ def check_config_values_changes():
     log.info("check_config_values_changes: inotify watching config file ended")
 
 
-threads = []
-stop_threads = False
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
 if keyboard:
@@ -2239,11 +2238,9 @@ if xdg_session_type == "x11":
 t = threading.Thread(target=check_gnome_layout)
 threads.append(t)
 
-
 # start all threads
 for thread in threads:
     thread.start()
-
 
 try:
     listen_touchpad_events()
