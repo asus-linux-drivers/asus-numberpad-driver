@@ -24,6 +24,10 @@ import mmap
 from smbus2 import SMBus, i2c_msg
 import ast
 
+xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
+display_var = os.environ.get('DISPLAY')
+display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
+
 enabled_evdev_keys = []
 
 def mod_name_to_evdev_keyname(mod_name):
@@ -71,6 +75,9 @@ def mod_name_to_evdev_keyname(mod_name):
 
     return mods_to_evdev_key_names[mod_name]
 
+
+gnome_current_layout = "us" # TODO; remove testing purpose
+gnome_current_layout_index = 0 # TODO: remove testing purpose
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
 chars_associated_to_evdev_keys_reflecting_current_layout = {
@@ -207,8 +214,15 @@ def isEventList(events):
 
 
 def load_evdev_key_for_wayland(char, keyboard_state):
+
     keymap = keyboard_state.get_keymap()
     num_mods = keymap.num_mods()
+
+    #char = "ISO_Level3_Shift"
+    key = "Mod1"
+    whee_map = keymap.get_as_string()
+    print(whee_map)
+    #print(whee)
 
     for keycode in keymap:
 
@@ -234,6 +248,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
                     mod_evdev_keys = []
                     for mod_index in range(0, num_mods):
+                        
                         if (mod_masks_for_level[mod_mask_index] & (1 << mod_index) == 0):
                             continue
 
@@ -250,7 +265,12 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                     else:
                         key = EV_KEY.codes[int(keycode - 8)]
 
-                    layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+
+                    if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
+                        layout_is_active = True
+                    else:
+                        layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+
                     if layout_is_active:
                         chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
 
@@ -258,9 +278,23 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
                     return key
 
+keyboard_state = None
+
+def wl_load_keymap_state():
+    global keyboard_state, chars_associated_to_evdev_keys_reflecting_current_layout
+
+    enabled_keys = len(enabled_evdev_keys)
+
+    for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+        load_evdev_key_for_wayland(char, keyboard_state)
+
+    # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
+    #if len(enabled_evdev_keys) > enabled_keys:
+        #reset_udev_device()
+
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
-    global chars_associated_to_evdev_keys_reflecting_current_layout
+    global keyboard_state
 
     keymap_data = mmap.mmap(
        fd, size, prot=mmap.PROT_READ, flags=mmap.MAP_PRIVATE
@@ -270,15 +304,9 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keymap_data.close()
 
     keyboard_state = keymap.state_new()
+    keymap = keymap.state_new
 
-    enabled_keys = len(enabled_evdev_keys)
-
-    for char in chars_associated_to_evdev_keys_reflecting_current_layout:
-        load_evdev_key_for_wayland(char, keyboard_state)
-
-    # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
-    if len(enabled_evdev_keys) > enabled_keys:
-        reset_udev_device()
+    wl_load_keymap_state()
 
 
 def wl_registry_handler(registry, id_, interface, version):
@@ -288,12 +316,9 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
 display_wayland = None
-display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
-
 display = None
-display_var = os.environ.get('DISPLAY')
 
-if display_var:
+if xdg_session_type == "x11":
   try:
     display = Xlib.display.Display(display_var)
   except:
@@ -312,14 +337,13 @@ def load_keymap_listener_wayland():
 
 keymap_lock = threading.Lock()
 
-# TODO: not tested - xev display events
 def load_keymap_listener_x11():
     global stop_threads, display
 
     while not stop_threads:
       event = display.next_event()
-      print(event)
-      if event.type == Xlib.X.MappingNotify and event.count > 0:
+
+      if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
 
           keymap_lock.acquire()
 
@@ -727,7 +751,7 @@ while try_times > 0:
                 # keyboard is optional, no sys.exit(1)!
             if touchpad_detected != 2:
                 log.error("Can't find touchpad (code: %s)", touchpad_detected)
-                sys.exit(1)
+                #sys.exit(1)
             if touchpad_detected == 2 and not device_id.isnumeric():
                 log.error("Can't find device id")
                 sys.exit(1)
@@ -743,47 +767,125 @@ try:
     bus.close()
 except:
     log.error("Can't open the I2C bus connection (id: %s)", device_id)
-    sys.exit(1)
+    #sys.exit(1)
 
 # Start monitoring the touchpad
-fd_t = open('/dev/input/event' + str(touchpad), 'rb')
-d_t = Device(fd_t)
+#fd_t = open('/dev/input/event' + str(touchpad), 'rb')
+#d_t = Device(fd_t)
 
 # Retrieve touchpad dimensions
-ai = d_t.absinfo[EV_ABS.ABS_X]
-(minx, maxx) = (ai.minimum, ai.maximum)
-minx_numpad = minx + left_offset
-maxx_numpad = maxx - right_offset
-ai = d_t.absinfo[EV_ABS.ABS_Y]
-(miny, maxy) = (ai.minimum, ai.maximum)
-miny_numpad = miny + top_offset
-maxy_numpad = maxy - bottom_offset
-log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
-log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
-          maxx_numpad, miny_numpad, maxy_numpad)
+#ai = d_t.absinfo[EV_ABS.ABS_X]
+#minx, maxx) = (ai.minimum, ai.maximum)
+#minx_numpad = minx + left_offset
+#maxx_numpad = maxx - right_offset
+#ai = d_t.absinfo[EV_ABS.ABS_Y]
+#(miny, maxy) = (ai.minimum, ai.maximum)
+#miny_numpad = miny + top_offset
+#maxy_numpad = maxy - bottom_offset
+#log.info('Touchpad min-max: x %d-%d, y %d-%d', minx, maxx, miny, maxy)
+#log.info('Numpad min-max: x %d-%d, y %d-%d', minx_numpad,
+          #maxx_numpad, miny_numpad, maxy_numpad)
 
 # Detect col, row count from map of keys
-col_count = len(max(keys, key=len))
-row_count = len(keys)
-col_width = (maxx_numpad - minx_numpad) / col_count
-row_height = (maxy_numpad - miny_numpad) / row_count
+#col_count = len(max(keys, key=len))
+#row_count = len(keys)
+#col_width = (maxx_numpad - minx_numpad) / col_count
+#row_height = (maxy_numpad - miny_numpad) / row_count
 
 
 # Create a new keyboard device to send numpad events
 dev = Device()
-dev.name = touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
+dev.name = "foo" # touchpad_name.split(" ")[0] + " " + touchpad_name.split(" ")[1] + " NumberPad"
 enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
-if not display_wayland_var and display_var:
+if xdg_session_type == "x11":
   load_evdev_keys_for_x11(False)
 
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
+
+if xdg_session_type == "wayland":
+    load_keymap_listener_wayland()
+
+print(chars_associated_to_evdev_keys_reflecting_current_layout)
+
+stop_threads = False
+
+def check_gnome_layout():
+    global stop_threads, gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
+
+    while not stop_threads:
+
+        mru_sources = gsettingsGet('org.gnome.desktop.input-sources', 'mru-sources')
+        mru_sources_evaluated = ast.literal_eval(mru_sources.decode())
+
+        sources = gsettingsGet('org.gnome.desktop.input-sources', 'sources')
+        sources_evaluated = ast.literal_eval(sources.decode())
+
+        if len(mru_sources_evaluated) > 0:
+
+            mru_layout_index = sources_evaluated.index(mru_sources_evaluated[0])
+            mru_layout = mru_sources_evaluated[0][1].split("+")[0]
+
+            # first run, would be unnecessary duplicated loading wayland / x11 keymap
+            if gnome_current_layout_index == None:
+                gnome_current_layout_index = mru_layout_index
+                gnome_current_layout = mru_layout
+
+            elif display_wayland_var:
+                if keyboard_state:
+                    layout_is_active = keyboard_state.layout_index_is_active(mru_layout_index, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+
+                    if not layout_is_active and gnome_current_layout_index is not mru_layout_index:
+                        gnome_current_layout_index =  mru_layout_index
+                        gnome_current_layout = mru_layout
+                        wl_load_keymap_state()
+
+            elif gnome_current_layout != mru_layout:
+
+                    try:
+                        cmd = ['setxkbmap', mru_layout, '-display', display_var]
+
+                        log.debug(cmd)
+                        subprocess.call(cmd)
+
+                        gnome_current_layout = mru_layout
+                    except:
+                        log.exception('setxkbmap set failed')
+
+        else:
+
+            current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
+            current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
+
+            if len(sources_evaluated) > current_evaluated:
+                layout = sources_evaluated[current_evaluated][1].split("+")[0]
+
+                # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
+                if gnome_current_layout == None:
+                    gnome_current_layout = layout
+
+                elif gnome_current_layout != layout:
+
+                    try:
+                        cmd = ['setxkbmap', layout, '-display', display_var]
+
+                        log.debug(cmd)
+                        subprocess.call(cmd)
+
+                        gnome_current_layout = layout
+                    except:
+                        log.exception('setxkbmap set failed')
+
+        sleep(1)
+
+load_keymap_listener_x11()
+check_gnome_layout() # TODO: remove testing purpose only
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
@@ -2000,52 +2102,10 @@ def check_touchpad_status():
     numlock_lock.release()
 
 
+# only to avoid first - x11 only
 gnome_current_layout = None
-
-def check_gnome_layout():
-    global stop_threads, gnome_current_layout
-
-    while not stop_threads:
-
-        mru_sources = gsettingsGet('org.gnome.desktop.input-sources', 'mru-sources')
-        mru_sources_evaluated = ast.literal_eval(mru_sources.decode().split(" ")[1])
-
-        if not mru_sources_evaluated:
-
-            current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
-            current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
-
-
-            #print(current_evaluated)
-
-            sources = gsettingsGet('org.gnome.desktop.input-sources', 'sources')
-            sources_evaluated = ast.literal_eval(sources.decode())
-
-            if len(sources_evaluated) > current_evaluated:
-                layout = sources_evaluated[current_evaluated][1].split("+")[0]
-
-                # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
-                if gnome_current_layout == None:
-                    gnome_current_layout = layout
-
-                elif gnome_current_layout != layout:
-
-                    try:
-                        cmd = ['setxkbmap', layout, '-display', display_var]
-
-                        log.debug(cmd)
-                        subprocess.call(cmd)
-
-                        gnome_current_layout = layout
-                    except:
-                        log.exception('setxkbmap set failed')
-
-        else:
-            # TODO:
-            pass
-
-        sleep(1)
-
+# only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
+gnome_current_layout_index = None
 
 def check_system_numlock_status():
     global stop_threads
@@ -2168,13 +2228,11 @@ threads.append(t)
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
 
-display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
-if display_wayland_var:
+if xdg_session_type == "wayland":
   t = threading.Thread(target=load_keymap_listener_wayland)
   threads.append(t)
 
-display_var = os.environ.get('DISPLAY')
-if not display_wayland_var and display_var:
+if xdg_session_type == "x11":
   t = threading.Thread(target=load_keymap_listener_x11)
   threads.append(t)
 
