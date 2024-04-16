@@ -2231,7 +2231,7 @@ if xdg_session_type == "wayland":
   t = threading.Thread(target=load_keymap_listener_wayland)
   threads.append(t)
 
-if xdg_session_type == "x11":
+if xdg_session_type == "x11" and display:
   t = threading.Thread(target=load_keymap_listener_x11)
   threads.append(t)
 
