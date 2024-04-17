@@ -292,8 +292,8 @@ def wl_load_keymap_state():
         load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
-    #if len(enabled_evdev_keys) > enabled_keys:
-        #reset_udev_device()
+    if len(enabled_evdev_keys) > enabled_keys:
+        reset_udev_device()
 
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
