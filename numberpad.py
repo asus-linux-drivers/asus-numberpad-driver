@@ -29,11 +29,17 @@ display_var = os.environ.get('DISPLAY')
 display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 
 display_wayland = None
+keyboard_state = None
 display = None
 
 threads = []
 stop_threads = False
 enabled_evdev_keys = []
+
+# only to avoid first - x11 only
+gnome_current_layout = None
+# only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
+gnome_current_layout_index = None
 
 def mod_name_to_specific_keysym_name(mod_name):
     # TODO: Wayland dynamically
@@ -223,6 +229,7 @@ def isEventList(events):
 
 
 def load_evdev_key_for_wayland(char, keyboard_state):
+    global gnome_current_layout_index
 
     keymap = keyboard_state.get_keymap()
     num_mods = keymap.num_mods()
@@ -280,8 +287,6 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                     enable_key(key)
 
                     return key
-
-keyboard_state = None
 
 def wl_load_keymap_state():
     global keyboard_state, keysym_name_associated_to_evdev_key_reflecting_current_layout
@@ -2103,11 +2108,6 @@ def check_touchpad_status():
 
     numlock_lock.release()
 
-
-# only to avoid first - x11 only
-gnome_current_layout = None
-# only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
-gnome_current_layout_index = None
 
 def check_system_numlock_status():
     global stop_threads
