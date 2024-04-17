@@ -89,7 +89,7 @@ def mod_name_to_specific_keysym_name(mod_name):
 
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
-chars_associated_to_evdev_keys_reflecting_current_layout = {
+keysym_name_associated_to_evdev_key_reflecting_current_layout = {
     'Num_Lock': '',
     # unicode shortcut - for hex value
     '0': '',
@@ -179,7 +179,7 @@ def load_evdev_key_for_x11(char):
     elif display.keycode_to_keysym(keycode, 3) == keysym:
       key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
 
-    chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+    keysym_name_associated_to_evdev_key_reflecting_current_layout[char] = key
 
     enable_key(key)
 
@@ -187,11 +187,11 @@ def load_evdev_key_for_x11(char):
 
 
 def load_evdev_keys_for_x11(reset_udev = True):
-  global chars_associated_to_evdev_keys_reflecting_current_layout, enabled_evdev_keys
+  global keysym_name_associated_to_evdev_key_reflecting_current_layout, enabled_evdev_keys
 
   enabled_keys_count = len(enabled_evdev_keys)
 
-  for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+  for char in keysym_name_associated_to_evdev_key_reflecting_current_layout:
     load_evdev_key_for_x11(char)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
@@ -200,9 +200,9 @@ def load_evdev_keys_for_x11(reset_udev = True):
 
 
 def get_evdev_key_for_char(char):
-    global chars_associated_to_evdev_keys_reflecting_current_layout
+    global keysym_name_associated_to_evdev_key_reflecting_current_layout
 
-    return chars_associated_to_evdev_keys_reflecting_current_layout[char]
+    return keysym_name_associated_to_evdev_key_reflecting_current_layout[char]
 
 
 def isEvent(event):
@@ -275,7 +275,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                         layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
 
                     if layout_is_active:
-                        chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
+                        keysym_name_associated_to_evdev_key_reflecting_current_layout[char] = key
 
                     enable_key(key)
 
@@ -284,11 +284,11 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 keyboard_state = None
 
 def wl_load_keymap_state():
-    global keyboard_state, chars_associated_to_evdev_keys_reflecting_current_layout
+    global keyboard_state, keysym_name_associated_to_evdev_key_reflecting_current_layout
 
     enabled_keys = len(enabled_evdev_keys)
 
-    for char in chars_associated_to_evdev_keys_reflecting_current_layout:
+    for char in keysym_name_associated_to_evdev_key_reflecting_current_layout:
         load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
@@ -348,7 +348,7 @@ def load_keymap_listener_x11():
           keymap_lock.acquire()
           display.refresh_keyboard_mapping(event)
           load_evdev_keys_for_x11(True)
-          log.debug(chars_associated_to_evdev_keys_reflecting_current_layout)
+          log.debug(keysym_name_associated_to_evdev_key_reflecting_current_layout)
           keymap_lock.release()
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
@@ -413,8 +413,8 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
 
 for row in keys:
     for key in row:
-        if not isEvent(key) and not isEventList(key) and not key in chars_associated_to_evdev_keys_reflecting_current_layout:
-            chars_associated_to_evdev_keys_reflecting_current_layout[key] = None
+        if not isEvent(key) and not isEventList(key) and not key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
+            keysym_name_associated_to_evdev_key_reflecting_current_layout[key] = None
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 backlight_levels = getattr(model_layout, "backlight_levels", [])
@@ -1559,9 +1559,9 @@ def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
 
     if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
         return numpad_layout_key
-    elif numpad_layout_key in chars_associated_to_evdev_keys_reflecting_current_layout:
-        if chars_associated_to_evdev_keys_reflecting_current_layout[numpad_layout_key]:
-            return chars_associated_to_evdev_keys_reflecting_current_layout[numpad_layout_key]
+    elif numpad_layout_key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
+        if keysym_name_associated_to_evdev_key_reflecting_current_layout[numpad_layout_key]:
+            return keysym_name_associated_to_evdev_key_reflecting_current_layout[numpad_layout_key]
         else:
             return numpad_layout_key
 
