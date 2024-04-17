@@ -35,26 +35,9 @@ threads = []
 stop_threads = False
 enabled_evdev_keys = []
 
-def mod_name_to_evdev_keyname(mod_name):
-    # TODO:
-    # Dynamically load Shift, Control, Lock - do not use hard-cored Shift_L etc.
-    #
-    # X11:
-    #
-    # mods = display.get_modifier_mapping()
-    # mod1_is_shift = mods[Xlib.X.Mod1MapIndex]
-    # ref: https://github.com/crvv/coc_unbreakable/blob/99aefc71b5af238ccd7f3d87b7e51937f4628816/pykeyboard/x11.py#L402
-    #
-    # Wayland:
-    #
-    # IDK
-    #
-    #
-    # 1. Shift: Shift and inside function have special implementation for code above
-    # 2. Shift: ShiftMapIndex
-    # 3. Xlib.X.Mod1MapIndex
-    #
-    mods_to_evdev_key_names = {
+def mod_name_to_specific_keysym_name(mod_name):
+    # TODO: Wayland dynamically
+    mod_to_specific_keysym_name = {
         'Control': 'Control_L',
         'Shift': 'Shift_L',
         'Lock': 'Caps_Lock',
@@ -78,7 +61,31 @@ def mod_name_to_evdev_keyname(mod_name):
         'Hyper': 'Hyper_L'
     }
 
-    return mods_to_evdev_key_names[mod_name]
+    mods_to_indexes_x11 = {
+        "Shift": Xlib.X.ShiftMapIndex,
+        "Lock": Xlib.X.LockMapIndex,
+        "Control": Xlib.X.ControlMapIndex,
+        "Mod1": Xlib.X.Mod1MapIndex,
+        "Mod2": Xlib.X.Mod2MapIndex,
+        "Mod3": Xlib.X.Mod3MapIndex,
+        "Mod4": Xlib.X.Mod4MapIndex,
+        "Mod5": Xlib.X.Mod5MapIndex
+    }
+
+    if display and mod_name in mods_to_indexes_x11:
+
+      mods = display.get_modifier_mapping()
+      first_keycode = mods[mods_to_indexes_x11[mod_name]][0]
+      if first_keycode:
+        key = EV_KEY.codes[int(first_keycode) - 8]
+        keysym = display.keycode_to_keysym(first_keycode, 0)
+        for key in Xlib.XK.__dict__:
+          if key.startswith("XK") and Xlib.XK.__dict__[key] == keysym:
+            return key[3:]
+      else:
+        return mod_to_specific_keysym_name[mod_name]
+    else:
+      return mod_to_specific_keysym_name[mod_name]
 
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
@@ -102,13 +109,13 @@ chars_associated_to_evdev_keys_reflecting_current_layout = {
     'e': '',
     'f': '',
     # unicode shortcut - start sequence
-    mod_name_to_evdev_keyname('Shift'): '',
-    mod_name_to_evdev_keyname('Control'): '',
+    mod_name_to_specific_keysym_name('Shift'): '',
+    mod_name_to_specific_keysym_name('Control'): '',
     'u': '',
     # unicode shortcut - end sequence
     'space': '',
     # modifiers for each level (Shift is already included)
-    mod_name_to_evdev_keyname('AltGr'): '',
+    mod_name_to_specific_keysym_name('AltGr'): '',
 }
 
 
@@ -164,13 +171,13 @@ def load_evdev_key_for_x11(char):
       pass
     # shift
     elif display.keycode_to_keysym(keycode, 1) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), key]
+      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), key]
     # altgr
     elif display.keycode_to_keysym(keycode, 2) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('AltGr')), key]
+      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
     # shift altgr
     elif display.keycode_to_keysym(keycode, 3) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_evdev_keyname('Shift')), load_evdev_key_for_x11(mod_name_to_evdev_keyname('AltGr')), key]
+      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
 
     chars_associated_to_evdev_keys_reflecting_current_layout[char] = key
 
@@ -220,12 +227,6 @@ def load_evdev_key_for_wayland(char, keyboard_state):
     keymap = keyboard_state.get_keymap()
     num_mods = keymap.num_mods()
 
-    #char = "ISO_Level3_Shift"
-    key = "Mod1"
-    whee_map = keymap.get_as_string()
-    print(whee_map)
-    #print(whee)
-
     for keycode in keymap:
 
         keysym = xkb.keysym_from_name(char)
@@ -256,7 +257,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
                         mod_name = keymap.mod_get_name(mod_index)
 
-                        mod_as_evdev_key = load_evdev_key_for_wayland(mod_name_to_evdev_keyname(mod_name), keyboard_state)
+                        mod_as_evdev_key = load_evdev_key_for_wayland(mod_name_to_specific_keysym_name(mod_name), keyboard_state)
                         mod_evdev_keys.append(mod_as_evdev_key)
 
                         if not mod_as_evdev_key:
@@ -609,7 +610,7 @@ def get_compose_key_start_events_for_unicode_string(reset_udev = True):
 
         for key_modifier in key_modifiers:
             try:
-                key_evdev = get_evdev_key_for_char(mod_name_to_evdev_keyname(key_modifier))
+                key_evdev = get_evdev_key_for_char(mod_name_to_specific_keysym_name(key_modifier))
                 keys.append(key_evdev)
                 enable_key(key_evdev, reset_udev)
             except:
@@ -625,11 +626,11 @@ def get_compose_key_start_events_for_unicode_string(reset_udev = True):
             pass
     else:
 
-        control_key = get_evdev_key_for_char(mod_name_to_evdev_keyname('Control'))
+        control_key = get_evdev_key_for_char(mod_name_to_specific_keysym_name('Control'))
         keys.append(control_key)
         enable_key(control_key, reset_udev)
 
-        shift_key = get_evdev_key_for_char(mod_name_to_evdev_keyname('Shift'))
+        shift_key = get_evdev_key_for_char(mod_name_to_specific_keysym_name('Shift'))
         keys.append(shift_key)
         enable_key(shift_key, reset_udev)
 
