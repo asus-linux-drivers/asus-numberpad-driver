@@ -126,7 +126,7 @@ $ bash uninstall_user_groups.sh
 
 | Model/Layout | Description                                                                                                  | Image                                                                                               |
 | ------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| <a id="ux433fa"></a><br><br><br><br><br>ux433fa<br><br><br><br><br><br><br> | Without % = symbols<br><br>Without left icon                                                                 | ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)                                             | 
+| <a id="ux433fa"></a><br><br><br><br><br>ux433fa<br><br><br><br><br><br><br> | Without % = symbols<br><br>Without left icon                                                                 | ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)                                             |
 | <a id="e210ma"></a><br><br><br><br><br>e210ma<br><br><br><br><br><br><br> | With % = symbols<br><br>Without left icon                                                                    | ![with % = symbols but left icon is missing](images/Asus-E210MA.jpg)                                |
 | <a id="b7402"></a><br><br><br><br><br>b7402<br><br><br><br><br><br><br> | With % = symbols<br><br>Without left icon<br><br>Rectangle style of backlight                                | ![with % = symbols, left icon is missing and rectangles style of backlight](images/Asus-B7402.png) |
 | <a id="up5401ea"></a><br><br><br><br><br>up5401ea<br><br><br><br><br><br><br> | With % = symbols                                                                                             | ![with % = symbols](images/Asus-ZenBook-UP5401EA.png) ![with % = symbols](images/Asus-ZenBook-UP5401EA_2.png)                                               |
@@ -192,10 +192,10 @@ xdotool key XF86Calculator
 
 **How to start NumberPad without systemd service?**
 
-- directly:
+- layout name is required as first argument and as second argument can be optionally passed path to directory where will be autocreated config `numberpad_dev` (default is current working directory):
 
 ```
-/usr/share/asus-numberpad-driver/.env/bin/python3 /usr/share/asus-numberpad-driver/numberpad.py
+/usr/share/asus-numberpad-driver/.env/bin/python3 /usr/share/asus-numberpad-driver/numberpad.py <up5401ea|e210ma|..>
 ```
 
 **How to install the driver when is used pyenv for managing multiple Python versions?**
