@@ -42,25 +42,25 @@ gnome_current_layout = None
 gnome_current_layout_index = None
 
 def mod_name_to_specific_keysym_name(mod_name):
-    # TODO: Wayland dynamically
+    # TODO: Wayland dynamically like is done for x11 below
     mod_to_specific_keysym_name = {
         'Control': 'Control_L',
         'Shift': 'Shift_L',
         'Lock': 'Caps_Lock',
-        'Mod1': '', # TODO:
-        'Mod2': '', # TODO:
-        'Mod3': '', # TODO:
-        'Mod4': '', # TODO:
-        'Mod5': '', # TODO:
+        'Mod1': 'Alt_L',
+        'Mod2': 'Num_Lock',
+        'Mod3': 'Caps_Lock',
+        'Mod4': 'Meta_L',
+        'Mod5': 'Scroll_Lock',
         'NumLock': 'Num_Lock',
         'Alt': 'Alt_L',
-        'LevelThree': '', # TODO:
+        'LevelThree': 'ISO_Level3_Shift',
         'LAlt': 'Alt_L',
         'RAlt': 'Alt_R',
         'RControl': 'Control_R',
         'LControl': 'Control_L',
         'ScrollLock': 'Scroll_Lock',
-        'LevelFive': '', # TODO:
+        'LevelFive': 'ISO_Level5_Shift',
         'AltGr': 'Alt_R',
         'Meta': 'Meta_L',
         'Super': 'Meta_L',
