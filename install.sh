@@ -25,7 +25,11 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon
     elif [[ $(sudo dnf help 2>/dev/null) ]]; then
         PACKAGE_MANAGER="dnf"
+<<<<<<< Updated upstream
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel
+=======
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 gcc
+>>>>>>> Stashed changes
     elif [[ $(sudo yum help 2>/dev/null) ]]; then
         PACKAGE_MANAGER="yum"
         # yum was replaced with newer dnf above
