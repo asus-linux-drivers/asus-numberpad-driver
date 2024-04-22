@@ -119,9 +119,7 @@ keysym_name_associated_to_evdev_key_reflecting_current_layout = {
     mod_name_to_specific_keysym_name('Control'): '',
     'u': '',
     # unicode shortcut - end sequence
-    'space': '',
-    # modifiers for each level (Shift is already included)
-    mod_name_to_specific_keysym_name('AltGr'): '',
+    'space': ''
 }
 
 
@@ -162,7 +160,7 @@ def enable_key(key_or_key_combination, reset_udev = False):
 
 
 def load_evdev_key_for_x11(char):
-    global display
+    global display, keysym_name_associated_to_evdev_key_reflecting_current_layout
 
     keysym = Xlib.XK.string_to_keysym(char)
 
@@ -197,7 +195,7 @@ def load_evdev_keys_for_x11(reset_udev = True):
 
   enabled_keys_count = len(enabled_evdev_keys)
 
-  for char in keysym_name_associated_to_evdev_key_reflecting_current_layout:
+  for char in keysym_name_associated_to_evdev_key_reflecting_current_layout.copy():
     load_evdev_key_for_x11(char)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
@@ -293,7 +291,7 @@ def wl_load_keymap_state():
 
     enabled_keys = len(enabled_evdev_keys)
 
-    for char in keysym_name_associated_to_evdev_key_reflecting_current_layout:
+    for char in keysym_name_associated_to_evdev_key_reflecting_current_layout.copy():
         load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
