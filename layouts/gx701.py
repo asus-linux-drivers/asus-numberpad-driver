@@ -6,9 +6,9 @@ left_offset = 0
 bottom_offset = 0
 
 keys = [
-    ["numbersign", "/", "*", "-"],
-    ["7", "8", "9", "+"],
-    ["4", "5", "6", "+"],
+    ["numbersign", "slash", "asterisk", "minus"],
+    ["7", "8", "9", "plus"],
+    ["4", "5", "6", "plus"],
     ["1", "2", "3", "Return"],
     ["0", "0", ".", "Return"]
 ]

@@ -12,8 +12,8 @@ left_offset = 40
 bottom_offset = 80
 
 keys = [
-    ["7", "8", "9", "/", "BackSpace"],
-    ["4", "5", "6", "*", "BackSpace"],
-    ["1", "2", "3", "-", "Return"],
-    ["0", "0", ".", "+", "Return"]
+    ["7", "8", "9", "slash", "BackSpace"],
+    ["4", "5", "6", "asterisk", "BackSpace"],
+    ["1", "2", "3", "minus", "Return"],
+    ["0", "0", "period", "plus", "Return"]
 ]

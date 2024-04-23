@@ -24,8 +24,8 @@ backlight_levels = [
 ]
 
 keys = [
-    ["7", "8", "9", "/"],
-    ["4", "5", "6", "*", "BackSpace"],
-    ["1", "2", "3", "-", "Return"],
-    ["0", "0", ".", "+", "Return"]
+    ["7", "8", "9", "slash"],
+    ["4", "5", "6", "asterisk", "BackSpace"],
+    ["1", "2", "3", "minus", "Return"],
+    ["0", "0", "period", "plus", "Return"]
 ]

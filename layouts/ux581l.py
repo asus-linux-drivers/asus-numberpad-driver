@@ -11,7 +11,7 @@ right_offset = 80
 left_offset = 80
 bottom_offset = 80
 
-# please create an issue in case values does not work
+# please create an issue in case values do not work
 backlight_levels = [
     "0x41",
     "0x42",
@@ -27,6 +27,6 @@ keys = [
     ["equal", "percent", "BackSpace", "BackSpace"],
     ["7", "8", "9", "slash"],
     ["4", "5", "6", "asterisk"],
-    ["1", "2", "3", "mminus"],
+    ["1", "2", "3", "minus"],
     ["0", "period", "Return", "plus"]
 ]
