@@ -24,7 +24,7 @@ backlight_levels = [
 ]
 
 keys = [
-    ["Num_Lock", "8", "9", "slash", "BackSpace"],
+    ["7", "8", "9", "slash", "BackSpace"],
     ["4", "5", "6", "asterisk", "BackSpace"],
     ["1", "2", "3", "minus", "percent"],
     ["0", "period", "Return", "plus", "equal"]
