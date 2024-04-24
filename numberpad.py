@@ -96,7 +96,8 @@ def mod_name_to_specific_keysym_name(mod_name):
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
 keysym_name_associated_to_evdev_key_reflecting_current_layout = {
-    'Num_Lock': '',
+    # is predefined for the situation when is used wayland and in config is written enabled=true so Num_Lock will be send before is loaded from current keymap
+    'Num_Lock': 'Num_Lock',
     # unicode shortcut - for hex value
     '0': '',
     '1': '',
@@ -285,6 +286,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                     enable_key(key)
 
                     return key
+
 
 def wl_load_keymap_state():
     global keyboard_state, keysym_name_associated_to_evdev_key_reflecting_current_layout
@@ -810,9 +812,6 @@ if xdg_session_type == "x11":
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
-
-if xdg_session_type == "wayland":
-    load_keymap_listener_wayland()
 
 def check_gnome_layout():
     global stop_threads, gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
@@ -1429,13 +1428,13 @@ def get_compose_key_end_events_for_unicode_string():
     return events
 
 
-def get_events_for_unicode_char(char):
+def get_events_for_unicode_char(hex_digits):
 
     key_events = []
 
-    for hex_digit in '%X' % ord(char):
+    for hex_digit in hex_digits.lower():
 
-        key = get_evdev_key_for_char(hex_digit.lower())
+        key = get_evdev_key_for_char(hex_digit)
 
         key_event_press = InputEvent(key, 1)
         key_event_unpress = InputEvent(key, 0)
@@ -1474,10 +1473,16 @@ def pressed_numpad_key():
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
     else:
-        unicode_string = abs_mt_slot_numpad_key[abs_mt_slot_value]
-        for unicode_char in unicode_string:
-            events = events + get_events_for_unicode_char(unicode_char)
-
+        field_value = abs_mt_slot_numpad_key[abs_mt_slot_value]
+        keysym = xkb.keysym_from_name(field_value)
+        if keysym != 0:
+          unicode_char_hex_digits = hex(keysym)[2:]
+          log.debug(unicode_char_hex_digits)
+          events = events + get_events_for_unicode_char(unicode_char_hex_digits)
+        else:
+          for unicode_char in field_value:
+            unicode_char_hex_digits = '%X' % ord(unicode_char)
+            events = events + get_events_for_unicode_char(unicode_char_hex_digits)
     try:
         if enabled_touchpad_pointer == 1:
             grab_current_slot()
@@ -1559,12 +1564,14 @@ def unpressed_numpad_key(replaced_by_key=None):
 
 
 def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
+    global keysym_name_associated_to_evdev_key_reflecting_current_layout
 
     if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
         return numpad_layout_key
     elif numpad_layout_key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
-        if keysym_name_associated_to_evdev_key_reflecting_current_layout[numpad_layout_key]:
-            return keysym_name_associated_to_evdev_key_reflecting_current_layout[numpad_layout_key]
+        if get_evdev_key_for_char(numpad_layout_key):
+            return get_evdev_key_for_char(numpad_layout_key)
+        # else will be sent via unicode shortcut
         else:
             return numpad_layout_key
 
