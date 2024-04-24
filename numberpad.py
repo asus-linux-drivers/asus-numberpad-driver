@@ -32,6 +32,12 @@ display_wayland = None
 keyboard_state = None
 display = None
 
+if xdg_session_type == "x11":
+  try:
+    display = Xlib.display.Display(display_var)
+  except:
+    pass
+
 threads = []
 stop_threads = False
 enabled_evdev_keys = []
@@ -323,11 +329,6 @@ def wl_registry_handler(registry, id_, interface, version):
     keyboard = seat.get_keyboard()
     keyboard.dispatcher["keymap"] = wl_keyboard_keymap_handler
 
-if xdg_session_type == "x11":
-  try:
-    display = Xlib.display.Display(display_var)
-  except:
-    pass
 
 def load_keymap_listener_wayland():
     global display_wayland_var, display_wayland
