@@ -1481,16 +1481,25 @@ def pressed_numpad_key():
           unicode_char_hex_digits = hex(keysym)[2:]
           log.debug(unicode_char_hex_digits)
           events = events + get_events_for_unicode_char(unicode_char_hex_digits)
+        try:
+          if enabled_touchpad_pointer == 1:
+            grab_current_slot()
+
+          udev.send_events(events)
+        except OSError as e:
+          log.warning("Cannot send press event, %s", e)
+
         else:
           for unicode_char in field_value:
             unicode_char_hex_digits = '%X' % ord(unicode_char)
-            events = events + get_events_for_unicode_char(unicode_char_hex_digits)
-    try:
-        if enabled_touchpad_pointer == 1:
-            grab_current_slot()
-        udev.send_events(events)
-    except OSError as e:
-        log.warning("Cannot send press event, %s", e)
+            events = get_events_for_unicode_char(unicode_char_hex_digits)
+
+            try:
+              if enabled_touchpad_pointer == 1:
+                grab_current_slot()
+              udev.send_events(events)
+            except OSError as e:
+              log.warning("Cannot send press event, %s", e)
 
 
 def replaced_numpad_key(touched_key_now):
