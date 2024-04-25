@@ -8,7 +8,7 @@ if [ -z "$LAYOUT_NAME" ]; then
     echo
     echo "NumberPad layout"
     echo
-    echo "For all fields of NumberPad layout will try to found appropriate keys that are in success sent. Key modifiers are supported. When is appropriate key not found than field will be sent using the unicode shortcut (usually Ctrl+Shift+U+<0-F>)."
+    echo "The driver will try to find the appropriate keys for each field of the layout that can be successfully sent. Key modifiers are supported. When the appropriate key cannot be found then the field will be sent using the Unicode shortcut (usually Ctrl+Shift+U+<0-F>)."
     echo
     echo "Photos of all layouts can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts."
     echo
