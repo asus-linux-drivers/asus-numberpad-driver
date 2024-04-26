@@ -31,6 +31,7 @@ display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 display_wayland = None
 keyboard_state = None
 display = None
+keymap_loaded = False
 
 if xdg_session_type == "x11":
   try:
@@ -141,34 +142,48 @@ def mod_name_to_specific_keysym_name(mod_name):
       return mod_to_specific_keysym_name[mod_name]
 
 
+keysym_name_associated_to_evdev_key_reflecting_current_layout = None
+
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
-keysym_name_associated_to_evdev_key_reflecting_current_layout = {
-    # is predefined for the situation when is used wayland and in config is written enabled=true so Num_Lock will be send before is loaded from current keymap
-    'Num_Lock': 'Num_Lock',
-    # unicode shortcut - for hex value
-    '0': '',
-    '1': '',
-    '2': '',
-    '3': '',
-    '4': '',
-    '5': '',
-    '6': '',
-    '7': '',
-    '8': '',
-    '9': '',
-    'a': '',
-    'b': '',
-    'c': '',
-    'd': '',
-    'e': '',
-    'f': '',
-    # unicode shortcut - start sequence
-    mod_name_to_specific_keysym_name('Shift'): '',
-    mod_name_to_specific_keysym_name('Control'): '',
-    'u': '',
-    # unicode shortcut - end sequence
-    'space': ''
-}
+def set_defaults_keysym_name_associated_to_evdev_key_reflecting_current_layout():
+    global keysym_name_associated_to_evdev_key_reflecting_current_layout
+
+    keysym_name_associated_to_evdev_key_reflecting_current_layout = {
+        'Num_Lock': '',
+         # unicode shortcut - for hex value
+        '0': '',
+        '1': '',
+        '2': '',
+        '3': '',
+        '4': '',
+        '5': '',
+        '6': '',
+        '7': '',
+        '8': '',
+        '9': '',
+        'a': '',
+        'b': '',
+        'c': '',
+        'd': '',
+        'e': '',
+        'f': '',
+        # unicode shortcut - start sequence
+        mod_name_to_specific_keysym_name('Shift'): '',
+        mod_name_to_specific_keysym_name('Control'): '',
+        'u': '',
+        # unicode shortcut - end sequence
+        'space': ''
+    }
+
+
+def get_keysym_name_associated_to_evdev_key_reflecting_current_layout():
+    global keysym_name_associated_to_evdev_key_reflecting_current_layout
+
+    # lazy initialization because of loading modifiers inside Shift & Control
+    if not keysym_name_associated_to_evdev_key_reflecting_current_layout:
+        set_defaults_keysym_name_associated_to_evdev_key_reflecting_current_layout()
+
+    return keysym_name_associated_to_evdev_key_reflecting_current_layout
 
 
 # necessary when are new keys enabled
@@ -231,7 +246,7 @@ def load_evdev_key_for_x11(char):
     elif display.keycode_to_keysym(keycode, 3) == keysym:
       key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
 
-    keysym_name_associated_to_evdev_key_reflecting_current_layout[char] = key
+    set_evdev_key_for_char(char, key)
 
     enable_key(key)
 
@@ -239,20 +254,32 @@ def load_evdev_key_for_x11(char):
 
 
 def load_evdev_keys_for_x11(reset_udev = True):
-  global keysym_name_associated_to_evdev_key_reflecting_current_layout, enabled_evdev_keys
+  global enabled_evdev_keys, keymap_loaded
 
   enabled_keys_count = len(enabled_evdev_keys)
 
-  for char in keysym_name_associated_to_evdev_key_reflecting_current_layout.copy():
+  for char in get_keysym_name_associated_to_evdev_key_reflecting_current_layout().copy():
     load_evdev_key_for_x11(char)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
   if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
     reset_udev_device()
 
+  keymap_loaded = True
+
+
+def set_evdev_key_for_char(char, evdev_key):
+    global keysym_name_associated_to_evdev_key_reflecting_current_layout
+
+    # lazy initialization because of loading modifiers inside Shift & Control
+    if not keysym_name_associated_to_evdev_key_reflecting_current_layout:
+        set_defaults_keysym_name_associated_to_evdev_key_reflecting_current_layout()
+
+    keysym_name_associated_to_evdev_key_reflecting_current_layout[char] = evdev_key
+
 
 def get_evdev_key_for_char(char):
-    global keysym_name_associated_to_evdev_key_reflecting_current_layout
+    keysym_name_associated_to_evdev_key_reflecting_current_layout = get_keysym_name_associated_to_evdev_key_reflecting_current_layout()
 
     return keysym_name_associated_to_evdev_key_reflecting_current_layout[char]
 
@@ -328,7 +355,7 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                         layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
 
                     if layout_is_active:
-                        keysym_name_associated_to_evdev_key_reflecting_current_layout[char] = key
+                        set_evdev_key_for_char(char, key)
 
                     enable_key(key)
 
@@ -336,16 +363,18 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
 
 def wl_load_keymap_state():
-    global keyboard_state, keysym_name_associated_to_evdev_key_reflecting_current_layout
+    global keyboard_state, keymap_loaded
 
     enabled_keys = len(enabled_evdev_keys)
 
-    for char in keysym_name_associated_to_evdev_key_reflecting_current_layout.copy():
+    for char in get_keysym_name_associated_to_evdev_key_reflecting_current_layout().copy():
         load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
     if len(enabled_evdev_keys) > enabled_keys:
         reset_udev_device()
+
+    keymap_loaded = True
 
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
@@ -387,7 +416,7 @@ def load_keymap_listener_wayland():
 keymap_lock = threading.Lock()
 
 def load_keymap_listener_x11():
-    global stop_threads, display
+    global stop_threads, display, keymap_loaded
 
     while not stop_threads:
       event = display.next_event()
@@ -397,8 +426,9 @@ def load_keymap_listener_x11():
           keymap_lock.acquire()
           display.refresh_keyboard_mapping(event)
           load_evdev_keys_for_x11(True)
-          log.debug(keysym_name_associated_to_evdev_key_reflecting_current_layout)
+          log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
           keymap_lock.release()
+
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
@@ -461,9 +491,9 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
     sys.exit(1)
 
 for row in keys:
-    for key in row:
-        if not isEvent(key) and not isEventList(key) and not key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
-            keysym_name_associated_to_evdev_key_reflecting_current_layout[key] = None
+    for field in row:
+        if not isEvent(field) and not isEventList(field):
+            set_evdev_key_for_char(field, '')
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 backlight_levels = getattr(model_layout, "backlight_levels", [])
@@ -852,7 +882,6 @@ enable_key(EV_KEY.BTN_MIDDLE)
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
 if xdg_session_type == "x11":
   load_evdev_keys_for_x11(False)
-
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -2268,38 +2297,45 @@ def check_config_values_changes():
     log.info("check_config_values_changes: inotify watching config file ended")
 
 
+if xdg_session_type == "wayland":
+  t = threading.Thread(target=load_keymap_listener_wayland)
+  threads.append(t)
+  t.start()
+
+if xdg_session_type == "x11" and display:
+  t = threading.Thread(target=load_keymap_listener_x11)
+  threads.append(t)
+  t.start()
+
+# wait until is keymap loaded
+while not keymap_loaded:
+  pass
+
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
 if keyboard:
     t = threading.Thread(target=check_system_numlock_status)
     threads.append(t)
+    t.start()
 
 # if disabling touchpad disables numpad aswell
 if d_t and touchpad_name:
     t = threading.Thread(target=check_touchpad_status_endless_cycle)
     threads.append(t)
+    t.start()
 
 t = threading.Thread(target=check_numpad_automatical_disable_or_idle_due_inactivity)
 threads.append(t)
+t.start()
 
 # check changes in config values
 t = threading.Thread(target=check_config_values_changes)
 threads.append(t)
-
-if xdg_session_type == "wayland":
-  t = threading.Thread(target=load_keymap_listener_wayland)
-  threads.append(t)
-
-if xdg_session_type == "x11" and display:
-  t = threading.Thread(target=load_keymap_listener_x11)
-  threads.append(t)
+t.start()
 
 t = threading.Thread(target=check_gnome_layout)
 threads.append(t)
-
-# start all threads
-for thread in threads:
-    thread.start()
+t.start()
 
 try:
     listen_touchpad_events()
