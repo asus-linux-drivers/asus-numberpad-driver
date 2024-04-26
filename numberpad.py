@@ -416,7 +416,7 @@ def load_keymap_listener_wayland():
 keymap_lock = threading.Lock()
 
 def load_keymap_listener_x11():
-    global stop_threads, display, keymap_loaded
+    global stop_threads, display
 
     while not stop_threads:
       event = display.next_event()
