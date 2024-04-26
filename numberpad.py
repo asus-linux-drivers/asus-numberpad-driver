@@ -48,7 +48,8 @@ gnome_current_layout = None
 gnome_current_layout_index = None
 
 def mod_name_to_specific_keysym_name(mod_name):
-    # TODO: Wayland dynamically like is done for x11 below
+    global display_wayland
+
     mod_to_specific_keysym_name = {
         'Control': 'Control_L',
         'Shift': 'Shift_L',
@@ -96,6 +97,46 @@ def mod_name_to_specific_keysym_name(mod_name):
             return key[3:]
       else:
         return mod_to_specific_keysym_name[mod_name]
+    elif display_wayland:
+        # TODO: wayland problem dynamic is not loaded everything
+        #mod_name = "Shift"
+
+        keymap = keyboard_state.get_keymap()
+        num_mods = keymap.num_mods()
+
+        for keycode in keymap:
+            keyboard_state_clean = keymap.state_new()
+            key_state = keyboard_state_clean.update_key(keycode, xkb.KeyDirection.XKB_KEY_DOWN)
+
+            num_layouts = keymap.num_layouts_for_key(keycode)
+            for layout in range(0, num_layouts):
+
+                if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
+                    layout_is_active = True
+                else:
+                    layout_is_active = keyboard_state_clean.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+
+                if layout_is_active:
+                    for mod_index in range(0, num_mods):
+
+                        is_key_mod = key_state & xkb.StateComponent.XKB_STATE_MODS_DEPRESSED
+                        if is_key_mod:
+
+                            is_mod_active = keyboard_state_clean.mod_index_is_active(mod_index, xkb.StateComponent.XKB_STATE_MODS_DEPRESSED)
+                            if is_mod_active:
+                                if keymap.mod_get_name(mod_index) == mod_name:
+
+                                    keysyms = keymap.key_get_syms_by_level(keycode, layout, 0)
+
+                                    if len(keysyms) != 1:
+                                        continue
+
+                                    keysym_name = xkb.keysym_get_name(keysyms[0])
+                                    #print(mod_name)
+                                    #print(keycode)
+                                    #print(keysym_name)
+                                    return keysym_name
+
     else:
       return mod_to_specific_keysym_name[mod_name]
 
@@ -318,7 +359,6 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
     keymap_data.close()
 
     keyboard_state = keymap.state_new()
-    keymap = keymap.state_new
 
     wl_load_keymap_state()
 
