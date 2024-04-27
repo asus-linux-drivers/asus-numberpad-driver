@@ -495,7 +495,7 @@ for row in keys:
         if not isEvent(field) and not isEventList(field):
             set_evdev_key_for_char(field, '')
         if isEvent(field):
-            enable_key(key)
+            enable_key(field)
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 backlight_levels = getattr(model_layout, "backlight_levels", [])
