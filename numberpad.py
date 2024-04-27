@@ -494,6 +494,8 @@ for row in keys:
     for field in row:
         if not isEvent(field) and not isEventList(field):
             set_evdev_key_for_char(field, '')
+        if isEvent(field):
+            enable_key(key)
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 backlight_levels = getattr(model_layout, "backlight_levels", [])
@@ -1001,14 +1003,6 @@ def is_device_enabled(device_name):
 
         log.exception('Getting Device Enabled via xinput failed')
         return True
-
-
-for col in keys:
-    for key in col:
-        if getattr(key, "name", None) is not None and\
-            getattr(EV_KEY, key.name):
-            dev.enable(key)
-
 
 # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
 # a chance to see the device and initialize it. Otherwise the event
