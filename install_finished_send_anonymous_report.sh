@@ -8,7 +8,7 @@ EVENT_NAME="install_finished"
 LAPTOP_ID=$(sudo cat /sys/class/dmi/id/product_uuid)
 
 # finished
-INSTALL_DURATION=$(bc -l <<<"($END_TIME - $START_TIME)")
+INSTALL_DURATION=$(($END_TIME - $START_TIME))
 
 # $SUGGESTED_LAYOUT
 # $LAYOUT_NAME
