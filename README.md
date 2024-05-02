@@ -28,7 +28,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 ## Features
 
 - Driver during installation collects anonymous data with goal improve driver (data are publicly available [here](https://lookerstudio.google.com/reporting/2bf9a72c-c675-4ff8-a3c6-2e1e8c1167b9), you can provide used config using `$ bash install_config_send_anonymous_report.sh`)
-- Driver (including backlighting if hardware supported) installed for the current user (does not run under `$ sudo`)
+- Driver (including backlighting if hardware supported) installed for the current user
 - Driver creates own virtual environment of currently installed version of `Python3`
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with the possibility of [creating custom layouts or improving existing ones (keys, sizes, paddings..)](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout)
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when `$ bash ./install.sh` is run, changes previously made in the config file will not be overwritten without user permission, similarly when `$ bash ./uninstall.sh` is run the config file will be kept. In either case, when the config file or parts of it do not exist they will be automatically created or completed with default values)

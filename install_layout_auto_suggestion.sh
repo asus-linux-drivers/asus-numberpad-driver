@@ -107,12 +107,7 @@ for OPTION in $(ls layouts); do
         echo
         echo "NumberPad layout"
         echo
-        echo "3 variants of NumberPad layouts are predefined for each laptop:"
-        echo " - The non-unicode variant does not send any character via the unicode Ctrl+Shift+U shortcut. It uses the direct numeric keys, and key combinations (Shift + number) for the percent and hash characters. Because of this, this option is not resistant to custom overbindings nor to some keyboard language layouts (e.g. Czech)"
-        echo " - Standard. All keys are sent directly except the percent and hash characters (these use the unicode Ctrl+Shift+U shortcut) so that this layout should work for any keyboard language layout but still is not resistant to custom overbinding of keys, which is why the last variant exists"
-        echo " - The unicode variant sends all keys as unicode characters except for BACKSPACE and ENTER. This layout is the most resistant to overbinding of keys but sends multiple keys instead of just one, unnecessarily heavy if you do not need it."
-        echo
-        read -r -p "Automatically recommended numberpad layout for detected laptop $LAPTOP_NAME_FULL is $SUGGESTED_LAYOUT. Do you want to use standard variant of $SUGGESTED_LAYOUT? [y/N]" RESPONSE
+        read -r -p "The automatically recommended NumberPad layout for this laptop ($LAPTOP_NAME_FULL) is $SUGGESTED_LAYOUT. Do you want to use the $SUGGESTED_LAYOUT layout? (The photo of the recommended NumberPad layout can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#$SUGGESTED_LAYOUT) [y/N]" RESPONSE
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo

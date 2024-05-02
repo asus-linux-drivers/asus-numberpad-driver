@@ -11,7 +11,7 @@ right_offset = 80
 left_offset = 80
 bottom_offset = 80
 
-# please create an issue in case values does not work
+# please create an issue in case values do not work
 backlight_levels = [
     "0x41",
     "0x42",
@@ -24,9 +24,9 @@ backlight_levels = [
 ]
 
 keys = [
-    [EV_KEY.KEY_KPEQUAL, "%", EV_KEY.KEY_BACKSPACE, EV_KEY.KEY_BACKSPACE],
-    [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPSLASH],
-    [EV_KEY.KEY_KP4, EV_KEY.KEY_KP5, EV_KEY.KEY_KP6, EV_KEY.KEY_KPASTERISK],
-    [EV_KEY.KEY_KP1, EV_KEY.KEY_KP2, EV_KEY.KEY_KP3, EV_KEY.KEY_KPMINUS],
-    [EV_KEY.KEY_KP0, EV_KEY.KEY_KPDOT, EV_KEY.KEY_KPENTER, EV_KEY.KEY_KPPLUS]
+    ["equal", "percent", "BackSpace", "BackSpace"],
+    ["7", "8", "9", "slash"],
+    ["4", "5", "6", "asterisk"],
+    ["1", "2", "3", "minus"],
+    ["0", "period", "Return", "plus"]
 ]
