@@ -1,5 +1,21 @@
 # Changelog
 
+### 6.0.0 (3.5.2024)
+
+### Feature
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Decreased activation treshold of y for slide functions from both corners to 0.2 ratio
+
+### Fixed
+
+- Wayland support
+- Removed unnecessary `bc` dependency
+- Fixed finding interpret for `virtualenv` using path instead of version
+- Fixed activation treshold of y axis for top_right_icon (NumLock)
+- Fixed removing other shortcuts during first installation
+
+
 ### 5.1.1 (4.4.2024)
 
 ### Fixed
