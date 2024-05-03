@@ -4,11 +4,11 @@ left_offset = 20
 right_offset = 20
 
 keys = [
-    [EV_KEY.KEY_NUMLOCK, EV_KEY.KEY_KPSLASH, EV_KEY.KEY_KPASTERISK, EV_KEY.KEY_KPMINUS],
-    [EV_KEY.KEY_KP7, EV_KEY.KEY_KP8, EV_KEY.KEY_KP9, EV_KEY.KEY_KPPLUS],
-    [EV_KEY.KEY_KP4, EV_KEY.KEY_KP5, EV_KEY.KEY_KP6, EV_KEY.KEY_KPPLUS],
-    [EV_KEY.KEY_KP1, EV_KEY.KEY_KP2, EV_KEY.KEY_KP3, EV_KEY.KEY_KPENTER],
-    [EV_KEY.KEY_KP0, EV_KEY.KEY_KP0, EV_KEY.KEY_KPDOT, EV_KEY.KEY_KPENTER]
+    ["Num_Lock", "slash", "asterisk", "minus"],
+    ["7", "8", "9", "plus"],
+    ["4", "5", "6", "plus"],
+    ["1", "2", "3", "Return"],
+    ["0", "0", "period", "Return"]
 ]
 
 keys_ignore_offset = [

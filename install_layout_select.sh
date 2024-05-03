@@ -8,10 +8,9 @@ if [ -z "$LAYOUT_NAME" ]; then
     echo
     echo "NumberPad layout"
     echo
-    echo "3 variants of NumberPad layouts are predefined for each laptop:"
-    echo " - The non-unicode variant does not send any character via the unicode Ctrl+Shift+U shortcut. It uses the direct numeric keys, and key combinations (Shift + number) for the percent and hash characters. Because of this, this option is not resistant to custom overbindings nor to some keyboard language layouts (e.g. Czech)"
-    echo " - Standard. All keys are sent directly except the percent and hash characters (these use the unicode Ctrl+Shift+U shortcut) so that this layout should work for any keyboard language layout but still is not resistant to custom overbinding of keys, which is why the last variant exists"
-    echo " - The unicode variant sends all keys as unicode characters except for BACKSPACE and ENTER. This layout is the most resistant to overbinding of keys but sends multiple keys instead of just one, unnecessarily heavy if you do not need it."
+    echo "The driver will try to find the appropriate keys for each field of the layout that can be successfully sent. Key modifiers are supported. When the appropriate key cannot be found then the field will be sent using the Unicode shortcut (usually Ctrl+Shift+U+<0-F>)."
+    echo
+    echo "Photos of all layouts can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts."
     echo
     echo "Select layout:"
     echo
