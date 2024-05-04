@@ -939,10 +939,12 @@ def check_gnome_layout():
         else:
 
             current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
+
+            current_evaluated = None
             try:
               current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
             except:
-              current_evaluate = None
+              pass
 
             if current_evaluated and current_evaluated < len(sources_evaluated):
                 layout = sources_evaluated[current_evaluated][1].split("+")[0]
