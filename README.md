@@ -27,12 +27,12 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 
 ## Features
 
-- Driver during installation collects anonymous data with goal improve driver (data are publicly available [here](https://lookerstudio.google.com/reporting/2bf9a72c-c675-4ff8-a3c6-2e1e8c1167b9), you can provide used config using `$ bash install_config_send_anonymous_report.sh`)
+- Driver during installation collects anonymous data with goal improve driver (e.g. automatic layout detection; data are publicly available [here](https://lookerstudio.google.com/reporting/2bf9a72c-c675-4ff8-a3c6-2e1e8c1167b9), you can provide used config using `$ bash install_config_send_anonymous_report.sh`)
 - Driver (including backlighting if hardware supported) installed for the current user
 - Driver creates own virtual environment of currently installed version of `Python3`
 - Multiple pre-created [NumberPad layouts](https://github.com/asus-linux-drivers/asus-numberpad-driver#layouts) with the possibility of [creating custom layouts or improving existing ones (keys, sizes, paddings..)](https://github.com/asus-linux-drivers/asus-numberpad-driver#keyboard-layout)
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when `$ bash ./install.sh` is run, changes previously made in the config file will not be overwritten without user permission, similarly when `$ bash ./uninstall.sh` is run the config file will be kept. In either case, when the config file or parts of it do not exist they will be automatically created or completed with default values)
-- Automatic NumberPad layout detection via [an offline list of NumberPad layouts associated with specific laptops](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/laptop_numpad_layouts); when the users's laptop does not exist yet exist in the offline list and an internet connection is available, the search continues using the online laptop database [linux-hardware.org](https://linux-hardware.org) because the user's Touchpad may be associated with other laptop models already in the offline list
+- Automatic NumberPad layout detection
 - Activation/deactivation of NumberPad by pressing and holding the top-right icon or another spot associated with the key `KEY_NUMLOCK` (activation time by default is 1s)
 - Fast activation/deactivation of NumberPad via slide gesture beginning at top right (by default, the end of slide should have covered at least 30% of Touchpad width and height)
 - When NumberPad is activated a customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system
