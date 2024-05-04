@@ -37,9 +37,9 @@ if [[ $(type i2cdetect 2>/dev/null) ]]; then
     done
 
     if [ "$TOUCHPAD_WITH_NUMBERPAD_DETECTED" ]; then
-        echo "The detection was successful. Touchpad with numberpad found: $INDEX"
+        echo "The detection was successful. Touchpad with NumberPad found: $INDEX"
     else
-        echo "The detection was not successful. Touchpad with numberpad not found"
+        echo "The detection was not successful. Touchpad with NumberPad not found"
         exit 1
     fi
 else
