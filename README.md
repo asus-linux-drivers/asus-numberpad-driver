@@ -37,7 +37,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 - Fast activation/deactivation of NumberPad via slide gesture beginning at top right (by default, the end of slide should have covered at least 30% of Touchpad width and height)
 - When NumberPad is activated a customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system
 keyboard shortcuts - for example in [my toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh); the first slide gesture activates the calculator app and the next one closes it, a slide covering by default at least 30% of the Touchpad width and height being required)
-- Support for various keyboard layouts (unicode characters (e.g. `"%"` in layouts `up5401ea, ux581l` or `"#"` in layout `gx701`) are sent via unicode shortcut `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`)
+- Support for field to be sent via unicode shortcut `<left_shift>+<left_ctrl>+<U>+<0-F>+<space>`
 - Smooth change of backlight levels (endless loop with customizable interval, default 1s)
 - Customizable default level of backlight (by default the last-used default level)
 - NumberPad is automatically disabled due to inactivity (default 1 min, maximum value is around 2 minutes and is limited by hardware, more in [#143](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/143))
