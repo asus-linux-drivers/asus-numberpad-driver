@@ -25,6 +25,7 @@ from smbus2 import SMBus, i2c_msg
 import ast
 
 xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
+
 display_var = os.environ.get('DISPLAY')
 display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 
@@ -33,11 +34,25 @@ keyboard_state = None
 display = None
 keymap_loaded = False
 
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s %(message)s',
+    level=os.environ.get('LOG', 'INFO')
+)
+log = logging.getLogger('asus-numberpad-driver')
+
+if not xdg_session_type:
+  log.info("xdg session type can not be empty")
+  sys.exit(1)
+
 if xdg_session_type == "x11":
-  try:
-    display = Xlib.display.Display(display_var)
-  except:
-    pass
+
+  while not display:
+    try:
+      display = Xlib.display.Display(display_var)
+      log.info("X11 detected and connected succesfully to the display {}".format(display_var))
+    except:
+      log.info("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
+      sys.exit(1)
 
 threads = []
 stop_threads = False
@@ -99,8 +114,6 @@ def mod_name_to_specific_keysym_name(mod_name):
       else:
         return mod_to_specific_keysym_name[mod_name]
     elif display_wayland:
-        # TODO: wayland problem dynamic is not loaded everything
-        #mod_name = "Shift"
 
         keymap = keyboard_state.get_keymap()
         num_mods = keymap.num_mods()
@@ -435,12 +448,6 @@ EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 numlock: bool = False
 
 is_idled: bool = False
-
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=os.environ.get('LOG', 'INFO')
-)
-log = logging.getLogger('asus-numberpad-driver')
 
 # Constants
 try_times = 5
@@ -882,8 +889,10 @@ enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
-if xdg_session_type == "x11":
+if xdg_session_type == "x11" and display:
+  log.info("X11 will try to load keymap")
   load_evdev_keys_for_x11(False)
+  log.info("X11 loaded keymap succesfully")
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -1452,14 +1461,6 @@ top_left_icon_touch_start_time = 0
 top_right_icon_touch_start_time = 0
 last_event_time = 0
 key_pointer_button_is_touched = None
-
-config = configparser.ConfigParser()
-load_all_config_values()
-config_lock.acquire()
-config_save()
-config_lock.release()
-# because inotify (deadlock)
-sleep(0.1)
 
 def set_tracking_id(value):
     try:
@@ -2316,6 +2317,13 @@ if xdg_session_type == "x11" and display:
 # wait until is keymap loaded
 while not keymap_loaded:
   pass
+
+load_all_config_values()
+config_lock.acquire()
+config_save()
+config_lock.release()
+# because inotify (deadlock)
+sleep(0.1)
 
 # if keyboard with numlock indicator was found
 # thread for listening change of system numlock
