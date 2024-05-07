@@ -1567,13 +1567,13 @@ def pressed_numpad_key():
           log.debug(unicode_char_hex_digits)
           events = events + get_events_for_unicode_char(unicode_char_hex_digits)
 
-        try:
-          if enabled_touchpad_pointer == 1:
-            grab_current_slot()
+          try:
+            if enabled_touchpad_pointer == 1:
+              grab_current_slot()
 
-          udev.send_events(events)
-        except OSError as e:
-          log.warning("Cannot send press event, %s", e)
+            udev.send_events(events)
+          except OSError as e:
+            log.warning("Cannot send press event, %s", e)
 
         else:
           for unicode_char in field_value:
