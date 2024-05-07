@@ -317,12 +317,12 @@ def isEventList(events):
 def load_evdev_key_for_wayland(char, keyboard_state):
     global gnome_current_layout_index
 
+    keysym = xkb.keysym_from_name(char)
+
     keymap = keyboard_state.get_keymap()
     num_mods = keymap.num_mods()
 
     for keycode in keymap:
-
-        keysym = xkb.keysym_from_name(char)
 
         num_layouts = keymap.num_layouts_for_key(keycode)
         for layout in range(0, num_layouts):
@@ -367,12 +367,11 @@ def load_evdev_key_for_wayland(char, keyboard_state):
                     else:
                         layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
 
-                    if layout_is_active:
-                        set_evdev_key_for_char(char, key)
-
                     enable_key(key)
 
-                    return key
+                    if layout_is_active:
+                        set_evdev_key_for_char(char, key)
+                        return key
 
 
 def wl_load_keymap_state():
