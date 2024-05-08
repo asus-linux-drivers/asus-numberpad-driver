@@ -23,6 +23,7 @@ from pywayland.protocol.wayland import WlSeat
 import mmap
 from smbus2 import SMBus, i2c_msg
 import ast
+import signal
 
 xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
 
@@ -41,7 +42,7 @@ logging.basicConfig(
 log = logging.getLogger('asus-numberpad-driver')
 
 if not xdg_session_type:
-  log.info("xdg session type can not be empty")
+  log.error("xdg session type can not be empty. Exiting")
   sys.exit(1)
 
 if xdg_session_type == "x11":
@@ -51,12 +52,14 @@ if xdg_session_type == "x11":
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
     except:
-      log.info("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
+      log.error("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
       sys.exit(1)
 
 threads = []
 stop_threads = False
 enabled_evdev_keys = []
+
+keymap_lock = threading.Lock()
 
 # only to avoid first - x11 only
 gnome_current_layout = None
@@ -146,9 +149,9 @@ def mod_name_to_specific_keysym_name(mod_name):
                                         continue
 
                                     keysym_name = xkb.keysym_get_name(keysyms[0])
-                                    #print(mod_name)
-                                    #print(keycode)
-                                    #print(keysym_name)
+                                    #log.info(mod_name)
+                                    #log.info(keycode)
+                                    #log.info(keysym_name)
                                     return keysym_name
 
     else:
@@ -269,6 +272,8 @@ def load_evdev_key_for_x11(char):
 def load_evdev_keys_for_x11(reset_udev = True):
   global enabled_evdev_keys, keymap_loaded
 
+  log.debug("X11 will try to load keymap")
+
   enabled_keys_count = len(enabled_evdev_keys)
 
   for char in get_keysym_name_associated_to_evdev_key_reflecting_current_layout().copy():
@@ -279,6 +284,8 @@ def load_evdev_keys_for_x11(reset_udev = True):
     reset_udev_device()
 
   keymap_loaded = True
+
+  log.debug("X11 loaded keymap succesfully")
 
 
 def set_evdev_key_for_char(char, evdev_key):
@@ -424,22 +431,24 @@ def load_keymap_listener_wayland():
     while not stop_threads and display_wayland.dispatch(block=True) != -1:
         pass
 
-
-keymap_lock = threading.Lock()
-
 def load_keymap_listener_x11():
-    global stop_threads, display
+    global stop_threads, display, keymap_lock
 
-    while not stop_threads:
-      event = display.next_event()
+    try:
+      while not stop_threads:
+        event = display.next_event()
 
-      if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
+        if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
 
           keymap_lock.acquire()
           display.refresh_keyboard_mapping(event)
           load_evdev_keys_for_x11(True)
           log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
           keymap_lock.release()
+          #raise Xlib.error.ConnectionClosedError("fd") # testing purpose only
+    except:
+      log.exception("X11 load keymap listener error. Exiting")
+      os.kill(os.getpid(), signal.SIGUSR1)
 
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
@@ -889,9 +898,9 @@ enable_key(EV_KEY.BTN_MIDDLE)
 
 # for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
 if xdg_session_type == "x11" and display:
-  log.info("X11 will try to load keymap")
+  keymap_lock.acquire()
   load_evdev_keys_for_x11(False)
-  log.info("X11 loaded keymap succesfully")
+  keymap_lock.release()
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -2303,88 +2312,116 @@ def check_config_values_changes():
     log.info("check_config_values_changes: inotify watching config file ended")
 
 
-if xdg_session_type == "wayland":
-  t = threading.Thread(target=load_keymap_listener_wayland)
-  threads.append(t)
-  t.start()
+def cleanup():
+    global numlock, is_idled, display, display_wayland, stop_threads
 
-if xdg_session_type == "x11" and display:
-  t = threading.Thread(target=load_keymap_listener_x11)
-  threads.append(t)
-  t.start()
+    log.info("Clean up started")
 
-# wait until is keymap loaded
-while not keymap_loaded:
-  pass
+    # try deactivate first
+    try:
+        numlock_lock.acquire()
+        if numlock:
+            sys_numlock = get_system_numlock()
+            if sys_numlock and numpad_disables_sys_numlock:
+                send_numlock_key(1)
+                send_numlock_key(0)
+                log.info("System numlock deactivated")
 
-load_all_config_values()
-config_lock.acquire()
-config_save()
-config_lock.release()
-# because inotify (deadlock)
-sleep(0.1)
+            is_idled = False
+            cancel_idle_numpad()
+            log.info("Cancelled idle")
 
-# if keyboard with numlock indicator was found
-# thread for listening change of system numlock
-if keyboard:
-    t = threading.Thread(target=check_system_numlock_status)
-    threads.append(t)
-    t.start()
+            numlock = False
+            deactivate_numpad()
+            log.info("Numpad deactivated")
+        numlock_lock.release()
 
-# if disabling touchpad disables numpad aswell
-if d_t and touchpad_name:
-    t = threading.Thread(target=check_touchpad_status_endless_cycle)
-    threads.append(t)
-    t.start()
+        # then clean up
+        stop_threads=True
 
-t = threading.Thread(target=check_numpad_automatical_disable_or_idle_due_inactivity)
-threads.append(t)
-t.start()
+        fd_t.close()
 
-# check changes in config values
-t = threading.Thread(target=check_config_values_changes)
-threads.append(t)
-t.start()
+        if display_wayland:
+            display_wayland.disconnect()
 
-t = threading.Thread(target=check_gnome_layout)
-threads.append(t)
-t.start()
+        if display:
+            try:
+                display.close()
+            # because may be already closed (e.g. closed connection by server in load_keymap_listener_x11)
+            except:
+                pass
+
+        log.info("Clean up finished")
+    except:
+        log.exception("Clean up error")
+        pass
+
+
+def signal_handler(signal, frame):
+    raise Exception()
+
+signal.signal(signal.SIGUSR1, signal_handler)
 
 try:
+
+    if xdg_session_type == "wayland":
+        t = threading.Thread(target=load_keymap_listener_wayland)
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    if xdg_session_type == "x11" and display:
+        t = threading.Thread(target=load_keymap_listener_x11)
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    # wait until is keymap loaded
+    while not keymap_loaded:
+        pass
+
+    load_all_config_values()
+    config_lock.acquire()
+    config_save()
+    config_lock.release()
+    # because inotify (deadlock)
+    sleep(0.1)
+
+    # if keyboard with numlock indicator was found
+    # thread for listening change of system numlock
+    if keyboard:
+        t = threading.Thread(target=check_system_numlock_status)
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    # if disabling touchpad disables numpad aswell
+    if d_t and touchpad_name:
+        t = threading.Thread(target=check_touchpad_status_endless_cycle)
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    t = threading.Thread(target=check_numpad_automatical_disable_or_idle_due_inactivity)
+    t.daemon = True
+    threads.append(t)
+    t.start()
+
+    # check changes in config values
+    t = threading.Thread(target=check_config_values_changes)
+    t.daemon = True
+    threads.append(t)
+    t.start()
+
+    t = threading.Thread(target=check_gnome_layout)
+    t.daemon = True
+    threads.append(t)
+    t.start()
+
     listen_touchpad_events()
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
 finally:
-
-    # try deactivate first
-    numlock_lock.acquire()
-    if numlock:
-        sys_numlock = get_system_numlock()
-        if sys_numlock and numpad_disables_sys_numlock:
-            send_numlock_key(1)
-            send_numlock_key(0)
-            log.info("System numlock deactivated")
-
-        is_idled = False
-        cancel_idle_numpad()
-        log.info("Cancelled idle")
-
-        numlock = False
-        deactivate_numpad()
-        log.info("Numpad deactivated")
-    numlock_lock.release()
-
-    # then clean up
-    stop_threads=True
-    fd_t.close()
-
-    if display_wayland:
-        display_wayland.disconnect()
-
-    if display:
-        display.close()
-
-    for thread in threads:
-        thread.join()
-
+    cleanup()
+    log.info("Exiting")
     sys.exit(1)
