@@ -421,15 +421,20 @@ def wl_registry_handler(registry, id_, interface, version):
 def load_keymap_listener_wayland():
     global stop_threads, display_wayland_var, display_wayland
 
-    display_wayland = Display(display_wayland_var)
-    display_wayland.connect()
-    registry = display_wayland.get_registry()
-    registry.dispatcher["global"] = wl_registry_handler
-    display_wayland.dispatch(block=True)
-    display_wayland.roundtrip()
+    try:
+        display_wayland = Display(display_wayland_var)
+        display_wayland.connect()
+        registry = display_wayland.get_registry()
+        registry.dispatcher["global"] = wl_registry_handler
+        display_wayland.dispatch(block=True)
+        display_wayland.roundtrip()
 
-    while not stop_threads and display_wayland.dispatch(block=True) != -1:
-        pass
+        while not stop_threads and display_wayland.dispatch(block=True) != -1:
+            pass
+    except:
+        log.exception("Wayland load keymap listener error. Exiting")
+        os.kill(os.getpid(), signal.SIGUSR1)
+
 
 def load_keymap_listener_x11():
     global stop_threads, display, keymap_lock
