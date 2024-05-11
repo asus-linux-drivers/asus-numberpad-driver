@@ -394,7 +394,7 @@ def wl_load_keymap_state():
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
     #
     # BUT only reset if event is not first one - driver is starting and keymap is not loaded yet
-    if len(enabled_evdev_keys) > enabled_keys and not keymap_loaded and udev:
+    if len(enabled_evdev_keys) > enabled_keys and keymap_loaded and udev:
         reset_udev_device()
 
     keymap_loaded = True
