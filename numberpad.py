@@ -46,8 +46,6 @@ if not xdg_session_type:
   sys.exit(1)
 
 if xdg_session_type == "x11":
-
-  while not display:
     try:
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
@@ -55,6 +53,7 @@ if xdg_session_type == "x11":
       log.error("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
       sys.exit(1)
 
+udev = None
 threads = []
 stop_threads = False
 enabled_evdev_keys = []
@@ -214,7 +213,7 @@ def reset_udev_device():
     # a chance to see the device and initialize it. Otherwise the event
     # will be sent by the kernel but nothing is ready to listen to the
     # device yet
-    sleep(1)
+    sleep(0.5)
 
 
 def enable_key(key_or_key_combination, reset_udev = False):
@@ -269,8 +268,10 @@ def load_evdev_key_for_x11(char):
     return key
 
 
-def load_evdev_keys_for_x11(reset_udev = True):
-  global enabled_evdev_keys, keymap_loaded
+def load_evdev_keys_for_x11():
+  global enabled_evdev_keys, keymap_loaded, keymap_lock, udev
+
+  keymap_lock.acquire()
 
   log.debug("X11 will try to load keymap")
 
@@ -280,12 +281,17 @@ def load_evdev_keys_for_x11(reset_udev = True):
     load_evdev_key_for_x11(char)
 
   # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
-  if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
+  #
+  # BUT only reset if event is not first one - driver is starting and keymap is not loaded yet
+  if len(enabled_evdev_keys) > enabled_keys_count and keymap_loaded and udev:
     reset_udev_device()
 
   keymap_loaded = True
 
   log.debug("X11 loaded keymap succesfully")
+  log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
+
+  keymap_lock.release()
 
 
 def set_evdev_key_for_char(char, evdev_key):
@@ -437,19 +443,17 @@ def load_keymap_listener_wayland():
 
 
 def load_keymap_listener_x11():
-    global stop_threads, display, keymap_lock
+    global stop_threads, display
 
     try:
-      while not stop_threads:
-        event = display.next_event()
 
+      while not stop_threads:
+
+        event = display.next_event()
         if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
 
-          keymap_lock.acquire()
           display.refresh_keyboard_mapping(event)
-          load_evdev_keys_for_x11(True)
-          log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
-          keymap_lock.release()
+          load_evdev_keys_for_x11()
           #raise Xlib.error.ConnectionClosedError("fd") # testing purpose only
     except:
       log.exception("X11 load keymap listener error. Exiting")
@@ -901,11 +905,6 @@ enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
 
-# for x11 pre-enable keys for current keyboard layout (wayland have only handler for keymap)
-if xdg_session_type == "x11" and display:
-  keymap_lock.acquire()
-  load_evdev_keys_for_x11(False)
-  keymap_lock.release()
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
@@ -968,7 +967,7 @@ def check_gnome_layout():
             except:
               pass
 
-            if current_evaluated and current_evaluated < len(sources_evaluated):
+            if current_evaluated is not None and current_evaluated < len(sources_evaluated):
                 layout = sources_evaluated[current_evaluated][1].split("+")[0]
 
                 # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
@@ -1027,13 +1026,6 @@ def is_device_enabled(device_name):
 
         log.exception('Getting Device Enabled via xinput failed')
         return True
-
-# Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
-# a chance to see the device and initialize it. Otherwise the event
-# will be sent by the kernel but nothing is ready to listen to the
-# device yet
-udev = dev.create_uinput_device()
-sleep(1)
 
 
 def use_bindings_for_touchpad_left_icon_slide_function():
@@ -2376,6 +2368,10 @@ try:
         t.start()
 
     if xdg_session_type == "x11" and display:
+
+        # when is the driver starting event is not received
+        load_evdev_keys_for_x11()
+
         t = threading.Thread(target=load_keymap_listener_x11)
         t.daemon = True
         threads.append(t)
@@ -2384,6 +2380,13 @@ try:
     # wait until is keymap loaded
     while not keymap_loaded:
         pass
+
+    # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
+    # a chance to see the device and initialize it. Otherwise the event
+    # will be sent by the kernel but nothing is ready to listen to the
+    # device yet
+    udev = dev.create_uinput_device()
+    sleep(0.5)
 
     load_all_config_values()
     config_lock.acquire()
