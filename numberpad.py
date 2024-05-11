@@ -382,7 +382,9 @@ def load_evdev_key_for_wayland(char, keyboard_state):
 
 
 def wl_load_keymap_state():
-    global keyboard_state, keymap_loaded
+    global keyboard_state, keymap_loaded, udev
+
+    log.debug("Wayland will try to load keymap")
 
     enabled_keys = len(enabled_evdev_keys)
 
@@ -390,10 +392,15 @@ def wl_load_keymap_state():
         load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
-    if len(enabled_evdev_keys) > enabled_keys:
+    #
+    # BUT only reset if event is not first one - driver is starting and keymap is not loaded yet
+    if len(enabled_evdev_keys) > enabled_keys and not keymap_loaded and udev:
         reset_udev_device()
 
     keymap_loaded = True
+
+    log.debug("Wayland loaded keymap succesfully")
+    log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
 
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
@@ -781,7 +788,6 @@ while try_times > 0:
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
             if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" or "Name=\"ASUF" in line) and "Touchpad" in line) or \
                 (("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
-
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
@@ -866,6 +872,7 @@ try:
 except:
     log.error("Can't open the I2C bus connection (id: %s)", device_id)
     sys.exit(1)
+
 
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
