@@ -58,8 +58,6 @@ threads = []
 stop_threads = False
 enabled_evdev_keys = []
 
-keymap_lock = threading.Lock()
-
 # only to avoid first - x11 only
 gnome_current_layout = None
 # only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
@@ -269,9 +267,7 @@ def load_evdev_key_for_x11(char):
 
 
 def load_evdev_keys_for_x11():
-  global enabled_evdev_keys, keymap_loaded, keymap_lock, udev
-
-  keymap_lock.acquire()
+  global enabled_evdev_keys, keymap_loaded, udev
 
   log.debug("X11 will try to load keymap")
 
@@ -290,8 +286,6 @@ def load_evdev_keys_for_x11():
 
   log.debug("X11 loaded keymap succesfully")
   log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
-
-  keymap_lock.release()
 
 
 def set_evdev_key_for_char(char, evdev_key):
