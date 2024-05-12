@@ -63,6 +63,9 @@ gnome_current_layout = None
 # only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
 gnome_current_layout_index = None
 
+watch_manager = None
+event_notifier = None
+
 def mod_name_to_specific_keysym_name(mod_name):
     global display_wayland
 
@@ -987,7 +990,7 @@ def check_gnome_layout():
                     except:
                         log.exception('setxkbmap set failed')
 
-        sleep(1)
+        sleep(0.5)
 
 
 def is_device_enabled(device_name):
@@ -2277,15 +2280,7 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
 
 
 def check_config_values_changes():
-    global config_lock, stop_threads
-
-    watch_manager = WatchManager()
-
-    path = os.path.abspath(config_file_dir)
-    mask = IN_CLOSE_WRITE | IN_IGNORED | IN_MOVED_TO
-    watch_manager.add_watch(path, mask)
-
-    event_notifier = AsyncNotifier(watch_manager)
+    global config_lock, stop_threads, event_notifier
 
     while not stop_threads:
         try:
@@ -2304,14 +2299,11 @@ def check_config_values_changes():
         except KeyboardInterrupt:
             break
 
-    event_notifier.stop()
-    watch_manager.del_watch(path)
-
     log.info("check_config_values_changes: inotify watching config file ended")
 
 
 def cleanup():
-    global numlock, is_idled, display, display_wayland, stop_threads
+    global numlock, is_idled, display, display_wayland, stop_threads, event_notifier, watch_manager
 
     log.info("Clean up started")
 
@@ -2348,6 +2340,11 @@ def cleanup():
             # because may be already closed (e.g. closed connection by server in load_keymap_listener_x11)
             except:
                 pass
+
+        if event_notifier:
+            event_notifier.stop()
+        if watch_manager:
+            watch_manager.del_watch(path)
 
         log.info("Clean up finished")
     except:
@@ -2395,6 +2392,14 @@ try:
     config_lock.release()
     # because inotify (deadlock)
     sleep(0.1)
+
+    watch_manager = WatchManager()
+
+    path = os.path.abspath(config_file_dir)
+    mask = IN_CLOSE_WRITE | IN_IGNORED | IN_MOVED_TO
+    watch_manager.add_watch(path, mask)
+
+    event_notifier = AsyncNotifier(watch_manager)
 
     # if keyboard with numlock indicator was found
     # thread for listening change of system numlock
