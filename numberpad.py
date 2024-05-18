@@ -1258,16 +1258,7 @@ def activate_numpad():
     send_value_to_touchpad_via_i2c("0x01")
 
     if default_backlight_level != "0x01" and not top_left_icon_brightness_func_disabled:
-         send_value_to_touchpad_via_i2c(default_backlight_level)
-
-    try:
-        brightness = backlight_levels.index(default_backlight_level)
-    except ValueError:
-        # so after start and then click on icon for increasing brightness
-        # will be used first indexed value in given array with index 0 (0 = -1 + 1)
-        # (if exists)
-        # TODO: atm do not care what last value is now displayed and which one (nearest higher) should be next (default 0x01 means turn leds on with last used level of brightness)
-        brightness = -1
+         send_value_to_touchpad_via_i2c(brightness)
 
     config_set(CONFIG_ENABLED, True)
 
@@ -1285,7 +1276,6 @@ def deactivate_numpad():
     # inactivation can be doubled with another value 0x61 - that means lock NumberPad (toggle settings lock/unlock NumberPad inside MyAsus app on Windows)
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/132
     send_value_to_touchpad_via_i2c("0x00")
-    brightness = 0
 
     config_set(CONFIG_ENABLED, False)
 
@@ -1387,6 +1377,7 @@ def load_all_config_values():
     global idle_brightness
     global idle_enabled
     global idle_time
+    global brightness
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -1421,13 +1412,14 @@ def load_all_config_values():
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
         try:
-            default_backlight_level = config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS)
+            brightness = backlight_levels.index(config.get(CONFIG_SECTION, CONFIG_LAST_BRIGHTNESS))
         except:
             # idle functionality needs (if possible) to set up previous state of brightness and because I do not know at this moment how to read current brightness,
             # we know only how to set up that so is necessary set default value to config if does not exist (and brightness levels are supported!!)
             #
             if len(backlight_levels) > 0:
-              config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[len(backlight_levels) - 1], True, True)
+                brightness = len(backlight_levels) - 1
+                config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness], True, True)
 
     top_left_icon_brightness_func_disabled = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT)
     if not backlight_levels or not top_left_icon_height or not top_left_icon_width:
