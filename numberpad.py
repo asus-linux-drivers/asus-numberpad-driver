@@ -422,6 +422,10 @@ def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
 
 
 def wl_registry_handler(registry, id_, interface, version):
+  log.debug(registry)
+  log.debug(id_)
+  log.debug(interface)
+  log.debug(version)
   if interface == "wl_seat":
     seat = registry.bind(id_, WlSeat, version)
     keyboard = seat.get_keyboard()
