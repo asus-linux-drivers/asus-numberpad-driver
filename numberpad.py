@@ -2337,10 +2337,8 @@ def cleanup():
             except:
                 pass
 
-        if event_notifier:
-            event_notifier.stop()
         if watch_manager:
-            watch_manager.del_watch(path)
+            watch_manager.close()
 
         log.info("Clean up finished")
     except:
@@ -2373,7 +2371,7 @@ try:
 
     # wait until is keymap loaded
     while not keymap_loaded:
-        pass
+        sleep(0.5)
 
     # Sleep for a bit so udev, libinput, Xorg, Wayland, ... all have had
     # a chance to see the device and initialize it. Otherwise the event
