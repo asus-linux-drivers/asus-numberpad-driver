@@ -34,6 +34,7 @@ display_wayland = None
 keyboard_state = None
 display = None
 keymap_loaded = False
+listening_touchpad_events_started = False
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s',
@@ -451,7 +452,7 @@ def load_keymap_listener_wayland():
 
 
 def load_keymap_listener_x11():
-    global stop_threads, display
+    global stop_threads, display, listening_touchpad_events_started
 
     try:
 
@@ -460,9 +461,10 @@ def load_keymap_listener_x11():
         event = display.next_event()
         if event.type == Xlib.X.MappingNotify and event.count > 0 and event.request == Xlib.X.MappingKeyboard:
 
-          display.refresh_keyboard_mapping(event)
-          load_evdev_keys_for_x11()
-          #raise Xlib.error.ConnectionClosedError("fd") # testing purpose only
+          if listening_touchpad_events_started or not keymap_loaded:
+            display.refresh_keyboard_mapping(event)
+            load_evdev_keys_for_x11()
+            #raise Xlib.error.ConnectionClosedError("fd") # testing purpose only
     except:
       log.exception("X11 load keymap listener error. Exiting")
       os.kill(os.getpid(), signal.SIGUSR1)
@@ -2432,6 +2434,7 @@ try:
     threads.append(t)
     t.start()
 
+    listening_touchpad_events_started = True
     listen_touchpad_events()
 except:
     logging.exception("Listening touchpad events unexpectedly failed")
