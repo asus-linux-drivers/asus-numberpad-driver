@@ -1950,238 +1950,244 @@ def listen_touchpad_events():
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad
 
-    for e in d_t.events():
+    try:
 
-        last_event_time = time()
+        for e in d_t.events():
 
-        if is_idled:
-          is_idled = False
-          cancel_idle_numpad()
+            last_event_time = time()
 
-        current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
-        current_slot_y = abs_mt_slot_y_values[abs_mt_slot_value]
+            if is_idled:
+                is_idled = False
+                cancel_idle_numpad()
 
-        current_slot_key = abs_mt_slot_numpad_key[abs_mt_slot_value]
+            current_slot_x = abs_mt_slot_x_values[abs_mt_slot_value]
+            current_slot_y = abs_mt_slot_y_values[abs_mt_slot_value]
+
+            current_slot_key = abs_mt_slot_numpad_key[abs_mt_slot_value]
 
 
-        # POINTER_BUTTON own handling instead of touchpad driver starts
-        #
-        # can not be excluded situation
-        # when is send number or character together
-        # with POINTER_BUTTON because can be send in slot firstly!
-        #
-        # for each EV_KEY.BTN_LEFT, EV_KEY.BTN_RIGHT, EV_KEY.BTN_MIDDLE
-        # if is send always only BTN_LEFT
-        # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
-        #
-        # enabled_touchpad_pointer value 0 is filtered out here
-        if is_key_pointer_button(e.code) and enabled_touchpad_pointer == 0:
-            continue
-
-        # protection against situations when is clicked pointer button (LEFT, RIGHT, MIDDLE) and in config is set up send key when is released finger
-        # then this code cancel sending all key events unless is finger released
-        if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
-
-            if e.value == 0:
-                log.debug("Released touchpad pointer button")
-                key_pointer_button_is_touched = False
-                set_none_to_all_mt_slots()
-
-                if enabled_touchpad_pointer == 1:
-                    ungrab_current_slot()
-
+            # POINTER_BUTTON own handling instead of touchpad driver starts
+            #
+            # can not be excluded situation
+            # when is send number or character together
+            # with POINTER_BUTTON because can be send in slot firstly!
+            #
+            # for each EV_KEY.BTN_LEFT, EV_KEY.BTN_RIGHT, EV_KEY.BTN_MIDDLE
+            # if is send always only BTN_LEFT
+            # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
+            #
+            # enabled_touchpad_pointer value 0 is filtered out here
+            if is_key_pointer_button(e.code) and enabled_touchpad_pointer == 0:
                 continue
-            else:
-                log.debug("Pressed touchpad pointer button")
-                key_pointer_button_is_touched = True
 
-        # enabled_touchpad_pointer value 2 only! is processed
-        if numlock and enabled_touchpad_pointer == 2:
-            if e.matches(EV_KEY.BTN_LEFT):
-                if(current_slot_x <= (maxx / 100) * 35):
-                    pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
-                elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
-                    pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
+            # protection against situations when is clicked pointer button (LEFT, RIGHT, MIDDLE) and in config is set up send key when is released finger
+            # then this code cancel sending all key events unless is finger released
+            if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
+
+                if e.value == 0:
+                    log.debug("Released touchpad pointer button")
+                    key_pointer_button_is_touched = False
+                    set_none_to_all_mt_slots()
+
+                    if enabled_touchpad_pointer == 1:
+                        ungrab_current_slot()
+
+                    continue
                 else:
-                    pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
+                    log.debug("Pressed touchpad pointer button")
+                    key_pointer_button_is_touched = True
 
-            if is_key_pointer_button(current_slot_key):
-            #    #log.info("skipping because current slot is pointer button")
-                continue
-        # enabled_touchpad_pointer value 1 only! is processed futher
-        # POINTER_BUTTON own handling instead of touchpad driver ends
+            # enabled_touchpad_pointer value 2 only! is processed
+            if numlock and enabled_touchpad_pointer == 2:
+                if e.matches(EV_KEY.BTN_LEFT):
+                    if(current_slot_x <= (maxx / 100) * 35):
+                        pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
+                    elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
+                        pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
+                    else:
+                        pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
+
+                if is_key_pointer_button(current_slot_key):
+                #    #log.info("skipping because current slot is pointer button")
+                    continue
+            # enabled_touchpad_pointer value 1 only! is processed futher
+            # POINTER_BUTTON own handling instead of touchpad driver ends
 
 
-        if key_pointer_button_is_touched:
-            continue
-
-        if e.matches(EV_ABS.ABS_MT_SLOT):
-            if(e.value < support_for_maximum_abs_mt_slots):
-                abs_mt_slot_value = e.value
-                unsupported_abs_mt_slot = False
-            else:
-                unsupported_abs_mt_slot = True
-
-        if unsupported_abs_mt_slot == True:
-            # slide gestures with multitouch True: second finger stops slide gesture
-            # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED
-            if multitouch:
-                stop_top_left_right_icon_slide_gestures()
-
-            if not multitouch:
-
-                # protection against multitouching when is multitouch not enable: when is used another finger on activated NumberPad and multitouch is not enabled (is allowed only 1 finger), slot is reseted
-                set_none_to_current_mt_slot()
-
-            continue
-
-        if e.matches(EV_MSC.MSC_TIMESTAMP):
-
-            # top right icon (numlock) activation
-            touched_key = get_touched_key()
-            top_right_icon = is_pressed_touchpad_top_right_icon()
-            if (top_right_icon or touched_key == get_evdev_key_for_char('Num_Lock')) and takes_numlock_longer_then_set_up_activation_time():
-
-              local_numlock_pressed()
-              continue
-
-            # top left icon (brightness change) activation
-            if numlock and is_pressed_touchpad_top_left_icon() and\
-                takes_top_left_icon_touch_longer_then_set_up_activation_time() and\
-                not top_left_icon_brightness_func_disabled:
-
-                increase_brightness()
+            if key_pointer_button_is_touched:
                 continue
 
-        if e.matches(EV_ABS.ABS_MT_POSITION_X):
-            abs_mt_slot_x_values[abs_mt_slot_value] = e.value
-            if distance_to_move_only_pointer and \
-                top_right_icon_touch_start_time == 0 and \
-                top_left_icon_touch_start_time == 0:
+            if e.matches(EV_ABS.ABS_MT_SLOT):
+                if(e.value < support_for_maximum_abs_mt_slots):
+                    abs_mt_slot_value = e.value
+                    unsupported_abs_mt_slot = False
+                else:
+                    unsupported_abs_mt_slot = True
 
-                if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
-                    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
-                if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
-                    current_position_is_more_distant_than_distance_to_move_only_pointer():
+            if unsupported_abs_mt_slot == True:
+                # slide gestures with multitouch True: second finger stops slide gesture
+                # slide gestures with multitouch False: finger out of capacity (6th) is ignored but GESTURE IS NOT STOPPED
+                if multitouch:
+                    stop_top_left_right_icon_slide_gestures()
 
+                if not multitouch:
+
+                    # protection against multitouching when is multitouch not enable: when is used another finger on activated NumberPad and multitouch is not enabled (is allowed only 1 finger), slot is reseted
                     set_none_to_current_mt_slot()
 
-                    # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                continue
+
+            if e.matches(EV_MSC.MSC_TIMESTAMP):
+
+                # top right icon (numlock) activation
+                touched_key = get_touched_key()
+                top_right_icon = is_pressed_touchpad_top_right_icon()
+                if (top_right_icon or touched_key == get_evdev_key_for_char('Num_Lock')) and takes_numlock_longer_then_set_up_activation_time():
+
+                  local_numlock_pressed()
+                  continue
+
+                # top left icon (brightness change) activation
+                if numlock and is_pressed_touchpad_top_left_icon() and\
+                    takes_top_left_icon_touch_longer_then_set_up_activation_time() and\
+                    not top_left_icon_brightness_func_disabled:
+
+                    increase_brightness()
                     continue
 
-            is_not_finger_moved_to_another_key()
+            if e.matches(EV_ABS.ABS_MT_POSITION_X):
+                abs_mt_slot_x_values[abs_mt_slot_value] = e.value
+                if distance_to_move_only_pointer and \
+                    top_right_icon_touch_start_time == 0 and \
+                    top_left_icon_touch_start_time == 0:
 
-            if numlock and is_slided_from_top_left_icon(e):
-                use_bindings_for_touchpad_left_icon_slide_function()
-                continue
-            elif is_slided_from_top_right_icon(e):
-                local_numlock_pressed()
-                continue
+                    if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
+                        abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
+                    if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
+                        current_position_is_more_distant_than_distance_to_move_only_pointer():
 
-        if e.matches(EV_ABS.ABS_MT_POSITION_Y):
-            abs_mt_slot_y_values[abs_mt_slot_value] = e.value
-            if distance_to_move_only_pointer and \
-                top_right_icon_touch_start_time == 0 and \
-                top_left_icon_touch_start_time == 0:
+                        set_none_to_current_mt_slot()
 
-                if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
-                    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
-                if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
-                    current_position_is_more_distant_than_distance_to_move_only_pointer():
+                        # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                        continue
 
-                    set_none_to_current_mt_slot()
+                is_not_finger_moved_to_another_key()
 
-                    # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                if numlock and is_slided_from_top_left_icon(e):
+                    use_bindings_for_touchpad_left_icon_slide_function()
+                    continue
+                elif is_slided_from_top_right_icon(e):
+                    local_numlock_pressed()
                     continue
 
-            is_not_finger_moved_to_another_key()
+            if e.matches(EV_ABS.ABS_MT_POSITION_Y):
+                abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+                if distance_to_move_only_pointer and \
+                    top_right_icon_touch_start_time == 0 and \
+                    top_left_icon_touch_start_time == 0:
 
-            if is_slided_from_top_right_icon(e):
-                local_numlock_pressed()
-                continue
+                    if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+                        abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
+                    if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
+                        current_position_is_more_distant_than_distance_to_move_only_pointer():
 
-        if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
-            set_tracking_id(e.value)
+                        set_none_to_current_mt_slot()
 
-        if e.matches(EV_KEY.BTN_TOOL_FINGER) or \
-           e.matches(EV_KEY.BTN_TOOL_DOUBLETAP) or \
-           e.matches(EV_KEY.BTN_TOOL_TRIPLETAP) or \
-           e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
-           e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
+                        # current slot was cleaned, useless continue and call is_not_finger_moved_to_another_key()
+                        continue
 
-            log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
-                abs_mt_slot_y_values[abs_mt_slot_value]))
+                is_not_finger_moved_to_another_key()
 
-            if is_pressed_touchpad_top_right_icon():
-                pressed_touchpad_top_right_icon(e.value)
-                continue
-            elif numlock and is_pressed_touchpad_top_left_icon():
-                pressed_touchpad_top_left_icon(e)
-                continue
-
-            col = math.floor(
-                (current_slot_x - minx_numpad) / col_width)
-            row = math.floor(
-                (current_slot_y - miny_numpad) / row_height)
-
-            if([max(row, 0), max(col, 0)] in keys_ignore_offset):
-                row = max(row, 0)
-                col = max(col, 0)
-            elif (
-                    current_slot_x > minx_numpad and
-                    current_slot_x < maxx_numpad and
-                    current_slot_y > miny_numpad and
-                    current_slot_y < maxy_numpad
-                ):
-                if (row < 0 or col < 0):
-                    continue
-            else:
-                # offset area
-                continue
-
-            if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
-                log.debug('key unpress was already handled because slot is empty')
-                continue
-
-            try:
-
-                key_layout = keys[row][col]
-                key = get_evdev_key_for_numpad_layout_key(key_layout)
-
-                # Numpad is not activated
-                if not numlock and key != get_evdev_key_for_char('Num_Lock'):
+                if is_slided_from_top_right_icon(e):
+                    local_numlock_pressed()
                     continue
 
-                if key is None:
+            if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
+                set_tracking_id(e.value)
+
+            if e.matches(EV_KEY.BTN_TOOL_FINGER) or \
+               e.matches(EV_KEY.BTN_TOOL_DOUBLETAP) or \
+               e.matches(EV_KEY.BTN_TOOL_TRIPLETAP) or \
+               e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
+               e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
+
+                log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
+                    abs_mt_slot_y_values[abs_mt_slot_value]))
+
+                if is_pressed_touchpad_top_right_icon():
+                    pressed_touchpad_top_right_icon(e.value)
+                    continue
+                elif numlock and is_pressed_touchpad_top_left_icon():
+                    pressed_touchpad_top_left_icon(e)
                     continue
 
-                if key == get_evdev_key_for_char('Num_Lock'):
-                    pressed_numlock_key(e.value)
-                    continue
+                col = math.floor(
+                    (current_slot_x - minx_numpad) / col_width)
+                row = math.floor(
+                    (current_slot_y - miny_numpad) / row_height)
+
+                if([max(row, 0), max(col, 0)] in keys_ignore_offset):
+                    row = max(row, 0)
+                    col = max(col, 0)
+                elif (
+                        current_slot_x > minx_numpad and
+                        current_slot_x < maxx_numpad and
+                        current_slot_y > miny_numpad and
+                        current_slot_y < maxy_numpad
+                    ):
+                    if (row < 0 or col < 0):
+                        continue
                 else:
-                    abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+                    # offset area
+                    continue
 
-            except IndexError:
-                log.error('Unhandled col/row %d/%d for position %d-%d',
-                          col,
-                          row,
-                          current_slot_x,
-                          current_slot_y
-                          )
-                continue
+                if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
+                    log.debug('key unpress was already handled because slot is empty')
+                    continue
 
-            if e.value == 1 and press_key_when_is_done_untouch == 0:
-                if key_repetitions:
-                    pressed_numpad_key()
-                else:
+                try:
+
+                    key_layout = keys[row][col]
+                    key = get_evdev_key_for_numpad_layout_key(key_layout)
+
+                    # Numpad is not activated
+                    if not numlock and key != get_evdev_key_for_char('Num_Lock'):
+                        continue
+
+                    if key is None:
+                        continue
+
+                    if key == get_evdev_key_for_char('Num_Lock'):
+                        pressed_numlock_key(e.value)
+                        continue
+                    else:
+                        abs_mt_slot_numpad_key[abs_mt_slot_value] = key
+
+                except IndexError:
+                    log.error('Unhandled col/row %d/%d for position %d-%d',
+                              col,
+                              row,
+                              current_slot_x,
+                              current_slot_y
+                              )
+                    continue
+
+                if e.value == 1 and press_key_when_is_done_untouch == 0:
+                    if key_repetitions:
+                        pressed_numpad_key()
+                    else:
+                        pressed_numpad_key()
+                        unpressed_numpad_key()
+                elif e.value == 0 and press_key_when_is_done_untouch == 1:
+                    # key repetitions is not possible do in this case (press_key_when_is_done_untouch = 1)
                     pressed_numpad_key()
                     unpressed_numpad_key()
-            elif e.value == 0 and press_key_when_is_done_untouch == 1:
-                # key repetitions is not possible do in this case (press_key_when_is_done_untouch = 1)
-                pressed_numpad_key()
-                unpressed_numpad_key()
-            elif e.value == 0 and press_key_when_is_done_untouch == 0:
-                unpressed_numpad_key()
+                elif e.value == 0 and press_key_when_is_done_untouch == 0:
+                    unpressed_numpad_key()
+
+    except device.EventsDroppedException:
+        for e in dev.sync(True):
+            pass
 
 
 def check_touchpad_status():
