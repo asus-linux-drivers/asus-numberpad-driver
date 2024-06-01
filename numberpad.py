@@ -2393,7 +2393,7 @@ try:
     config_save()
     config_lock.release()
     # because inotify (deadlock)
-    sleep(0.1)
+    sleep(0.5)
 
     watch_manager = WatchManager()
 
