@@ -1,5 +1,4 @@
 # Asus touchpad NumberPad driver
-### (v6.0.0 / the latest master may not be stable yet, please use the previous version v5.1.1 or master fixed to the commit 2aae615)
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 ![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
