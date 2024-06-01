@@ -5,7 +5,7 @@
 ![Contributor](https://img.shields.io/badge/contributor-kamack33-blue)
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](https://github.com/asus-linux-drivers/asus-numberpad-driver/graphs/contributors)
 [![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-numberpad-driver.svg?style=flat)](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases)
-[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-numberpad-driver/v6.0.0.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/commit/)
+[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-numberpad-driver/v6.1.0.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/commit/)
 [![Arch package](https://repology.org/badge/version-for-repo/arch/asus-numberpad-driver-ux433fa-git.svg)](https://aur.archlinux.org/pkgbase/asus-numberpad-driver-git)
 [![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/issues?q=is%3Aissue+is%3Aclosed)
 [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/compare)
