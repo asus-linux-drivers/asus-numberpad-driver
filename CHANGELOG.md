@@ -1,5 +1,28 @@
 # Changelog
 
+### 6.1.0 (1.6.2024)
+
+### Feature
+
+- Support for package manager `xbps-install` of void linux (credits @vazw)
+- Updated offline table for auto suggestions from gathered data (GA)
+
+### Fixed
+
+- Fixed clean up of watch manager
+- Not using latest brightness (was used last loaded brightness from config)
+- Missing commas when was added the shortcut for toggling calculator script at the end of already existing shortcuts
+- Evaluating `input-sources` on gnome
+- Throwing away `current` layout index with value 0 on gnome
+- Not continuing when is x11 client not successfully connected to the server or xdg session type is empty
+- Replaced `git` as method used for obtaining reported version to GA (useful when is driver downloaded from the released page)
+- Checking when supported device is not detected
+- Using keymap thought wayland (was printing `/slash`, `-minus`, `+plus` etc.)
+- Loading keymap thought wayland (fixed not correct cancelling searching for keysym when was found keycode but not for active layout so key was not associated (empty string))
+- Starting systemd service on wayland (forced sync device when is `EventsDroppedException` thrown out)
+- Unnecessary udev reset during starting for wayland
+- Loading keymap on x11 twice during the start
+
 ### 6.0.0 (3.5.2024)
 
 ### Feature
