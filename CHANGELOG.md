@@ -1,5 +1,15 @@
 # Changelog
 
+### 6.2.0 (13.6.2024)
+
+### Feature
+
+- Support for package manager `portage` of gentoo linux (credits @v0llk)
+
+### Fixed
+
+- Fixed setting up the last brightness when is NumberPad started in response to activated numlock key
+
 ### 6.1.0 (1.6.2024)
 
 ### Feature
