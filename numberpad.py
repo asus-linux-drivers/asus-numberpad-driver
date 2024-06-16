@@ -1303,7 +1303,7 @@ def get_system_numlock():
         return bool(state)
 
 
-def local_numlock_pressed():
+def local_numlock_pressed(do_not_deactivate = False):
     global brightness, numlock
 
     #log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
@@ -1331,7 +1331,7 @@ def local_numlock_pressed():
         activate_numpad()
 
     # Inactivating
-    else:
+    elif not do_not_deactivate:
 
         numlock = False
         if sys_numlock and numpad_disables_sys_numlock:
@@ -2078,7 +2078,8 @@ def listen_touchpad_events():
 
                 is_not_finger_moved_to_another_key()
 
-                if numlock and is_slided_from_top_left_icon(e):
+                if is_slided_from_top_left_icon(e):
+                    local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
                     continue
                 elif is_slided_from_top_right_icon(e):
@@ -2122,7 +2123,7 @@ def listen_touchpad_events():
                 if is_pressed_touchpad_top_right_icon():
                     pressed_touchpad_top_right_icon(e.value)
                     continue
-                elif numlock and is_pressed_touchpad_top_left_icon():
+                elif is_pressed_touchpad_top_left_icon():
                     pressed_touchpad_top_left_icon(e)
                     continue
 
