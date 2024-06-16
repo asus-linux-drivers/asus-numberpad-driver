@@ -1,5 +1,13 @@
 # Changelog
 
+### 6.3.0 (16.6.2024)
+
+### Feature
+
+- Slide gestures activation treshold x AND y changed to radius
+- Allowed to activate NumberPad with slide gesture with beginning on the top left icon (together with calc app)
+- Updated offline table for auto suggestions from gathered data (GA)
+
 ### 6.2.0 (13.6.2024)
 
 ### Feature
