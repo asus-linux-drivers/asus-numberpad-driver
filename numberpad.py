@@ -24,6 +24,7 @@ import mmap
 from smbus2 import SMBus, i2c_msg
 import ast
 import signal
+import math
 
 xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
 
@@ -555,14 +556,10 @@ CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
 CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_left_icon_slide_func_activation_x_ratio"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.2
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_left_icon_slide_func_activation_y_ratio"
-CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.2
-CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO = "top_right_icon_slide_func_activation_x_ratio"
-CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT = 0.2
-CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO = "top_right_icon_slide_func_activation_y_ratio"
-CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT = 0.2
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_left_icon_slide_func_activation_radius"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 550
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_right_icon_slide_func_activation_radius"
+CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 550
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT = True
 CONFIG_DISABLE_DUE_INACTIVITY_TIME = "disable_due_inactivity_time"
@@ -1371,10 +1368,8 @@ def load_all_config_values():
     global activation_time
     global sys_numlock_enables_numpad
     global top_left_icon_activation_time
-    global top_left_icon_slide_func_activation_x_ratio
-    global top_left_icon_slide_func_activation_y_ratio
-    global top_right_icon_slide_func_activation_x_ratio
-    global top_right_icon_slide_func_activation_y_ratio
+    global top_left_icon_slide_func_activation_radius
+    global top_right_icon_slide_func_activation_radius
     global numlock
     global default_backlight_level
     global top_left_icon_brightness_func_disabled
@@ -1410,10 +1405,8 @@ def load_all_config_values():
             config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, sys_numlock_enables_numpad_new, True, True)
 
     top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
-    top_left_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
-    top_left_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
-    top_right_icon_slide_func_activation_x_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_X_RATIO_DEFAULT))
-    top_right_icon_slide_func_activation_y_ratio = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_Y_RATIO_DEFAULT))
+    top_left_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
+    top_right_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
@@ -1797,21 +1790,19 @@ def pressed_touchpad_top_right_icon(value):
 
 
 def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time, maxx, maxy
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time, top_right_icon_slide_func_activation_radius, maxx, maxy
 
     if top_right_icon_touch_start_time == 0:
         return
 
-    activation_threshold_x = maxx - top_right_icon_slide_func_activation_x_ratio * maxx
-    activation_threshold_y = top_right_icon_slide_func_activation_y_ratio * maxy
-
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == get_evdev_key_for_char('Num_Lock') and\
-        abs_mt_slot_x_values[abs_mt_slot_value] < maxx - top_right_icon_slide_func_activation_x_ratio * maxx and\
-        abs_mt_slot_y_values[abs_mt_slot_value] > maxy - top_right_icon_slide_func_activation_y_ratio * maxy:
+        (maxx - abs_mt_slot_x_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
+        abs_mt_slot_y_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
+        math.pow(maxx - abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_right_icon_slide_func_activation_radius, 2)
+        ):
 
         log.info("Slide from top_right_icon exceeded the activation threshold for x and y.")
-        log.info("Activation x %.2f (top left corner is 0; required < %.2f / %.2f)", abs_mt_slot_x_values[abs_mt_slot_value], activation_threshold_x, maxx)
-        log.info("Activation y %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_y_values[abs_mt_slot_value], activation_threshold_y, maxy)
+        log.info("Activation radius %.2f (top left corner is 0)", top_right_icon_slide_func_activation_radius)
 
         top_right_icon_touch_start_time = 0
         numlock_touch_start_time = 0
@@ -1823,21 +1814,19 @@ def is_slided_from_top_right_icon(e):
 
 
 def is_slided_from_top_left_icon(e):
-    global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values
+    global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, top_left_icon_slide_func_activation_radius
 
     if top_left_icon_touch_start_time == 0:
         return
 
-    activation_threshold_x = top_left_icon_slide_func_activation_x_ratio * maxx
-    activation_threshold_y = top_left_icon_slide_func_activation_y_ratio * maxy
-
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
-        abs_mt_slot_x_values[abs_mt_slot_value] > activation_threshold_x and\
-        abs_mt_slot_y_values[abs_mt_slot_value] > activation_threshold_y:
+        (abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
+        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
+        math.pow(abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_left_icon_slide_func_activation_radius, 2)
+        ):
 
         log.info("Slide from top_left_icon exceeded the activation threshold for x and y.")
-        log.info("Activation x %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_x_values[abs_mt_slot_value], activation_threshold_x, maxx)
-        log.info("Activation y %.2f (top left corner is 0; required > %.2f / %.2f)", abs_mt_slot_y_values[abs_mt_slot_value], activation_threshold_y, maxy)
+        log.info("Activation radius %.2f (top left corner is 0)", top_left_icon_slide_func_activation_radius)
 
         top_left_icon_touch_start_time = 0
         set_none_to_current_mt_slot()
