@@ -556,6 +556,8 @@ CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
 CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD = "top_left_icon_slide_func_activates_numpad"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_left_icon_slide_func_activation_radius"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 550
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_right_icon_slide_func_activation_radius"
@@ -1369,6 +1371,7 @@ def load_all_config_values():
     global sys_numlock_enables_numpad
     global top_left_icon_activation_time
     global top_left_icon_slide_func_activation_radius
+    global top_left_icon_slide_func_activates_numpad
     global top_right_icon_slide_func_activation_radius
     global numlock
     global default_backlight_level
@@ -1406,6 +1409,7 @@ def load_all_config_values():
 
     top_left_icon_activation_time = float(config_get(CONFIG_LEFT_ICON_ACTIVATION_TIME, CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT))
     top_left_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
+    top_left_icon_slide_func_activates_numpad = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT))
     top_right_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
@@ -1798,8 +1802,7 @@ def is_slided_from_top_right_icon(e):
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == get_evdev_key_for_char('Num_Lock') and\
         (maxx - abs_mt_slot_x_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
         abs_mt_slot_y_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
-        math.pow(maxx - abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_right_icon_slide_func_activation_radius, 2)
-        ):
+        math.pow(maxx - abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_right_icon_slide_func_activation_radius, 2)):
 
         log.info("Slide from top_right_icon exceeded the activation threshold for x and y.")
         log.info("Activation radius %.2f (top left corner is 0)", top_right_icon_slide_func_activation_radius)
@@ -1822,8 +1825,7 @@ def is_slided_from_top_left_icon(e):
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
         (abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
         abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
-        math.pow(abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_left_icon_slide_func_activation_radius, 2)
-        ):
+        math.pow(abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_left_icon_slide_func_activation_radius, 2)):
 
         log.info("Slide from top_left_icon exceeded the activation threshold for x and y.")
         log.info("Activation radius %.2f (top left corner is 0)", top_left_icon_slide_func_activation_radius)
@@ -1942,7 +1944,8 @@ def listen_touchpad_events():
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
-        key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad
+        key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
+        top_left_icon_slide_func_activates_numpad
 
     try:
 
@@ -2068,7 +2071,8 @@ def listen_touchpad_events():
                 is_not_finger_moved_to_another_key()
 
                 if is_slided_from_top_left_icon(e):
-                    local_numlock_pressed(True)
+                    if top_left_icon_slide_func_activates_numpad:
+                        local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
                     continue
                 elif is_slided_from_top_right_icon(e):
