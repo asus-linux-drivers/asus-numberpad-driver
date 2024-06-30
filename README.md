@@ -538,7 +538,7 @@ numpad_disables_sys_numlock=1
 
 ## Credits
 
-Thank you very much all the contributors of [asus-numberpad-driver](https://github.com/mohamed-badaoui/asus-numberpad-driver) for your work.
+Thank you very much all the contributors of [asus-numberpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver) for your work.
 
 Thank you who-t for great post about multitouch [Understanding evdev](http://who-t.blogspot.com/2016/09/understanding-evdev.html).
 
@@ -547,10 +547,10 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 - [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
 - [python service] <https://github.com/danahynes/Asus_L410M_Numpad> inspired by [python service, first initialization] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
-- [python service, configurable, the most widely used repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver> inspired by [python service] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
-- [c++ and meson] <https://github.com/xytovl/asus-numpad> inspired by/rewritten version of [python service, configurable, the most widely used repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver>
-- [rust] <https://github.com/iamkroot/asus-numpad> rewritten in rust the same python project which was starting point for this repository  <https://github.com/mohamed-badaoui/asus-numberpad-driver>
-- [python service, configurable, the most up-to-date] **The above project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-numberpad-driver>
+- [python service, configurable, the most widely used repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver> inspired by [python service] <https://gitlab.com/Thraen/gx735_touchpad_numpad>
+- [c++ and meson] <https://github.com/xytovl/asus-numpad> inspired by/rewritten version of [python service, configurable, the most widely used repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
+- [rust] <https://github.com/iamkroot/asus-numpad> rewritten in rust the same python project which was starting point for this repository  <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
+- [python service, configurable, the most up-to-date] **The above project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
 - [c++] <https://github.com/haronaut/asus_numberpad>
 - [c] <https://github.com/valoran-M/asus_driver_touchpad>
 
