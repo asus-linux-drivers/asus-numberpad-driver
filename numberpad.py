@@ -1079,6 +1079,8 @@ def is_pressed_touchpad_top_left_icon():
 
 
 def reset_mt_slot(index):
+    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_x_values, abs_mt_slot_numpad_key
+
     abs_mt_slot_numpad_key[index] = None
     abs_mt_slot_x_init_values[index] = -1
     abs_mt_slot_x_values[index] = -1
@@ -1093,8 +1095,7 @@ def set_none_to_current_mt_slot():
 
 
 def set_none_to_all_mt_slots():
-    global abs_mt_slot_numpad_key,\
-        abs_mt_slot_x_values, abs_mt_slot_y_values
+    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_x_values, abs_mt_slot_numpad_key
 
     abs_mt_slot_numpad_key[:] = None
     abs_mt_slot_x_init_values[:] = -1
