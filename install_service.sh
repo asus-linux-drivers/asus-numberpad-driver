@@ -47,16 +47,44 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     echo "env var XDG_SESSION_TYPE: $XDG_SESSION_TYPE"
     echo
     echo "ERROR LOG FILE: $ERROR_LOG_FILE_PATH"
+
+    # with no gdm is env var XDG_SESSION_TYPE tty - https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/185
+    if [ "$XDG_SESSION_TYPE" == "tty" ] || [ "$XDG_SESSION_TYPE" == "" ]; then
+
+        echo
+        echo "Env var XDG_SESSION_TYPE is: `$XDG_SESSION_TYPE`"
+        echo
+        echo "Please, select your display manager:"
+        echo
+        PS3="Please enter your choice "
+        OPTIONS=("x11" "wayland" "Quit")
+        select SELECTED_OPT in "${OPTIONS[@]}"; do
+            if [ "$SELECTED_OPT" = "Quit" ]; then
+                exit 0
+            fi
+
+            XDG_SESSION_TYPE=$SELECTED_OPT
+
+            echo
+            echo "(SET UP FOR DRIVER ONLY) env var XDG_SESSION_TYPE: $XDG_SESSION_TYPE"
+            echo
+
+            if [ -z "$LAYOUT_NAME" ]; then
+                echo "invalid option $REPLY"
+            else
+                break
+            fi
+        done
+    fi
+
     echo
 
-    if [ "$XDG_SESSION_TYPE" = "x11" ]; then
+    if [ "$XDG_SESSION_TYPE" == "x11" ]; then
         cat "$SERVICE_X11_FILE_PATH" | LAYOUT_NAME=$LAYOUT_NAME CONFIG_FILE_DIR_PATH="$CONFIG_FILE_DIR_PATH/" DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR XDG_SESSION_TYPE=$XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS ERROR_LOG_FILE_PATH=$ERROR_LOG_FILE_PATH envsubst '$LAYOUT_NAME $CONFIG_FILE_DIR_PATH $DISPLAY $XAUTHORITY $XDG_RUNTIME_DIR $XDG_SESSION_TYPE $DBUS_SESSION_BUS_ADDRESS $ERROR_LOG_FILE_PATH' | sudo tee "$SERVICE_INSTALL_DIR_PATH/$SERVICE_INSTALL_FILE_NAME" >/dev/null
-    elif [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        echo "Unfortunatelly you will not be able use feature: Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell, at this moment is supported only X11)"
+    else
+        echo "Unfortunatelly you will not be able use feature: Disabling Touchpad (e.g. Fn+special key) disables NumberPad aswell, at this moment is supported only X11"
         # DISPLAY=$DISPLAY for Xwayland
         cat "$SERVICE_WAYLAND_FILE_PATH" | LAYOUT_NAME=$LAYOUT_NAME CONFIG_FILE_DIR_PATH="$CONFIG_FILE_DIR_PATH/" DISPLAY=$DISPLAY WAYLAND_DISPLAY=$WAYLAND_DISPLAY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR XDG_SESSION_TYPE=$XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS ERROR_LOG_FILE_PATH=$ERROR_LOG_FILE_PATH envsubst '$LAYOUT_NAME $CONFIG_FILE_DIR_PATH $DISPLAY $WAYLAND_DISPLAY $XDG_RUNTIME_DIR $XDG_SESSION_TYPE $DBUS_SESSION_BUS_ADDRESS $ERROR_LOG_FILE_PATH' | sudo tee "$SERVICE_INSTALL_DIR_PATH/$SERVICE_INSTALL_FILE_NAME" >/dev/null
-    else
-        cat "$SERVICE_FILE_PATH" | LAYOUT_NAME=$LAYOUT_NAME CONFIG_FILE_DIR_PATH="$CONFIG_FILE_DIR_PATH/" DISPLAY=$DISPLAY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR XDG_SESSION_TYPE=$XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS ERROR_LOG_FILE_PATH=$ERROR_LOG_FILE_PATH envsubst '$LAYOUT_NAME $CONFIG_FILE_DIR_PATH $DISPLAY $XDG_RUNTIME_DIR $XDG_SESSION_TYPE $DBUS_SESSION_BUS_ADDRESS $ERROR_LOG_FILE_PATH' | sudo tee "$SERVICE_INSTALL_DIR_PATH/$SERVICE_INSTALL_FILE_NAME" >/dev/null
     fi
 
     if [[ $? != 0 ]]; then
