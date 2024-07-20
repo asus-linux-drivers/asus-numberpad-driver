@@ -5,4 +5,4 @@ python-xlib
 smbus2
 pyasyncore
 pywayland
-xkbcommon
+xkbcommon<1.1
