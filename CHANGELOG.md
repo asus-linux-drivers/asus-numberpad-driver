@@ -1,5 +1,14 @@
 # Changelog
 
+### 6.3.1 (20.7.2024)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Fixed version of `libxkcommon` to be lower than `1.1`
+- Fixed empty env var `XDG_SESSION_TYPE` or filled with `tty`
+- Fixed too short default slide activation radius (set up `1200px`)
+
 ### 6.3.0 (16.6.2024)
 
 ### Feature
