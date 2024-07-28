@@ -1473,14 +1473,19 @@ key_pointer_button_is_touched = None
 def set_tracking_id(value):
     try:
 
+        log.debug("set_tracking_id starts")
+        log.debug(value)
+
         if value > 0:
             log.debug("Started new slot")
             # not know yet
-            # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
+            log.debug(abs_mt_slot_numpad_key[abs_mt_slot_value])
         else:
             log.debug("Ended existing slot")
             # can be misunderstanding when is touched padding (is printed previous key)
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
+
+            set_none_to_current_mt_slot()
 
         abs_mt_slot[abs_mt_slot_value] = value
     except IndexError as e:
