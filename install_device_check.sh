@@ -3,7 +3,7 @@
 source non_sudo_check.sh
 
 # i2cdetect is /usr/sbin/i2cdetect and some distributions do not add sbin to $PATH (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/154)
-if [[ $(type i2cdetect 2>/dev/null) ]]; then
+if [[ $(type i2cdetect 2>/dev/null) ]] && [[ $(type i2ctransfer 2>/dev/null) ]]; then
     INTERFACES=$(for i in $(i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
 
     if [ -z "$INTERFACES" ]; then
@@ -43,5 +43,5 @@ if [[ $(type i2cdetect 2>/dev/null) ]]; then
         exit 1
     fi
 else
-    echo "The i2cdetect tool not found to proceed initial test whether any i2c device react like NumberPad"
+    echo "The i2cdetect or i2ctransfer tool not found to proceed initial test whether any i2c device react like NumberPad"
 fi
