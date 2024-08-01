@@ -1,5 +1,13 @@
 # Changelog
 
+### 6.3.2 (1.8.2024)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Missing check whether is installed `i2ctransfer` tool
+- Accepting `-1` as starting x or y axis for touch
+
 ### 6.3.1 (20.7.2024)
 
 ### Fixed
