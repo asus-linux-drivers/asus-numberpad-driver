@@ -1485,7 +1485,7 @@ def set_tracking_id(value):
             # can be misunderstanding when is touched padding (is printed previous key)
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-            set_none_to_current_mt_slot()
+            #set_none_to_current_mt_slot()
 
         abs_mt_slot[abs_mt_slot_value] = value
     except IndexError as e:
