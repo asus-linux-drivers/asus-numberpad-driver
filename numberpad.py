@@ -25,6 +25,7 @@ from smbus2 import SMBus, i2c_msg
 import ast
 import signal
 import math
+import glob
 
 xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
 
@@ -42,6 +43,11 @@ logging.basicConfig(
     level=os.environ.get('LOG', 'INFO')
 )
 log = logging.getLogger('asus-numberpad-driver')
+
+xauth_in_tmp_dir = glob.glob('/tmp/xauth_*')
+if len(xauth_in_tmp_dir) > 0:
+  os.environ['XAUTHORITY'] = xauth_in_tmp_dir[0]
+  log.info("X11 has xauth file in /tmp folder with filename changed each boot, currently {}".format(os.environ['XAUTHORITY']))
 
 if not xdg_session_type:
   log.error("xdg session type can not be empty. Exiting")
