@@ -125,7 +125,7 @@ shopt -s extglob
 
 	read -r -p "Reboot is required. Do you want reboot now? [y/N]" RESPONSE
     case "$RESPONSE" in [yY][eE][sS]|[yY])
-        reboot
+        sudo /sbin/reboot
         ;;
     *)
         ;;
