@@ -946,19 +946,12 @@ def check_gnome_layout():
             mru_layout_index = sources_evaluated.index(mru_sources_evaluated[0])
             mru_layout = mru_sources_evaluated[0][1].split("+")[0]
 
-            # first run, would be unnecessary duplicated loading wayland / x11 keymap
-            if gnome_current_layout_index == None:
-                gnome_current_layout_index = mru_layout_index
-                gnome_current_layout = mru_layout
+            if display_wayland_var:
+                if keyboard_state and gnome_current_layout_index is not mru_layout_index:
 
-            elif display_wayland_var:
-                if keyboard_state:
-                    layout_is_active = keyboard_state.layout_index_is_active(mru_layout_index, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
-
-                    if not layout_is_active and gnome_current_layout_index is not mru_layout_index:
-                        gnome_current_layout_index =  mru_layout_index
-                        gnome_current_layout = mru_layout
-                        wl_load_keymap_state()
+                    gnome_current_layout_index =  mru_layout_index
+                    gnome_current_layout = mru_layout
+                    wl_load_keymap_state()
 
             elif gnome_current_layout != mru_layout:
 
@@ -969,6 +962,7 @@ def check_gnome_layout():
                         subprocess.call(cmd)
 
                         gnome_current_layout = mru_layout
+                        gnome_current_layout_index =  mru_layout_index
                     except:
                         log.exception('setxkbmap set failed')
 
