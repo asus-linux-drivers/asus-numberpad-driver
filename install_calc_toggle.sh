@@ -65,13 +65,13 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             new_shortcut_string=" ['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']"
         fi
 
-        IS_INSTALLED_ELEMENTARY_OS_CALCULATOR=$(type io.elementary.calculator &>/dev/null ; echo $? )
+        IS_INSTALLED_ELEMENTARY_OS_CALCULATOR=$((type io.elementary.calculator || flatpak list | grep io.elementary.calculator) &>/dev/null ; echo $?)
         if [ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR == "0" ]; then
             CALC_TOGGLE_SUPPORTED_CALC=1
             echo "Detected io.elementary.calculator"
         fi
 
-        IS_INSTALLED_GNOME_OS_CALCULATOR=$(type gnome-calculator &>/dev/null ; echo $? )
+        IS_INSTALLED_GNOME_OS_CALCULATOR=$((type gnome-calculator || flatpak list | grep org.gnome.Calculator) &>/dev/null ; echo $?)
         if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "0" ]; then
             CALC_TOGGLE_SUPPORTED_CALC=1
             echo "Detected gnome-calculator"

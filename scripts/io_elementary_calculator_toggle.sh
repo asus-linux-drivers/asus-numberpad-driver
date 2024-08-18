@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if [[ $(ps aux | grep io.elementary.calculator | grep -v grep) ]]; then
-	flatpak kill io.elementary.calculator &>/dev/null &
-else
+if [[ $(pgrep -xlf io.elementary.calculator &>/dev/null ; echo $?) != 0 ]]; then
 	flatpak run io.elementary.calculator &>/dev/null &
+else
+  killall io.elementary.calculator &>/dev/null &
 fi
