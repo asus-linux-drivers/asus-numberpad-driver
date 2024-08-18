@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
-if [[ $(pgrep -lf gnome-calculator) ]]; then
-	killall gnome-calculator &>/dev/null &
+if [[ $(flatpak list | grep org.gnome.Calculator) ]]; then
+  if [[ $(pgrep -lfx org.gnome.Calculator) ]]; then
+  	flatpak run org.gnome.Calculator &>/dev/null &
+  else
+    flatpak kill org.gnome.Calculator &>/dev/null &
+  fi
 else
-	gnome-calculator &>/dev/null &
+  if [[ $(pgrep -lfx gnome-calculator) ]]; then
+  	killall gnome-calculator &>/dev/null &
+  else
+  	gnome-calculator &>/dev/null &
+  fi
 fi
