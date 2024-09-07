@@ -1266,8 +1266,13 @@ def activate_numpad():
     if not top_left_icon_brightness_func_disabled:
         if default_backlight_level != "0x01":
             send_value_to_touchpad_via_i2c(default_backlight_level)
-        elif len(backlight_levels) > brightness:
-            send_value_to_touchpad_via_i2c(backlight_levels[brightness])
+        else:
+            try:
+                # brightness may be not defined yet
+                if len(backlight_levels) > brightness:
+                    send_value_to_touchpad_via_i2c(backlight_levels[brightness])
+            except:
+                pass
 
     config_set(CONFIG_ENABLED, True)
 
