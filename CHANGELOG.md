@@ -1,5 +1,18 @@
 # Changelog
 
+### 6.3.3 (7.9.2024)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Support for `gnome-calculator` installed via `flatpak` (credits @encrustace)
+- Support for `io.elementary.calculator`
+- Xauthority file in `/temp` folder with different name for each boot
+- When `i2c-tools` require `sudo`
+- Not prioritizing layout from source `mru-sources` and not reloading keymap
+- Missing `sudo` when uninstalling (credits @Triw-12)
+- Activation when is `brightness` not defined yet
+
 ### 6.3.2 (1.8.2024)
 
 ### Fixed
