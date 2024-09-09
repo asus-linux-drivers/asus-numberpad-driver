@@ -715,6 +715,11 @@ def gsettingsSetTouchpadTapToClick(value):
 def gsettingsGetUnicodeHotkey():
     return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey').decode().rstrip()
 
+def qdbusSetTouchpadTapToClick(value):
+    cmd = ['qdbus', 'org.kde.KWin', '/org/kde/KWin/InputDevice/event7', 'org.kde.KWin.InputDevice.tapToClick', str(value)]
+    log.debug(cmd)
+    subprocess.call(cmd)
+
 
 def get_compose_key_start_events_for_unicode_string(reset_udev = True):
     global gsettings_failure_count, gsettings_max_failure_count, mods_to_evdev_keys
@@ -1168,7 +1173,8 @@ def set_touchpad_prop_tap_to_click(value):
 
     # 1. priority - gsettings
     if gsettings_failure_count < gsettings_max_failure_count:
-        gsettingsSetTouchpadTapToClick(value)
+        # gsettingsSetTouchpadTapToClick(value)
+        qdbusSetTouchpadTapToClick(value)
         # why is return commented? and is always run also xinput below? Because on KDE is allowed set up without any error but nothing happens
         # return
 
