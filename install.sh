@@ -124,6 +124,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
+    source install_sudoers_rule.sh
+
+    echo
+
     source install_external_keyboard_toggle.sh
 
     echo

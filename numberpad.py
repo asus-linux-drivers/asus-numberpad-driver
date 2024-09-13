@@ -476,12 +476,32 @@ def load_keymap_listener_x11():
       log.exception("X11 load keymap listener error. Exiting")
       os.kill(os.getpid(), signal.SIGUSR1)
 
+def get_libinput_touchpad_event_number() -> int:
+    result = subprocess.run(['sudo', 'libinput', 'list-devices'], stdout=subprocess.PIPE)
+    output = result.stdout.decode('utf-8')
+
+    touchpad_section = ''
+    for section in output.split('\n\n'):
+        if 'touchpad' in section.lower():
+            touchpad_section = section
+            break
+    
+    kernel_line = ''
+    for line in touchpad_section.splitlines():
+        if 'kernel:' in line.lower():
+            kernel_line = line
+            break
+
+    return kernel_line.split('/')[-1].removeprefix('event')
+
 
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
 
 is_idled: bool = False
+
+libinput_touchpad_event_number = get_libinput_touchpad_event_number()
 
 # Constants
 try_times = 5
@@ -716,7 +736,13 @@ def gsettingsGetUnicodeHotkey():
     return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey').decode().rstrip()
 
 def qdbusSetTouchpadTapToClick(value):
-    cmd = ['qdbus', 'org.kde.KWin', '/org/kde/KWin/InputDevice/event7', 'org.kde.KWin.InputDevice.tapToClick', str(value)]
+    cmd = [
+        'qdbus', 
+        'org.kde.KWin', 
+        f'/org/kde/KWin/InputDevice/event{libinput_touchpad_event_number}', 
+        'org.kde.KWin.InputDevice.tapToClick', 
+        str(value)
+    ]
     log.debug(cmd)
     subprocess.call(cmd)
 

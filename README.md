@@ -1,3 +1,11 @@
+### This is a fork of [asus-linux-drivers/asus-numberpad-driver](https://github.com/asus-linux-drivers/asus-numberpad-driver), with support for toggling tap-to-click on KDE Plasma Wayland.
+
+Without this, the touchpad registers NumberPad clicks as normal clicks too, and screws with everything as a result.
+
+This fork uses `qdbus` to toggle tap-to-click from the terminal.
+
+---
+
 # Asus touchpad NumberPad driver
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
