@@ -1392,6 +1392,7 @@ def local_numlock_pressed(do_not_deactivate = False):
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
+        numlock_lock.release()
         return
 
     sys_numlock = get_system_numlock()
