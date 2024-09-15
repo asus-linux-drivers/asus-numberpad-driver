@@ -728,21 +728,59 @@ def qdbusSet(value):
     else:
         log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
 
-    subprocess.call(cmd)
+
+def qdbusGet(service, path, interface, property_name):
+    global qdbus_failure_count, qdbus_max_failure_count
+
+    if qdbus_failure_count < qdbus_max_failure_count:
+        try:
+            cmd = [
+                'qdbus',
+                service,
+                path,
+                'org.freedesktop.DBus.Properties.Get',
+                interface,
+                property_name
+            ]
+            result = subprocess.check_output(cmd).rstrip()
+            return result
+        except:
+            log.exception('qdbus get failed')
+            qdbus_failure_count+=1
+    else:
+        log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
 
 
 def qdbusSetTouchpadTapToClick(value):
     qdbusSet(value)
 
+def qdbusGetTouchpadEnabled():
+    global touchpad
+
+    try:
+        return qdbusGet(
+            'org.kde.KWin',
+            f'/org/kde/KWin/InputDevice/event{touchpad}',
+            'org.kde.KWin.InputDevice',
+            'enabled'
+        ).decode().rstrip()
+    except:
+        return None
+
 def gsettingsGetTouchpadSendEvents():
-    return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events').decode().rstrip()
+    try:
+        return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events').decode().rstrip()
+    except:
+        return None
 
 def gsettingsSetTouchpadTapToClick(value):
     gsettingsSet('org.gnome.desktop.peripherals.touchpad', 'tap-to-click', str(bool(value)).lower())
 
 def gsettingsGetUnicodeHotkey():
-    return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey').decode().rstrip()
-
+    try:
+        return gsettingsGet('org.freedesktop.ibus.panel.emoji', 'unicode-hotkey').decode().rstrip()
+    except:
+        return None
 
 def get_compose_key_start_events_for_unicode_string(reset_udev = True):
     global gsettings_failure_count, gsettings_max_failure_count, mods_to_evdev_keys
@@ -1028,6 +1066,15 @@ def check_gnome_layout():
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+
+    # before gsettings, because gsettings reports "enabled" on KDE regardless of the truth
+    if qdbus_failure_count < qdbus_max_failure_count:
+        value = qdbusGetTouchpadEnabled()
+        if value:
+            if 'true' in value:
+                return True
+            elif 'false' in value:
+                return False
 
     if gsettings_failure_count < gsettings_max_failure_count:
         value = gsettingsGetTouchpadSendEvents()
