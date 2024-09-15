@@ -490,6 +490,9 @@ try_sleep = 0.1
 gsettings_failure_count = 0
 gsettings_max_failure_count = 3
 
+qdbus_failure_count = 0
+qdbus_max_failure_count = 3
+
 getting_device_via_xinput_status_failure_count = 0
 getting_device_via_xinput_status_max_failure_count = 3
 
@@ -705,6 +708,31 @@ def gsettingsGet(path, name):
     else:
         log.debug('Gsettings failed more then: \"%s\" so is not try anymore', gsettings_max_failure_count)
 
+
+def qdbusSet(value):
+    global qdbus_failure_count, qdbus_max_failure_count, touchpad
+
+    if qdbus_failure_count < qdbus_max_failure_count:
+        try:
+            cmd = [
+                'qdbus',
+                'org.kde.KWin',
+                f'/org/kde/KWin/InputDevice/event{touchpad}',
+                'org.kde.KWin.InputDevice.tapToClick',
+                str(value)
+            ]
+            subprocess.call(cmd)
+        except:
+            log.exception('qdbus set failed')
+            qdbus_failure_count+=1
+    else:
+        log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
+
+    subprocess.call(cmd)
+
+
+def qdbusSetTouchpadTapToClick(value):
+    qdbusSet(value)
 
 def gsettingsGetTouchpadSendEvents():
     return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events').decode().rstrip()
@@ -1164,13 +1192,13 @@ def grab_current_slot():
 
 
 def set_touchpad_prop_tap_to_click(value):
-    global touchpad_name, gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
+    global touchpad_name, gsettings_failure_count, gsettings_max_failure_count, qdbus_max_failure_count, qdbus_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
 
-    # 1. priority - gsettings
+    # 1. priority - gsettings (gnome) or qdbus (kde)
     if gsettings_failure_count < gsettings_max_failure_count:
         gsettingsSetTouchpadTapToClick(value)
-        # why is return commented? and is always run also xinput below? Because on KDE is allowed set up without any error but nothing happens
-        # return
+    if qdbus_failure_count < qdbus_max_failure_count:
+        qdbusSetTouchpadTapToClick(value)
 
     # 2. priority - xinput
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
