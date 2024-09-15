@@ -731,8 +731,38 @@ def qdbusSet(value):
     subprocess.call(cmd)
 
 
+def qdbusGet(service, path, interface, property_name):   
+    global qdbus_failure_count, qdbus_max_failure_count
+
+    if qdbus_failure_count < qdbus_max_failure_count:
+        try:
+            cmd = [
+                'qdbus',
+                service,
+                path,
+                'org.freedesktop.DBus.Properties.Get',
+                interface,
+                property_name
+            ]
+            result = subprocess.check_output(cmd).rstrip()
+            return result
+        except:
+            log.exception('qdbus get failed')
+            qdbus_failure_count+=1
+    else:
+        log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
+
+
 def qdbusSetTouchpadTapToClick(value):
     qdbusSet(value)
+
+def qdbusGetTouchpadEnabled():
+    return qdbusGet(
+        'org.kde.KWin',
+        f'/org/kde/KWin/InputDevice/event{touchpad}',
+        'org.kde.KWin.InputDevice',
+        'enabled'
+    ).decode().rstrip()
 
 def gsettingsGetTouchpadSendEvents():
     return gsettingsGet('org.gnome.desktop.peripherals.touchpad', 'send-events').decode().rstrip()
@@ -1028,6 +1058,15 @@ def check_gnome_layout():
 
 def is_device_enabled(device_name):
     global gsettings_failure_count, gsettings_max_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count
+            
+    # Before gsettings, because gsettings reports "enabled" on KDE regardless of the truth
+    if device_name == touchpad_name and qdbus_failure_count < qdbus_max_failure_count:
+        value = qdbusGetTouchpadEnabled()
+        if value:
+            if 'true' in value:
+                return True
+            elif 'false' in value:
+                return False
 
     if gsettings_failure_count < gsettings_max_failure_count:
         value = gsettingsGetTouchpadSendEvents()
