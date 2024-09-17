@@ -866,9 +866,8 @@ while try_times > 0:
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
-            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198 (ROG Zephyrus duo 16 (2023) 4F3:41D9 - in future might be better just filtering out all lines that contain 9009)
-            if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" or "Name=\"ASUF" in line) and "Touchpad" in line) or \
-                (("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and ("1406" in line or "4F3:3101" in line or "4F3:41D9" in line) and "Touchpad" in line):
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198
+            if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" or "Name=\"ASUF" in line) and "Touchpad" in line and not "9009" in line):
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
