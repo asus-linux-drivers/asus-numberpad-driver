@@ -1,5 +1,15 @@
 # Changelog
 
+### 6.3.4 (19.9.2024)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Touchpad detection by just filtering out touchpad with 9009 that have only duo laptops
+- Missing releasing lock for numlock after attempt of activating NumberPad when is touchpad disabled (credits @sleddev)
+- Obtaining touchpad status enabled/disabled using `qdbus` for `kde` (credits @sleddev)
+- Toggling tap-to-click using `qdbus` for `kde` (credits @sleddev)
+
 ### 6.3.3 (7.9.2024)
 
 ### Fixed
