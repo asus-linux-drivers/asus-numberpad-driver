@@ -15,11 +15,10 @@ with open('/proc/bus/input/devices', 'r') as f:
 	for line in lines:
 
 		# Look for the touchpad #
-        # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
+		# https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
 		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
-		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and "Touchpad" in line) or \
-			(("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and ("1406" in line or "4F3:3101" in line) and "Touchpad" in line):
+		if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" or "Name=\"ASUF" in line) and "Touchpad" in line and not "9009" in line):
 
 			touchpad_detected = 1
 
@@ -48,13 +47,13 @@ with open('/proc/bus/input/devices', 'r') as f:
 				keyboard = keyboard.split(" ")[0]
 				keyboard_detected = 2
 
-        # Do not stop looking if touchpad and keyboard have been found
-        # because more drivers can be installed
-        # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
-		# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
-		#if keyboard_detected == 2 and touchpad_detected == 2:
-		#	break
+				# Do not stop looking if touchpad and keyboard have been found
+				# because more drivers can be installed
+				# https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
+				# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
+				# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
+				#if keyboard_detected == 2 and touchpad_detected == 2:
+				#	break
 
 for i in range(2, 255):
 	value = str(hex(i))
