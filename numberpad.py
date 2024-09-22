@@ -1186,7 +1186,7 @@ def pressed_touchpad_top_left_icon(e):
         top_left_icon_touch_start_time = time()
         log.info("Touched top_left_icon area in time: %s", time())
         abs_mt_slot_numpad_key[abs_mt_slot_value] = EV_KEY_TOP_LEFT_ICON
-    else:
+    elif e.value == 0:
         top_left_icon_touch_start_time = 0
         log.info("Un-touched top_left_icon area in time: %s", time())
         set_none_to_current_mt_slot()
@@ -1860,10 +1860,10 @@ def pressed_numlock_key(value):
         log.info("Un-touched numlock key (not top_right_icon) in time: %s", time())
 
 
-def pressed_touchpad_top_right_icon(value):
+def pressed_touchpad_top_right_icon(e):
     global top_right_icon_touch_start_time, numlock_touch_start_time, abs_mt_slot_numpad_key
 
-    if value == 1:
+    if e.value == 1:
         log.info("Touched top_right_icon area (numlock) in time: %s", time())
 
         # is used for slide (that is why duplicated location for saving time())
@@ -1871,7 +1871,7 @@ def pressed_touchpad_top_right_icon(value):
         numlock_touch_start_time = time()
 
         abs_mt_slot_numpad_key[abs_mt_slot_value] = get_evdev_key_for_char('Num_Lock')
-    else:
+    elif e.value == 0:
         top_right_icon_touch_start_time = 0
         numlock_touch_start_time = 0
 
@@ -2197,11 +2197,15 @@ def listen_touchpad_events():
                e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
                e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
-                log.debug('finger down at x %d y %d', abs_mt_slot_x_values[abs_mt_slot_value], (
-                    abs_mt_slot_y_values[abs_mt_slot_value]))
+                log.debug('finger down at x %d y %d value %d', abs_mt_slot_x_values[abs_mt_slot_value], (
+                    abs_mt_slot_y_values[abs_mt_slot_value]), e.value)
+
+                # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/169
+                if e.value == 2:
+                    continue
 
                 if is_pressed_touchpad_top_right_icon():
-                    pressed_touchpad_top_right_icon(e.value)
+                    pressed_touchpad_top_right_icon(e)
                     continue
                 elif is_pressed_touchpad_top_left_icon():
                     pressed_touchpad_top_left_icon(e)
