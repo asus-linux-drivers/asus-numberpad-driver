@@ -687,8 +687,8 @@ def gsettingsSet(path, name, value):
 
             log.debug(cmd)
             subprocess.call(cmd)
-        except:
-            log.exception('gsettings set failed')
+        except Exception as e:
+            log.debug(e, exc_info=True)
             gsettings_failure_count+=1
     else:
         log.debug('Gsettings failed more then: \"%s\" so is not try anymore', gsettings_max_failure_count)
@@ -702,8 +702,8 @@ def gsettingsGet(path, name):
             cmd = ['gsettings', 'get', path, name]
             result = subprocess.check_output(cmd).rstrip()
             return result
-        except:
-            log.exception('gsettings get failed')
+        except Exception as e:
+            log.debug(e, exc_info=True)
             gsettings_failure_count+=1
     else:
         log.debug('Gsettings failed more then: \"%s\" so is not try anymore', gsettings_max_failure_count)
@@ -722,8 +722,8 @@ def qdbusSet(value):
                 str(value)
             ]
             subprocess.call(cmd)
-        except:
-            log.exception('qdbus set failed')
+        except Exception as e:
+            log.debug(e, exc_info=True)
             qdbus_failure_count+=1
     else:
         log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
@@ -744,8 +744,8 @@ def qdbusGet(service, path, interface, property_name):
             ]
             result = subprocess.check_output(cmd).rstrip()
             return result
-        except:
-            log.exception('qdbus get failed')
+        except Exception as e:
+            log.debug(e, exc_info=True)
             qdbus_failure_count+=1
     else:
         log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
