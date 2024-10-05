@@ -474,6 +474,7 @@ sys_numlock_enables_numpad = 1
 top_left_icon_activation_time = 1
 top_left_icon_slide_func_activation_radius = 1200
 top_left_icon_slide_func_activates_numpad = 1
+top_left_icon_brightness_func_max_min_only = 1
 top_right_icon_slide_func_activation_radius = 1200
 enabled_touchpad_pointer = 3
 press_key_when_is_done_untouch = 1
@@ -509,6 +510,7 @@ idle_enabled = 0
 | `top_left_icon_slide_func_activates_numpad`   |          | `1`             |  valid value is `0` or `1`, whether is NumberPad activated if is not already
 | `top_left_icon_slide_func_activation_radius` |          | `1200` [px]         | minimum radius of slide
 | `top_left_icon_brightness_func_disabled`      |          | `0`            | valid value is `0` or `1`, allow forced disablement of brightness change function<br><br>brightness function is auto disabled when array `backlight_levels` is empty and when `top_left_icon_width` or `top_left_icon_width` is not set
+| `top_left_icon_brightness_func_max_min_only`  |          | `0`            | valud value is `0` or `1`
 | **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate NumberPad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and removed, moving atleast as far as specified by the ratios of touchpad width > `top_right_icon_slide_func_activation_x_ratio` and height > `top_right_icon_slide_func_activation_y_ratio` |
 | `top_right_icon_slide_func_activation_radius`|          | `1200` [px]         | minimum radius of slide
 **Backlight**                                   |          |                   |

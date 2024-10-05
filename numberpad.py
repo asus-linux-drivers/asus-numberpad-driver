@@ -542,7 +542,8 @@ for row in keys:
             enable_key(field)
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
-backlight_levels = getattr(model_layout, "backlight_levels", [])
+# loaded in load_all_config_values
+backlight_levels = []
 
 
 # Config
@@ -569,6 +570,8 @@ CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD = "top_left_icon_slide_func_act
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_left_icon_slide_func_activation_radius"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 1200
+CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_MAX_MIN_ONLY = "top_left_icon_brightness_func_max_min_only"
+CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_MAX_MIN_ONLY_DEFAULT = False
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_right_icon_slide_func_activation_radius"
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 1200
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
@@ -593,6 +596,7 @@ CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH = "press_key_when_is_done_untouch"
 CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT = True
 CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER = "distance_to_move_only_pointer"
 CONFIG_DISTANCE_TO_MOVE_ONLY_POINTER_DEFAULT = False
+
 
 config_file_path = config_file_dir + CONFIG_FILE_NAME
 config = configparser.ConfigParser()
@@ -1467,6 +1471,8 @@ def load_all_config_values():
     global idle_enabled
     global idle_time
     global brightness
+    global top_left_icon_brightness_func_max_min_only
+    global backlight_levels
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -1496,6 +1502,17 @@ def load_all_config_values():
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
+
+    top_left_icon_brightness_func_max_min_only = config_get(CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_MAX_MIN_ONLY, CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_MAX_MIN_ONLY_DEFAULT)
+
+    if top_left_icon_brightness_func_max_min_only:
+      backlight_levels = getattr(model_layout, "backlight_levels", [])
+      if len(backlight_levels) > 1:
+        min_backlight_level = backlight_levels[0]
+        max_backlight_level = backlight_levels[len(backlight_levels) - 1]
+        backlight_levels = [min_backlight_level, max_backlight_level]
+    else:
+      backlight_levels = getattr(model_layout, "backlight_levels", [])
 
     default_backlight_level = config_get(CONFIG_DEFAULT_BACKLIGHT_LEVEL, CONFIG_DEFAULT_BACKLIGHT_LEVEL_DEFAULT)
     if default_backlight_level == "0x01":
