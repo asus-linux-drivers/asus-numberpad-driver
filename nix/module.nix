@@ -29,6 +29,18 @@ in {
         These options will be written to a configuration file for the driver.
       '';
     };
+
+    wayland = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enable this option to run under Wayland. Disable it for X11.";
+    };
+
+    runtimeDir = lib.mkOption {
+      type = lib.types.str;
+      default = "/run/user/1000";
+      description = "The XDG_RUNTIME_DIR environment variable, specifying the runtime directory.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -78,8 +90,8 @@ in {
 	TimeoutSec = 5;
         WorkingDirectory = "${defaultPackage}";
         Environment = [
-          "XDG_SESSION_TYPE=wayland"
-          "XDG_RUNTIME_DIR=/run/user/1000"
+          ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
+          ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
         ];
       };
     };
