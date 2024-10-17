@@ -38,7 +38,7 @@ in {
 
     runtimeDir = lib.mkOption {
       type = lib.types.str;
-      default = "/run/user/1000";
+      default = "/run/user/1000/";
       description = "The XDG_RUNTIME_DIR environment variable, specifying the runtime directory.";
     };
   };
