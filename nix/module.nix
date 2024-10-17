@@ -85,6 +85,8 @@ in {
       serviceConfig = {
         Type = "simple";
         ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
+        StandardOutput = "append:/var/log/asus-numberpad-driver/error.log";
+        StandardError = "append:/var/log/asus-numberpad-driver/error.log";
         Restart = "on-failure";
 	RestartSec = 1;
 	TimeoutSec = 5;
@@ -98,4 +100,3 @@ in {
 
   };
 }
-
