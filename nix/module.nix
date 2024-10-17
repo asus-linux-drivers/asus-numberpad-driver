@@ -46,9 +46,10 @@ in {
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ defaultPackage ];
 
-    # Ensure the writable directory exists
+    # Ensure the writable directories exists
     systemd.tmpfiles.rules = [
       "d ${configDir} 0755 root root -"
+      "d /var/log/asus-numberpad-driver 0755 root root -"
     ];
 
     # Write the configuration file to the writable directory
