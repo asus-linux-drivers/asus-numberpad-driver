@@ -1,14 +1,12 @@
 { lib
 , python311Packages
 , pkgs
-, fetchFromGitHub
 }:
 
 let
   # Define the Python packages required
   pythonPackages = pkgs.python311.withPackages (ps: with ps; [
     numpy
-    venvShellHook
     libevdev
     xlib
     pyinotify
