@@ -82,7 +82,7 @@ in {
     systemd.services.asus-numberpad-driver = {
       description = "Asus Numberpad Driver";
       after = [ "multi-user.target" "graphical-session.target" ];
-      wantedBy = [ "default.target" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "simple";
         ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
