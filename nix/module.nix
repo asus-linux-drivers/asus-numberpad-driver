@@ -81,6 +81,7 @@ in {
 
     systemd.services.asus-numberpad-driver = {
       description = "Asus Numberpad Driver";
+      after = [ "graphical-session.target" ];
       wantedBy = [ "default.target" ];
       serviceConfig = {
         Type = "simple";
