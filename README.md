@@ -105,6 +105,65 @@ or an available package on [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K
 $ paru -S asus-numberpad-driver-${model}-git
 ```
 
+or for NixOS you can use flakes for the installation of this driver.
+
+> [!IMPORTANT]  
+> In case the layout isn't provided, the default numpad layout is "up5401ea" make sure to change it to your layout in the configuration.
+> The default value for runtimeDir is `/run/usr/1000/` and wayland is `true`.
+
+<details>
+<summary>Flakes Configuration</summary>
+<br>
+
+This repo contains a flake that exposes a NixOS Module that manages and offers options for asus-numberpad-driver. To use it, add the flake as an input to your `flake.nix` file and enable the module:
+
+```nix 
+# flake.nix
+
+{
+
+    inputs = {
+        # ---Snip---
+        asus-numberpad-driver = {
+          url = "github:asus-linux-drivers/asus-numberpad-driver";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+        # ---Snip---
+    }
+
+    outputs = {nixpkgs, asus-numberpad-driver, ...} @ inputs: {
+        nixosConfigurations.HOSTNAME = nixpkgs.lib.nixosSystem {
+            specialArgs = { inherit inputs; };
+            modules = [
+                ./configuration.nix
+                asus-numberpad-driver.nixosModules.default
+            ];
+        };
+    } 
+}
+```
+Then you can enable the program in your `configuration.nix` file:
+```nix
+# configuration.nix
+
+{inputs, pkgs, ...}: {
+  # ---Snip---
+  # Enable Asus Numpad Service
+  services.asus-numberpad-driver = {
+    enable = true;
+    wayland = true;
+    runtimeDir = "/run/user/1000/";
+    layout = "up5401ea";
+    config = {
+      "top_left_icon_brightness_func_max_min_only" = "1";
+      # More Configuration Options
+    };
+  };
+  # ---Snip---
+}
+```
+</details>
+
 ## Uninstallation
 
 To uninstall run
