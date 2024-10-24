@@ -10,7 +10,7 @@ let
   );
 
   # Writable directory for the config file
-  configDir = "/etc/asus-numberpad-driver";
+  configDir = "/etc/asus-numberpad-driver/";
 in {
   options.services.asus-numberpad-driver = {
     enable = lib.mkEnableOption "Enable the Asus Numberpad Driver service.";
