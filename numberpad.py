@@ -1158,13 +1158,16 @@ def is_pressed_touchpad_top_left_icon():
 
 
 def reset_mt_slot(index):
-    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_x_values, abs_mt_slot_numpad_key
+    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_y_previous_values, abs_mt_slot_x_values, abs_mt_slot_x_previous_values, abs_mt_slot_numpad_key,\
+           numlock_touch_start_time, top_left_icon_touch_start_time, top_right_icon_touch_start_time
 
     abs_mt_slot_numpad_key[index] = None
     abs_mt_slot_x_init_values[index] = -1
     abs_mt_slot_x_values[index] = -1
+    abs_mt_slot_x_previous_values[index] = -1
     abs_mt_slot_y_init_values[index] = -1
     abs_mt_slot_y_values[index] = -1
+    abs_mt_slot_y_previous_values[index] = -1
 
 
 def set_none_to_current_mt_slot():
@@ -1172,15 +1175,21 @@ def set_none_to_current_mt_slot():
 
     reset_mt_slot(abs_mt_slot_value)
 
+    numlock_touch_start_time = 0
+    top_left_icon_touch_start_time = 0
+    top_right_icon_touch_start_time = 0
+
 
 def set_none_to_all_mt_slots():
-    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_x_values, abs_mt_slot_numpad_key
+    global abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_y_previous_values, abs_mt_slot_x_values, abs_mt_slot_x_previous_values, abs_mt_slot_numpad_key
 
     abs_mt_slot_numpad_key[:] = None
     abs_mt_slot_x_init_values[:] = -1
     abs_mt_slot_x_values[:] = -1
+    abs_mt_slot_x_previous_values[:] = -1
     abs_mt_slot_y_init_values[:] = -1
     abs_mt_slot_y_values[:] = -1
+    abs_mt_slot_y_previous_values[:] = -1
 
 
 def pressed_touchpad_top_left_icon(e):
@@ -1556,8 +1565,10 @@ abs_mt_slot = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_numpad_key = np.array([None, None, None, None, None], dtype=const.EventCode)
 abs_mt_slot_x_init_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_x_values = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_x_previous_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_init_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_y_values = np.array([-1, -1, -1, -1, -1], int)
+abs_mt_slot_y_previous_values = np.array([-1, -1, -1, -1, -1], int)
 abs_mt_slot_grab_status = np.array([-1, -1, -1, -1, -1], int)
 # equal to multi finger maximum
 support_for_maximum_abs_mt_slots: int = 1
@@ -1569,6 +1580,8 @@ last_event_time = 0
 key_pointer_button_is_touched = None
 
 def set_tracking_id(value):
+    global top_left_icon_touch_start_time, abs_mt_slot_x_init_values, abs_mt_slot_x_values, abs_mt_slot_x_previous_values, abs_mt_slot_y_init_values, abs_mt_slot_y_values, abs_mt_slot_y_previous_values
+
     try:
 
         log.debug("set_tracking_id starts")
@@ -1583,7 +1596,12 @@ def set_tracking_id(value):
             # can be misunderstanding when is touched padding (is printed previous key)
             # log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
 
-            #set_none_to_current_mt_slot()
+            # Reset everything when is None
+            #
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/209
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/commit/beca1f7188b276f81a054f8dc738c6ca92ea75e1
+            if abs_mt_slot_numpad_key[abs_mt_slot_value] == None:
+                set_none_to_current_mt_slot()
 
         abs_mt_slot[abs_mt_slot_value] = value
     except IndexError as e:
@@ -1897,45 +1915,98 @@ def pressed_touchpad_top_right_icon(e):
         log.info("Un-touched top_right_icon area (representing numlock key) in time: %s", time())
 
 
-def is_slided_from_top_right_icon(e):
-    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, numlock_touch_start_time, top_right_icon_slide_func_activation_radius, maxx, maxy
+def is_slided_from_top_right_icon():
+    global top_right_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_x_previous_values, abs_mt_slot_y_values, abs_mt_slot_y_previous_values, numlock_touch_start_time, top_right_icon_slide_func_activation_radius, maxx, maxy
 
     if top_right_icon_touch_start_time == 0:
-        return
+        return False
+
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] != get_evdev_key_for_char('Num_Lock'):
+        return False
+
+    if abs_mt_slot_y_values[abs_mt_slot_value] == -1 or abs_mt_slot_x_values[abs_mt_slot_value] == -1 or\
+       abs_mt_slot_y_previous_values[abs_mt_slot_value] == -1 or abs_mt_slot_x_previous_values[abs_mt_slot_value] == -1:
+        return False
+
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/209
+    if abs_mt_slot_x_values[abs_mt_slot_value] - abs_mt_slot_x_previous_values[abs_mt_slot_value] > 25:
+
+        log.debug("Slide from top_right_icon was cancelled because finger movement was not fluent. X axis changed from %.2f to %.2f.", abs_mt_slot_x_previous_values[abs_mt_slot_value], abs_mt_slot_x_values[abs_mt_slot_value])
+
+        top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
+
+        return False
+
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/209
+    if abs_mt_slot_y_values[abs_mt_slot_value] - abs_mt_slot_y_previous_values[abs_mt_slot_value] < -25:
+
+        log.debug("Slide from top_right_icon was cancelled because finger movement was not fluent. Y axis changed from %.2f to %.2f.", abs_mt_slot_y_previous_values[abs_mt_slot_value], abs_mt_slot_y_values[abs_mt_slot_value])
+
+        top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
+
+        return False
 
     if abs_mt_slot_numpad_key[abs_mt_slot_value] == get_evdev_key_for_char('Num_Lock') and\
         (maxx - abs_mt_slot_x_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
         abs_mt_slot_y_values[abs_mt_slot_value] > top_right_icon_slide_func_activation_radius or\
         math.pow(maxx - abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_right_icon_slide_func_activation_radius, 2)):
 
-        log.info("Slide from top_right_icon exceeded the activation threshold for x and y.")
-        log.info("Activation radius %.2f (top left corner is 0)", top_right_icon_slide_func_activation_radius)
-
         top_right_icon_touch_start_time = 0
         numlock_touch_start_time = 0
         set_none_to_current_mt_slot()
+
+        log.info("Slide from top_right_icon exceeded the activation threshold for x and y.")
+        log.info("Activation radius %.2f (top left corner is 0)", top_right_icon_slide_func_activation_radius)
 
         return True
     else:
         return False
 
 
-def is_slided_from_top_left_icon(e):
-    global top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_x_values, abs_mt_slot_y_values, top_left_icon_slide_func_activation_radius
+def is_slided_from_top_left_icon():
+    global abs_mt_slot_y_init_values, abs_mt_slot_x_init_values, top_left_icon_touch_start_time, abs_mt_slot_numpad_key, abs_mt_slot_y_values, abs_mt_slot_y_previous_values, abs_mt_slot_x_values, abs_mt_slot_x_previous_values, top_left_icon_slide_func_activation_radius
 
     if top_left_icon_touch_start_time == 0:
-        return
+        return False
 
-    if abs_mt_slot_numpad_key[abs_mt_slot_value] == EV_KEY_TOP_LEFT_ICON and\
-        (abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
-        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
-        math.pow(abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_left_icon_slide_func_activation_radius, 2)):
+    if abs_mt_slot_numpad_key[abs_mt_slot_value] != EV_KEY_TOP_LEFT_ICON:
+        return False
 
-        log.info("Slide from top_left_icon exceeded the activation threshold for x and y.")
-        log.info("Activation radius %.2f (top left corner is 0)", top_left_icon_slide_func_activation_radius)
+    if abs_mt_slot_y_values[abs_mt_slot_value] == -1 or abs_mt_slot_x_values[abs_mt_slot_value] == -1 or\
+       abs_mt_slot_y_previous_values[abs_mt_slot_value] == -1 or abs_mt_slot_x_previous_values[abs_mt_slot_value] == -1:
+        return False
+
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/209
+    if abs_mt_slot_x_values[abs_mt_slot_value] - abs_mt_slot_x_previous_values[abs_mt_slot_value] < -25:
+
+        log.debug("Slide from top_left_icon was cancelled because finger movement was not fluent. X axis changed from %.2f to %.2f.", abs_mt_slot_x_previous_values[abs_mt_slot_value], abs_mt_slot_x_values[abs_mt_slot_value])
 
         top_left_icon_touch_start_time = 0
         set_none_to_current_mt_slot()
+
+        return False
+
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/209
+    if abs_mt_slot_y_values[abs_mt_slot_value] - abs_mt_slot_y_previous_values[abs_mt_slot_value] < -25:
+
+        log.debug("Slide from top_left_icon was cancelled because finger movement was not fluent. Y axis changed from %.2f to %.2f.", abs_mt_slot_y_previous_values[abs_mt_slot_value], abs_mt_slot_y_values[abs_mt_slot_value])
+
+        top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
+
+        return False
+
+    if (abs_mt_slot_x_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
+        abs_mt_slot_y_values[abs_mt_slot_value] > top_left_icon_slide_func_activation_radius or\
+        math.pow(abs_mt_slot_x_values[abs_mt_slot_value], 2) + math.pow(abs_mt_slot_y_values[abs_mt_slot_value], 2) > math.pow(top_left_icon_slide_func_activation_radius, 2)):
+
+        top_left_icon_touch_start_time = 0
+        set_none_to_current_mt_slot()
+
+        log.info("Slide from top_left_icon exceeded the activation threshold for x and y.")
+        log.info("Activation radius %.2f (top left corner is 0)", top_left_icon_slide_func_activation_radius)
 
         return True
     else:
@@ -2021,12 +2092,11 @@ def is_key_pointer_button(key):
 
 
 def current_position_is_more_distant_than_distance_to_move_only_pointer():
-    global abs_mt_slot_value, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values, distance_to_move_only_pointer
+    global abs_mt_slot_value, abs_mt_slot_x_values, abs_mt_slot_y_values, abs_mt_slot_x_init_values,\
+           abs_mt_slot_y_init_values, distance_to_move_only_pointer
 
     if abs_mt_slot_x_values[abs_mt_slot_value] == -1 or \
-        abs_mt_slot_y_values[abs_mt_slot_value] == -1 or \
-        abs_mt_slot_x_init_values[abs_mt_slot_value] == -1 or \
-        abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+        abs_mt_slot_y_values[abs_mt_slot_value] == -1:
 
         return False
 
@@ -2046,10 +2116,11 @@ def current_position_is_more_distant_than_distance_to_move_only_pointer():
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
+        abs_mt_slot_x_previous_values, abs_mt_slot_y_previous_values,\
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
-        top_left_icon_slide_func_activates_numpad
+        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y
 
     try:
 
@@ -2157,13 +2228,19 @@ def listen_touchpad_events():
                     continue
 
             if e.matches(EV_ABS.ABS_MT_POSITION_X):
+
+                if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
+                    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
+                    abs_mt_slot_x_previous_values[abs_mt_slot_value] = -1
+                else:
+                    abs_mt_slot_x_previous_values[abs_mt_slot_value] = abs_mt_slot_x_values[abs_mt_slot_value]
+
                 abs_mt_slot_x_values[abs_mt_slot_value] = e.value
+
                 if distance_to_move_only_pointer and \
                     top_right_icon_touch_start_time == 0 and \
                     top_left_icon_touch_start_time == 0:
 
-                    if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
-                        abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
                     if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
                         current_position_is_more_distant_than_distance_to_move_only_pointer():
 
@@ -2174,23 +2251,29 @@ def listen_touchpad_events():
 
                 is_not_finger_moved_to_another_key()
 
-                if is_slided_from_top_left_icon(e):
+                if is_slided_from_top_left_icon():
                     if top_left_icon_slide_func_activates_numpad:
                         local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
                     continue
-                elif is_slided_from_top_right_icon(e):
+                elif is_slided_from_top_right_icon():
                     local_numlock_pressed()
                     continue
 
             if e.matches(EV_ABS.ABS_MT_POSITION_Y):
+
+                if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
+                    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
+                    abs_mt_slot_y_previous_values[abs_mt_slot_value] = -1
+                else:
+                    abs_mt_slot_y_previous_values[abs_mt_slot_value] = abs_mt_slot_y_values[abs_mt_slot_value]
+
                 abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+
                 if distance_to_move_only_pointer and \
                     top_right_icon_touch_start_time == 0 and \
                     top_left_icon_touch_start_time == 0:
 
-                    if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
-                        abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
                     if abs_mt_slot_numpad_key[abs_mt_slot_value] is not None and \
                         current_position_is_more_distant_than_distance_to_move_only_pointer():
 
@@ -2201,7 +2284,7 @@ def listen_touchpad_events():
 
                 is_not_finger_moved_to_another_key()
 
-                if is_slided_from_top_right_icon(e):
+                if is_slided_from_top_right_icon():
                     local_numlock_pressed()
                     continue
 
