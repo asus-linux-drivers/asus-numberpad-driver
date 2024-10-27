@@ -1671,6 +1671,7 @@ def pressed_numpad_key():
             grab_current_slot()
 
           udev.send_events(events)
+          sleep(0.005)
         except OSError as e:
           log.warning("Cannot send press event, %s", e)
 
