@@ -1763,7 +1763,7 @@ def unpressed_numpad_key(replaced_by_key=None):
 
     if isEventList(abs_mt_slot_numpad_key[abs_mt_slot_value]):
 
-        for event in abs_mt_slot_numpad_key[abs_mt_slot_value]:
+        for event in reversed(abs_mt_slot_numpad_key[abs_mt_slot_value]):
             events.append(InputEvent(event, 0))
             events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
 
