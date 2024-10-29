@@ -1653,7 +1653,7 @@ def get_events_for_unicode_char(hex_digits):
 
 
 def pressed_numpad_key():
-    global udev, abs_mt_slot_numpad_key, abs_mt_slot_value
+    global udev, abs_mt_slot_numpad_key, abs_mt_slot_value, display_wayland
 
     log.info("Pressed numpad key")
     log.info(abs_mt_slot_numpad_key[abs_mt_slot_value])
@@ -1673,7 +1673,8 @@ def pressed_numpad_key():
           udev.send_events(events)
           # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/210
           # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/187
-          sleep(0.005)
+          if display_wayland:
+            sleep(0.005)
         except OSError as e:
           log.warning("Cannot send press event, %s", e)
 
