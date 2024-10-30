@@ -36,6 +36,12 @@ in {
       description = "Enable this option to run under Wayland. Disable it for X11.";
     };
 
+    waylandDisplay = lib.mkOption {
+      type = lib.types.str;
+      default = "wayland-1";
+      description = "The WAYLAND_DISPLAY environment variable. Default is wayland-1.";
+    };
+
     runtimeDir = lib.mkOption {
       type = lib.types.str;
       default = "/run/user/1000/";
@@ -97,9 +103,7 @@ in {
         Environment = [
           ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
           ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
-          ''DISPLAY=:0''
-          ''WAYLAND_DISPLAY=wayland-1''
-          ''DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus''
+          ''WAYLAND_DISPLAY=${cfg.waylandDisplay}''
         ];
       };
     };
