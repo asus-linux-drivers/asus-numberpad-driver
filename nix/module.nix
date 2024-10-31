@@ -88,7 +88,7 @@ in {
     systemd.services.asus-numberpad-driver = {
       description = "Asus Numberpad Driver";
       after = [ "multi-user.target" "graphical-session.target" ];
-      wantedBy = [ "multi-user.target" ];
+      wantedBy = [ "graphical-session.target" ];
       startLimitBurst=20;
       startLimitIntervalSec=300;
       serviceConfig = {
