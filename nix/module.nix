@@ -83,18 +83,23 @@ in {
       description = "Asus Numberpad Driver";
       after = [ "multi-user.target" "graphical-session.target" ];
       wantedBy = [ "multi-user.target" ];
+      startLimitBurst=20;
+      startLimitIntervalSec=300;
       serviceConfig = {
         Type = "simple";
         ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
         StandardOutput = "append:/var/log/asus-numberpad-driver/error.log";
         StandardError = "append:/var/log/asus-numberpad-driver/error.log";
         Restart = "on-failure";
-	RestartSec = 1;
-	TimeoutSec = 5;
+        RestartSec = 1;
+        TimeoutSec = 5;
         WorkingDirectory = "${defaultPackage}";
         Environment = [
           ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
           ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
+          ''DISPLAY=:0''
+          ''WAYLAND_DISPLAY=wayland-1''
+          ''DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus''
         ];
       };
     };
