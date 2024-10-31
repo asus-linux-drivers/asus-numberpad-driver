@@ -39,7 +39,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
 
                 # filter out already added the same shortcuts by this driver (can be caused by running install script multiple times so clean and then add only 1 new - we want no duplicates)
                 command=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/ 'command')
-                if [[ "$command" != "'bash /usr/share/asus-numberpad-driver/scripts/calculator_toggle.sh'" ]]; then
+                if [[ "$command" != "'bash $INSTALL_DIR_PATH/scripts/calculator_toggle.sh'" ]]; then
                     if [[ "$filtered_existing_shortcut_string" != "[" ]]; then
                         filtered_existing_shortcut_string="$filtered_existing_shortcut_string"", '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom$shortcut_index/'"
                     else
