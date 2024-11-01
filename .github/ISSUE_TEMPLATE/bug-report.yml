@@ -32,7 +32,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. The driver install and error log is here `/var/log/asus-numberpad-driver/`. This will be automatically formatted into code, so no need for backticks.
+      description: Please copy and paste any relevant log output. The install and uninstall logs are here `/var/log/asus-numberpad-driver/*.log`. The runtime logs can be found using `journalctl -f | grep asus-numberpad-driver` or `journalctl -f --user-unit asus_numberpad_driver@ldrahnik.service`. This will be automatically formatted into code, so no need for backticks.
       render: shell
 
   - type: textarea
