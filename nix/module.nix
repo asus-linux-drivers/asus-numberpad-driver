@@ -36,6 +36,12 @@ in {
       description = "Enable this option to run under Wayland. Disable it for X11.";
     };
 
+    waylandDisplay = lib.mkOption {
+      type = lib.types.str;
+      default = "wayland-1";
+      description = "The WAYLAND_DISPLAY environment variable. Default is wayland-1.";
+    };
+
     runtimeDir = lib.mkOption {
       type = lib.types.str;
       default = "/run/user/1000/";
@@ -83,18 +89,21 @@ in {
       description = "Asus Numberpad Driver";
       after = [ "multi-user.target" "graphical-session.target" ];
       wantedBy = [ "multi-user.target" ];
+      startLimitBurst=20;
+      startLimitIntervalSec=300;
       serviceConfig = {
         Type = "simple";
         ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
         StandardOutput = "append:/var/log/asus-numberpad-driver/error.log";
         StandardError = "append:/var/log/asus-numberpad-driver/error.log";
         Restart = "on-failure";
-	RestartSec = 1;
-	TimeoutSec = 5;
+        RestartSec = 1;
+        TimeoutSec = 5;
         WorkingDirectory = "${defaultPackage}";
         Environment = [
           ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
           ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
+          ''WAYLAND_DISPLAY=${cfg.waylandDisplay}''
         ];
       };
     };
