@@ -102,8 +102,8 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     echo
 
     # create Python3 virtual environment
-    virtualenv --python=$(command -v python3) /usr/share/asus-numberpad-driver/.env
-    source /usr/share/asus-numberpad-driver/.env/bin/activate
+    virtualenv --python=$(command -v python3) $INSTALL_DIR_PATH/.env
+    source $INSTALL_DIR_PATH/.env/bin/activate
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
     pip3 install -r requirements.txt

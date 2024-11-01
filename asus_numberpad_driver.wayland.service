@@ -5,7 +5,7 @@ StartLimitIntervalSec=300
 
 [Service]
 Type=simple
-ExecStart=/usr/share/asus-numberpad-driver/.env/bin/python3 /usr/share/asus-numberpad-driver/numberpad.py $LAYOUT_NAME $CONFIG_FILE_DIR_PATH
+ExecStart=$INSTALL_DIR_PATH/.env/bin/python3 $INSTALL_DIR_PATH/numberpad.py $LAYOUT_NAME $CONFIG_FILE_DIR_PATH
 StandardOutput=append:$ERROR_LOG_FILE_PATH
 StandardError=append:$ERROR_LOG_FILE_PATH
 TimeoutSec=5
