@@ -109,7 +109,7 @@ or for NixOS you can use flakes for the installation of this driver.
 
 > [!IMPORTANT]
 > In case the layout isn't provided, the default numpad layout is "up5401ea" make sure to change it to your layout in the configuration.
-> The default value for runtimeDir is `/run/usr/1000/` and wayland is `true`.
+> The default value for runtimeDir is `/run/usr/1000/`, for waylandDisplay is `wayland-0` and wayland is `true`.
 
 <details>
 <summary>The driver installation (NixOS)</summary>
