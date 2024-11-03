@@ -1,3 +1,4 @@
+
 inputs: { config, lib, pkgs, ... }:
 
 let
@@ -39,7 +40,7 @@ in {
     waylandDisplay = lib.mkOption {
       type = lib.types.str;
       default = "wayland-0";
-      description = "The WAYLAND_DISPLAY environment variable. Default is wayland-1.";
+      description = "The WAYLAND_DISPLAY environment variable. Default is wayland-0.";
     };
 
     runtimeDir = lib.mkOption {
@@ -94,8 +95,8 @@ in {
       serviceConfig = {
         Type = "simple";
         ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
-        StandardOutput = "append:/var/log/asus-numberpad-driver/error.log";
-        StandardError = "append:/var/log/asus-numberpad-driver/error.log";
+        StandardOutput = null;
+        StandardError = null;
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutSec = 5;

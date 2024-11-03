@@ -14,6 +14,7 @@ let
     pyasyncore
     pywayland
     xkbcommon
+    systemd-python
   ]);
 in
 python311Packages.buildPythonPackage {
@@ -23,7 +24,7 @@ python311Packages.buildPythonPackage {
 
   format = "other";
 
-  propagatedBuildInputs = with pkgs; [ 
+  propagatedBuildInputs = with pkgs; [
     ibus
     libevdev
     libstdcxx5
@@ -47,7 +48,7 @@ python311Packages.buildPythonPackage {
   # Install files for driver and layouts
   installPhase = ''
     mkdir -p $out/share/asus-numberpad-driver
-    
+
     # Copy the driver script
     cp numberpad.py $out/share/asus-numberpad-driver/
 
