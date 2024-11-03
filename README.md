@@ -107,17 +107,17 @@ $ paru -S asus-numberpad-driver-${model}-git
 
 or for NixOS you can use flakes for the installation of this driver.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > In case the layout isn't provided, the default numpad layout is "up5401ea" make sure to change it to your layout in the configuration.
 > The default value for runtimeDir is `/run/usr/1000/` and wayland is `true`.
 
 <details>
-<summary>Flakes Configuration</summary>
+<summary>The driver installation (NixOS)</summary>
 <br>
 
-This repo contains a flake that exposes a NixOS Module that manages and offers options for asus-numberpad-driver. To use it, add the flake as an input to your `flake.nix` file and enable the module:
+This repo contains a Flake that exposes a NixOS Module that manages and offers options for asus-numberpad-driver. To use it, add the flake as an input to your `flake.nix` file and enable the module:
 
-```nix 
+```nix
 # flake.nix
 
 {
@@ -139,7 +139,7 @@ This repo contains a flake that exposes a NixOS Module that manages and offers o
                 asus-numberpad-driver.nixosModules.default
             ];
         };
-    } 
+    }
 }
 ```
 Then you can enable the program in your `configuration.nix` file:
@@ -163,6 +163,38 @@ Then you can enable the program in your `configuration.nix` file:
 }
 ```
 </details>
+
+<details>
+<summary>Calculator toggling set up (NixOS)</summary>
+<br>
+
+The home manager config sets up toggling the calculator using `dconf`:
+
+```nix
+{
+# Assuming gnome-calculator is installed
+
+  # Configure custom keybinding for calculator
+  dconf.settings = {
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      # Set up custom keybinding
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      ];
+    };
+
+    # Configure the custom keybinding
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      name = "Calculator";
+      binding = "XF86Calculator";
+      command = "sh -c 'if pidof gnome-calculator > /dev/null; then kill $(pidof gnome-calculator); else gnome-calculator; fi'";
+    };
+  };
+
+}
+```
+</details>
+
 
 ## Uninstallation
 
