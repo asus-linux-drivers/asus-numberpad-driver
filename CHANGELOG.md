@@ -1,5 +1,30 @@
 # Changelog
 
+### 6.4.0 (4.10.2024)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Touchpad detection by just filtering out touchpads with `9009` that have only duo laptops
+- Detection of `dnf` for v5
+- Filtering out repeating value 2 of event `BTN_TOOL_*`
+- Log level of failures of commands for another distros (from `error` to `debug`)
+- Internal modifier keys (add delay `0.005s` for composed keys only, credits @benj3578)
+- Releasing list of keys in reverse order so modifiers wrap up other keys
+- Uninstalling power supply mode
+- Unification of install path under `INSTALL_DIR_PATH`
+- Propagating env variables thought install/uninstall scripts
+- Slot ending when doing slide gesture from top icons
+
+### Feature
+
+- Removed `which` as unnecessary dependency
+- Simplified detection of package managers using `command`
+- Added config value that allows to limit backlight levels defined in layout file rotated by top left icon func to 2 levels only (min/max, windows official driver behaviour) (credits @scientiac)
+- Init `flake` for NixOS (credits @scientiac)
+- Send runtime logs to the journal
+- Not allow lowering x or y axis during movement
+
 ### 6.3.4 (19.9.2024)
 
 ### Fixed
