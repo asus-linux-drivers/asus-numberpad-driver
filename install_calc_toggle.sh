@@ -2,9 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
-INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-
+# ENV VARS
 if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi

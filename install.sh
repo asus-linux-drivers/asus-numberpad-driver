@@ -4,7 +4,10 @@ source non_sudo_check.sh
 
 START_TIME=${EPOCHREALTIME::-7}
 
-LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
+# ENV VARS
+if [ -z "$LOGS_DIR_PATH" ]; then
+    LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
+fi
 
 source install_logs.sh
 
@@ -69,9 +72,16 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         rm -rf layouts/__pycache__
     fi
 
-    INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-    CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
-    CONFIG_FILE_NAME="numberpad_dev"
+    # ENV VARS
+    if [ -z "$INSTALL_DIR_PATH" ]; then
+      INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+    fi
+    if [ -z "$CONFIG_FILE_DIR_PATH" ]; then
+      CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+    fi
+    if [ -z "$CONFIG_FILE_NAME" ]; then
+      CONFIG_FILE_NAME="numberpad_dev"
+    fi
     CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
     sudo mkdir -p "$INSTALL_DIR_PATH/layouts"
@@ -111,15 +121,18 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
-    source install_layout_auto_suggestion.sh
-
-    echo
-
     if [ -z "$LAYOUT_NAME" ]; then
+
+      source install_layout_auto_suggestion.sh
+
+      echo
+
+      if [ -z "$LAYOUT_NAME" ]; then
 
         source install_layout_select.sh
 
         echo
+      fi
     fi
 
     source install_service.sh

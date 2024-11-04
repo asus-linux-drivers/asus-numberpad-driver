@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
+# ENV VARS
 if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi
@@ -12,20 +12,17 @@ fi
 if [ -z "$CONFIG_FILE_NAME" ]; then
     CONFIG_FILE_NAME="numberpad_dev"
 fi
-if [ -z "$CONFIG_FILE_PATH" ]; then
-    CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
+if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
+    INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 fi
 
+CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
+
 echo "Power supply saver"
-
 echo
-
 echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this rule can be enabled by every detected change of power supply mode to battery mode."
-
 echo
-
 echo "Idle mode is configured to be enabled after 10s of inactivity and to decrease 30% of brightness."
-
 echo
 
 read -r -p "Do you want install the rule for idle functionality? [y/N]" RESPONSE
@@ -35,7 +32,7 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
 
-    cat "udev/80-numberpad-power-supply.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "/usr/lib/udev/rules.d/80-numberpad-power-supply.rules" >/dev/null
+    cat "udev/80-numberpad-power-supply.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/80-numberpad-power-supply.rules" >/dev/null
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when applying 80-numberpad-power-supply"

@@ -65,38 +65,58 @@ or download the latest release (stable version) from [the release page](https://
 
 ```bash
 $ bash install.sh
+
+# ENV VARS (with the defaults)
+INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+CONFIG_FILE_NAME="numberpad_dev"
+LOGS_DIR_PATH="/var/log/asus-numberpad-driver" # only for install and uninstall logs
+SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
+
+# e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
+$ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
+INSTALL_UDEV_DIR_PATH="/etc/udev/rules.d/"\
+SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
+bash install.sh
 ```
 
-or run separately parts of the install script
+or run separately parts of the install script.
 
-- try the found Touchpad with NumberPad
+Try found Touchpad with NumberPad:
 
 ```bash
 $ bash install_device_check.sh
 ```
 
-- add a user to the groups `i2c,input,uinput`
+Add a user to the groups `i2c,input,uinput`:
 
 ```bash
 $ bash install_user_groups.sh
 ```
 
-- install a predefined rule to change the configuration when is external keyboard connected/disconnected
+Install a predefined rule to change the configuration when is external keyboard connected/disconnected:
 
 ```bash
 $ bash install_external_keyboard_toggle.sh
 ```
 
-- run driver now and every time that user logs in (do NOT run as `$ sudo`, works via `systemctl --user`)
+Run driver now and every time that user logs in (do NOT run as `$ sudo`, works via `systemctl --user`):
 
 ```bash
 $ bash install_service.sh
 ```
 
-- activate top left corner slide gesture as function to show/disable calculator app (script supporting `io.elementary.calculator` and `gnome-calculator` via `gsettings`)
+Activate top left corner slide gesture as function to show/disable calculator app (script supporting `io.elementary.calculator` and `gnome-calculator` via `gsettings`):
 
 ```bash
 $ bash install_calc_toggle.sh
+```
+
+By installing this rule can be activated power supply saver every time when the power supply mode is changed to battery mode:
+
+```bash
+$ bash install_power_supply_saver.sh
 ```
 
 or an available package on [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace `asus-numberpad-driver` with one of the available models, e.g. `asus-numberpad-driver-ux433fa-git`)
@@ -208,6 +228,20 @@ To uninstall run
 
 ```bash
 $ bash uninstall.sh
+
+# ENV VARS (with the defaults)
+INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+CONFIG_FILE_NAME="numberpad_dev"
+LOGS_DIR_PATH="/var/log/asus-numberpad-driver" # only for install and uninstall logs
+SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
+
+# e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
+$ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
+INSTALL_UDEV_DIR_PATH="/etc/udev/rules.d/"\
+SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
+bash uninstall.sh
 ```
 
 or run separately parts of the uninstall script
@@ -215,6 +249,7 @@ or run separately parts of the uninstall script
 ```bash
 $ bash uninstall_calc_toggle.sh
 $ bash uninstall_external_keyboard_toggle.sh
+$ bash uninstall_power_supply_saver.sh
 $ bash uninstall_service.sh
 $ bash uninstall_user_groups.sh
 ```

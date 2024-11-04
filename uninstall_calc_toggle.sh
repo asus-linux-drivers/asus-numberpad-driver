@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
+# ENV VARS
 #
 # None
 
