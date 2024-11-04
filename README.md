@@ -156,7 +156,7 @@ Then you can enable the program in your `configuration.nix` file:
     runtimeDir = "/run/user/1000/";
     waylandDisplay = "wayland-0"
     config = {
-      "default_backlight_level" = "0x41";
+      # e.g. "activation_time" = "0.5";
       # More Configuration Options
     };
   };
