@@ -14,7 +14,7 @@ let
     pyasyncore
     pywayland
     xkbcommon
-    systemd-python
+    systemd
   ]);
 in
 python311Packages.buildPythonPackage {
