@@ -2,7 +2,14 @@
 
 source non_sudo_check.sh
 
-LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
+# ENV VARS
+if [ -z "$LOGS_DIR_PATH" ]; then
+    LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
+fi
+
+source install_logs.sh
+
+echo
 
 # log output from every uninstalling attempt aswell
 LOGS_UNINSTALL_LOG_FILE_NAME=uninstall-"$(date +"%d-%m-%Y-%H-%M-%S")".log
@@ -13,11 +20,21 @@ touch "$LOGS_UNINSTALL_LOG_FILE_PATH"
 shopt -s extglob
 
 {
+  # ENV VARS
+  if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-    CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
-    CONFIG_FILE_NAME="numberpad_dev"
-    CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
+  fi
+  if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
+    INSTALL_UDEV_DIR_PATH="/usr/lib/udev/"
+  fi
+  if [ -z "$CONFIG_FILE_DIR_PATH" ]; then
+	  CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
+  fi
+  if [ -z "$CONFIG_FILE_NAME" ]; then
+	  CONFIG_FILE_NAME="numberpad_dev"
+  fi
 
+  CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 	NUMPAD_LAYOUTS_DIR="$INSTALL_DIR_PATH/numpad_layouts/"
 
 	NUMPAD_LAYOUTS_DIR_DIFF=""
@@ -116,6 +133,10 @@ shopt -s extglob
 	echo
 
 	source uninstall_service.sh
+
+	echo
+
+	source uninstall_power_supply_saver.sh
 
 	echo
 

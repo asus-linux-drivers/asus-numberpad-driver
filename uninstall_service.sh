@@ -2,6 +2,11 @@
 
 source non_sudo_check.sh
 
+# ENV VARS
+if [ -z "$SERVICE_INSTALL_DIR_PATH" ]; then
+    SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+fi
+
 SERVICE_INSTALL_FILE_NAME="asus_numberpad_driver@.service"
 SERVICE_INSTANCE_FILE_NAME="asus_numberpad_driver@$USER.service"
 
@@ -21,7 +26,7 @@ else
     echo "Service $SERVICE_INSTANCE_FILE_NAME disabled"
 fi
 
-sudo rm -f "/usr/lib/systemd/user/$SERVICE_INSTALL_FILE_NAME"
+sudo rm -f "$SERVICE_INSTALL_DIR_PATH/$SERVICE_INSTALL_FILE_NAME"
 if [[ $? != 0 ]]
 then
     echo "Something went wrong when removing the $SERVICE_INSTALL_FILE_NAME"
