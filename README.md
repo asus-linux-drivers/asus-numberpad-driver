@@ -78,7 +78,7 @@ INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 
 # e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
 $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
-INSTALL_UDEV_DIR_PATH="/etc/udev/rules.d/"\
+INSTALL_UDEV_DIR_PATH="/etc/udev"\
 SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
 bash install.sh
 ```
@@ -241,7 +241,7 @@ INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 
 # e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
 $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
-INSTALL_UDEV_DIR_PATH="/etc/udev/rules.d/"\
+INSTALL_UDEV_DIR_PATH="/etc/udev/"\
 SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
 bash uninstall.sh
 ```
