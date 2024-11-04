@@ -151,16 +151,18 @@ Then you can enable the program in your `configuration.nix` file:
   # Enable Asus Numpad Service
   services.asus-numberpad-driver = {
     enable = true;
+    layout = "up5401ea";
     wayland = true;
     runtimeDir = "/run/user/1000/";
-    layout = "up5401ea";
+    waylandDisplay = "wayland-0"
     config = {
-      "top_left_icon_brightness_func_max_min_only" = "1";
+      "default_backlight_level" = "0x41";
       # More Configuration Options
     };
   };
   # ---Snip---
 }
+
 ```
 </details>
 
