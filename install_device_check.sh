@@ -3,8 +3,9 @@
 source non_sudo_check.sh
 
 # i2cdetect is /usr/sbin/i2cdetect and some distributions do not add sbin to $PATH (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/154)
-if [[ $(type i2cdetect 2>/dev/null) ]] && [[ $(type i2ctransfer 2>/dev/null) ]]; then
-    INTERFACES=$(for i in $(sudo i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
+# https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/218
+if [[ $(type /usr/sbin/i2cdetect 2>/dev/null) ]] && [[ $(type /usr/sbin/i2ctransfer 2>/dev/null) ]]; then
+    INTERFACES=$(for i in $(sudo /usr/sbin/i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
 
     if [ -z "$INTERFACES" ]; then
         echo "No i2c interface can be found. Make sure you have installed libevdev packages"
@@ -16,11 +17,11 @@ if [[ $(type i2cdetect 2>/dev/null) ]] && [[ $(type i2ctransfer 2>/dev/null) ]];
         echo -n "Testing interface $INDEX: "
 
         NUMBER=$(echo -n $INDEX | cut -d'-' -f2)
-        NUMBERPAD_OFF_CMD="sudo i2ctransfer -f -y $NUMBER w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
+        NUMBERPAD_OFF_CMD="sudo /usr/sbin/i2ctransfer -f -y $NUMBER w13@0x15 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         I2C_TEST_15=$($NUMBERPAD_OFF_CMD 2>&1)
 
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
-        NUMBERPAD_OFF_CMD="sudo i2ctransfer -f -y $NUMBER w13@0x38 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
+        NUMBERPAD_OFF_CMD="sudo /usr/sbin/i2ctransfer -f -y $NUMBER w13@0x38 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
         I2C_TEST_38=$($NUMBERPAD_OFF_CMD 2>&1)
 
         if [ -z "$I2C_TEST_15" ]; then
