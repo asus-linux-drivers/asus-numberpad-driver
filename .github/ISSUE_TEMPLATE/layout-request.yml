@@ -3,7 +3,6 @@ description: Add new numpad layout
 title: '[Layout Request] Layout Name'
 labels: ['enhancement', 'numpad layout']
 assignees:
-  - kamack38
   - ldrahnik
 body:
   - type: markdown
