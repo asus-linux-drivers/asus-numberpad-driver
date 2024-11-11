@@ -3,7 +3,6 @@ description: Report errors or unexpected behavior
 title: '[Bug]: '
 labels: ['bug']
 assignees:
-  - kamack38
   - ldrahnik
 body:
   - type: markdown

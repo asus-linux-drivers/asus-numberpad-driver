@@ -3,7 +3,6 @@ description: Suggest an idea for a new feature
 title: '[Feature Request] Short Description'
 labels: ['enhancement']
 assignees:
-  - kamack38
   - ldrahnik
 body:
   - type: textarea
