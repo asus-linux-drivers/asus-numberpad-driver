@@ -20,9 +20,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
 {
     # pip pywayland requires gcc
+    # TODO: add missing pkg-config libsystemd-dev
     if [[ $(command -v apt-get 2>/dev/null) ]]; then
         PACKAGE_MANAGER="apt"
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libsystemd-dev
     elif [[ $(command -v pacman 2>/dev/null) ]]; then
         PACKAGE_MANAGER="pacman"
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
