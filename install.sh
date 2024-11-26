@@ -25,12 +25,16 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libsystemd-dev
         # wayland (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198#issuecomment-2483268464)
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
-            sudo dnf -y install libwayland-dev
+            sudo apt-get -y install libwayland-dev
         fi
     elif [[ $(command -v pacman 2>/dev/null) ]]; then
         PACKAGE_MANAGER="pacman"
         # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf systemd
+        # wayland (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198#issuecomment-2483268464)
+        if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+            sudo pacman --noconfirm --needed -S install wayland
+        fi
     elif [[ $(command -v dnf 2>/dev/null) ]]; then
         # dnf5 has --help
         # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/204
