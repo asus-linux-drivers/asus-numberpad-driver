@@ -75,7 +75,7 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             echo "Detected gnome-calculator"
         fi
 
-        if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ] && [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ]; then
+        if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ] && [ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR == "1" ]; then
             echo "Automatic installing of toggling script for XF86Calculator key failed. Was not detected any supported calculator (gnome-calculator && io.elementary.calculator). You must associate the toggling script with the key EV_KEY.KEY_CALC by your own for this feature."
             echo
             echo "Example of the script for ElementaryOS calculator:"
