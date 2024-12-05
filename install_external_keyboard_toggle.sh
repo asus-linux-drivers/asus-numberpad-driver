@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
+# ENV VARS
 if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi
@@ -12,9 +12,11 @@ fi
 if [ -z "$CONFIG_FILE_NAME" ]; then
     CONFIG_FILE_NAME="numberpad_dev"
 fi
-if [ -z "$CONFIG_FILE_PATH" ]; then
-    CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
+if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
+    INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 fi
+
+CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
 echo "External keyboard"
 echo
@@ -36,7 +38,7 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
 
-    cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "/usr/lib/udev/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
+    cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when applying 90-numberpad-external-keyboard.rules"

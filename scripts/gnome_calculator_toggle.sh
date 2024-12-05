@@ -7,5 +7,5 @@ if [[ $(pgrep -xlf gnome-calculator &>/dev/null ; echo $?) != 0 ]]; then
     gnome-calculator &>/dev/null &
   fi
 else
-	killall gnome-calculator &>/dev/null &
+  killall gnome-calculator &>/dev/null &
 fi

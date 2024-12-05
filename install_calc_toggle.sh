@@ -2,9 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
-INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
-
+# ENV VARS
 if [ -z "$INSTALL_DIR_PATH" ]; then
     INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi
@@ -77,8 +75,22 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
             echo "Detected gnome-calculator"
         fi
 
-        if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ] && [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ]; then
-            echo "Not detected any supported calculator (gnome-calculator && io.elementary.calculator)"
+        if [ $IS_INSTALLED_GNOME_OS_CALCULATOR == "1" ] && [ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR == "1" ]; then
+            echo "Automatic installing of toggling script for XF86Calculator key failed. Was not detected any supported calculator (gnome-calculator && io.elementary.calculator). You must associate the toggling script with the key EV_KEY.KEY_CALC by your own for this feature."
+            echo
+            echo "Example of the script for ElementaryOS calculator:"
+            echo
+            echo "\`\`\`"
+            cat scripts/io_elementary_calculator_toggle.sh
+            echo
+            echo "\`\`\`"
+            echo
+            echo "or Gnome calculator:"
+            echo
+            echo "\`\`\`"
+            cat scripts/gnome_calculator_toggle.sh
+            echo
+            echo "\`\`\`"
         elif [[ $IS_INSTALLED_ELEMENTARY_OS_CALCULATOR -eq 0 ]]; then
             echo "Setting up for io.elementary.calculator"
 
@@ -124,5 +136,19 @@ if [[ $(type gsettings 2>/dev/null) ]]; then
         ;;
     esac
 else
-    echo "Automatic installing of toggling script for XF86Calculator key failed. Gsettings was not found."
+    echo "Automatic installing of toggling script for XF86Calculator key failed. Gsettings was not found. You must associate the toggling script with the key EV_KEY.KEY_CALC by your own for this feature."
+    echo
+    echo "Example of the script for ElementaryOS calculator:"
+    echo
+    echo "\`\`\`"
+    cat scripts/io_elementary_calculator_toggle.sh
+    echo
+    echo "\`\`\`"
+    echo
+    echo "or Gnome calculator:"
+    echo
+    echo "\`\`\`"
+    cat scripts/gnome_calculator_toggle.sh
+    echo
+    echo "\`\`\`"
 fi
