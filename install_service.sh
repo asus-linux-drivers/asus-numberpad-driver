@@ -2,7 +2,7 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
+# ENV VARS
 if [ -z "$CONFIG_FILE_DIR_PATH" ]; then
     CONFIG_FILE_DIR_PATH="/usr/share/asus-numberpad-driver"
 fi
@@ -11,6 +11,9 @@ if [ -z "$LAYOUT_NAME" ]; then
 fi
 if [ -z "$LOGS_DIR_PATH" ]; then
     LOGS_DIR_PATH="/var/log/asus-numberpad-driver"
+fi
+if [ -z "$SERVICE_INSTALL_DIR_PATH" ]; then
+    SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
 fi
 
 echo "Systemctl service"
@@ -25,7 +28,6 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     SERVICE_WAYLAND_FILE_PATH=asus_numberpad_driver.wayland.service
     SERVICE_X11_FILE_PATH=asus_numberpad_driver.x11.service
     SERVICE_INSTALL_FILE_NAME="asus_numberpad_driver@.service"
-    SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
 
     XDG_RUNTIME_DIR=$(echo $XDG_RUNTIME_DIR)
     DBUS_SESSION_BUS_ADDRESS=$(echo $DBUS_SESSION_BUS_ADDRESS)

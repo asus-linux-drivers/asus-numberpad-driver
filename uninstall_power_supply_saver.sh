@@ -2,16 +2,21 @@
 
 source non_sudo_check.sh
 
-# INHERIT VARS
-INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+# ENV VARS
+if [ -z "$INSTALL_DIR_PATH" ]; then
+    INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
+fi
+if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
+    INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
+fi
 
 sudo rm -f "$INSTALL_DIR_PATH/udev/power_supply_is_ac.sh"
 sudo rm -f "$INSTALL_DIR_PATH/udev/power_supply_is_bat.sh"
 
-sudo rm -f /usr/lib/udev/rules.d/80-numberpad-power-supply.rules
+sudo rm -f $INSTALL_UDEV_DIR_PATH/rules.d/80-numberpad-power-supply.rules
 if [[ $? != 0 ]]
 then
-	echo "/usr/lib/udev/rules.d/80-numberpad-power-supply.rules cannot be removed"
+	echo "$INSTALL_UDEV_DIR_PATH/rules.d/80-numberpad-power-supply.rules cannot be removed"
 else
     echo "Rule 80-numberpad-power-supply.rules removed"
 fi
