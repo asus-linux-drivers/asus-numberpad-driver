@@ -27,7 +27,6 @@ python311Packages.buildPythonPackage {
   propagatedBuildInputs = with pkgs; [
     ibus
     libevdev
-    libstdcxx5
     curl
     xorg.xinput
     i2c-tools
