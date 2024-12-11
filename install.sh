@@ -33,7 +33,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf systemd
         # wayland (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198#issuecomment-2483268464)
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
-            sudo pacman --noconfirm --needed -S install wayland
+            sudo pacman --noconfirm --needed -S wayland
         fi
     elif [[ $(command -v dnf 2>/dev/null) ]]; then
         # dnf5 has --help
