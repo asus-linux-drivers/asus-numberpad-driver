@@ -1,5 +1,18 @@
 # Changelog
 
+### 6.4.1 (12.12.2024)
+
+### Fixed
+
+- The `i2c` tools search under `/usr/sbin`
+- Missing `apt` dependencies `pkg-config` and `libsystemd-dev` for `pip` package `systemd-python`
+- Missing `wayland-dev` package
+- Missing info about installing toggling script for not supported calculator
+
+### Feature
+
+- Init package manager `rpm-ostree`
+
 ### 6.4.0 (4.10.2024)
 
 ### Fixed
