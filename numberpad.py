@@ -1121,18 +1121,22 @@ def is_device_enabled(device_name):
 def use_bindings_for_touchpad_left_icon_slide_function():
     global udev, top_left_icon_slide_func_keys
 
-    key_events = []
-    for custom_key in top_left_icon_slide_func_keys:
-        key_events.append(InputEvent(custom_key, 1))
-        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
-        key_events.append(InputEvent(custom_key, 0))
-        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+    is_touchpad_enabled = is_device_enabled(touchpad_name)
 
-    try:
-        udev.send_events(key_events)
-        log.info("Used bindings for touchpad left_icon slide function")
-    except OSError as e:
-        log.error("Cannot send event, %s", e)
+    if is_touchpad_enabled:
+
+        key_events = []
+        for custom_key in top_left_icon_slide_func_keys:
+            key_events.append(InputEvent(custom_key, 1))
+            key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+            key_events.append(InputEvent(custom_key, 0))
+            key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+
+        try:
+            udev.send_events(key_events)
+            log.info("Used bindings for touchpad left_icon slide function")
+        except OSError as e:
+            log.error("Cannot send event, %s", e)
 
 
 def is_pressed_touchpad_top_right_icon():
@@ -1173,7 +1177,7 @@ def reset_mt_slot(index):
 
 
 def set_none_to_current_mt_slot():
-    global abs_mt_slot_value
+    global abs_mt_slot_value, numlock_touch_start_time, top_left_icon_touch_start_time, top_right_icon_touch_start_time
 
     reset_mt_slot(abs_mt_slot_value)
 
@@ -2260,6 +2264,7 @@ def listen_touchpad_events():
                     if top_left_icon_slide_func_activates_numpad:
                         local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
+
                     continue
                 elif is_slided_from_top_right_icon():
                     local_numlock_pressed()
