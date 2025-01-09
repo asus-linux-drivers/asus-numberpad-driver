@@ -568,6 +568,8 @@ CONFIG_LEFT_ICON_ACTIVATION_TIME = "top_left_icon_activation_time"
 CONFIG_LEFT_ICON_ACTIVATION_TIME_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED = "top_left_icon_brightness_func_disabled"
 CONFIG_TOP_LEFT_ICON_BRIGHTNESS_FUNC_DISABLED_DEFAULT = False
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DISABLED = "top_left_icon_slide_func_disabled"
+CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DISABLED_DEFAULT = False
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD = "top_left_icon_slide_func_activates_numpad"
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT = True
 CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_left_icon_slide_func_activation_radius"
@@ -1488,6 +1490,8 @@ def load_all_config_values():
     global brightness
     global top_left_icon_brightness_func_max_min_only
     global backlight_levels
+    global idled
+    global top_left_icon_slide_func_disabled
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
@@ -1558,6 +1562,7 @@ def load_all_config_values():
     idle_brightness = float(config_get(CONFIG_IDLE_BRIGHTNESS, CONFIG_IDLE_BRIGHTNESS_DEFAULT))
     idle_enabled = config_get(CONFIG_IDLE_ENABLED, CONFIG_IDLE_ENABLED_DEFAULT)
     idle_time = int(config_get(CONFIG_IDLE_TIME, CONFIG_IDLE_TIME_DEFAULT))
+    top_left_icon_slide_func_disabled = int(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DISABLED, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_DISABLED_DEFAULT))
 
     config_lock.release()
 
@@ -2129,7 +2134,7 @@ def listen_touchpad_events():
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
-        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y
+        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_enabled
 
     try:
 
@@ -2260,7 +2265,7 @@ def listen_touchpad_events():
 
                 is_not_finger_moved_to_another_key()
 
-                if is_slided_from_top_left_icon():
+                if is_slided_from_top_left_icon() and not top_left_icon_slide_func_disabled:
                     if top_left_icon_slide_func_activates_numpad:
                         local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
