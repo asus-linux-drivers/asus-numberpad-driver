@@ -2134,7 +2134,7 @@ def listen_touchpad_events():
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
-        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_enabled
+        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_disabled
 
     try:
 
@@ -2265,7 +2265,13 @@ def listen_touchpad_events():
 
                 is_not_finger_moved_to_another_key()
 
-                if is_slided_from_top_left_icon() and not top_left_icon_slide_func_disabled:
+                if is_slided_from_top_left_icon() and \
+                  (
+                    top_left_icon_slide_func_disabled == 0 or\
+                    not numlock and top_left_icon_slide_func_disabled == 3 or\
+                    numlock and top_left_icon_slide_func_disabled == 2
+                  ):
+
                     if top_left_icon_slide_func_activates_numpad:
                         local_numlock_pressed(True)
                     use_bindings_for_touchpad_left_icon_slide_function()
