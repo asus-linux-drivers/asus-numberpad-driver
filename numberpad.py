@@ -1123,22 +1123,18 @@ def is_device_enabled(device_name):
 def use_bindings_for_touchpad_left_icon_slide_function():
     global udev, top_left_icon_slide_func_keys
 
-    is_touchpad_enabled = is_device_enabled(touchpad_name)
+    key_events = []
+    for custom_key in top_left_icon_slide_func_keys:
+        key_events.append(InputEvent(custom_key, 1))
+        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
+        key_events.append(InputEvent(custom_key, 0))
+        key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
 
-    if is_touchpad_enabled:
-
-        key_events = []
-        for custom_key in top_left_icon_slide_func_keys:
-            key_events.append(InputEvent(custom_key, 1))
-            key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
-            key_events.append(InputEvent(custom_key, 0))
-            key_events.append(InputEvent(EV_SYN.SYN_REPORT, 0))
-
-        try:
-            udev.send_events(key_events)
-            log.info("Used bindings for touchpad left_icon slide function")
-        except OSError as e:
-            log.error("Cannot send event, %s", e)
+    try:
+        udev.send_events(key_events)
+        log.info("Used bindings for touchpad left_icon slide function")
+    except OSError as e:
+        log.error("Cannot send event, %s", e)
 
 
 def is_pressed_touchpad_top_right_icon():
