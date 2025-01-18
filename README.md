@@ -258,6 +258,8 @@ $ bash uninstall_user_groups.sh
 
 ## Layouts
 
+The project should currently support every layout of NumberPad. Layouts below are named by laptop models, but the name is not important. What is important is their visual appearance because they are repeated on multiple laptop models across series. The install script should recognize the correct one automatically for your laptop. If yours was not recognized, please create issue.
+
 | Model/Layout | Description                                                                                                  | Image                                                                                               |
 | ------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | <a id="ux433fa"></a><br><br><br><br><br>ux433fa<br><br><br><br><br><br><br> | Without % = symbols<br><br>Without left icon                                                                 | ![without % = symbols](images/Asus-ZenBook-UX433FA.jpg)                                             |
