@@ -80,6 +80,13 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo rpm-ostree install wayland-devel
         fi
+    elif [[ $(command -v eopkg 2>/dev/null) ]]; then
+        PACKAGE_MANAGER="eopkg"
+        sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2-devel libxkbcommon-devel gcc pkg-config systemd-devel
+        # wayland
+        if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+            sudo eopkg install -y wayland-devel
+        fi
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
