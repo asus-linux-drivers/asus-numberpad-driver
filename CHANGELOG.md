@@ -1,5 +1,16 @@
 # Changelog
 
+### 6.5.0 (22.02.2025)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+
+### Feature
+
+- Added support for `eopkg` package manager
+- Added possibility to disable top left icon slide function separately for activated and not activated NumberPad via `top_left_icon_slide_func_disabled`
+
 ### 6.4.1 (12.12.2024)
 
 ### Fixed
