@@ -696,6 +696,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 - [python service, configurable, the most up-to-date] **The above project with continuing work based on** [python service, configurable, the most spread repository] <https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver>
 - [c++] <https://github.com/haronaut/asus_numberpad>
 - [c] <https://github.com/valoran-M/asus_driver_touchpad>
+- [c++] <https://github.com/Stivux/asus_numpad>
 
 ## Existing related projects
 
