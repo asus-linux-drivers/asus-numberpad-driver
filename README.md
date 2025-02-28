@@ -697,6 +697,7 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 - [c++] <https://github.com/haronaut/asus_numberpad>
 - [c] <https://github.com/valoran-M/asus_driver_touchpad>
 - [c++] <https://github.com/Stivux/asus_numpad>
+- [c] <https://github.com/chovine/asus_numpad_overlay>
 
 ## Existing related projects
 
