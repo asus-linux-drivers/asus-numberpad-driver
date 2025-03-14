@@ -28,6 +28,16 @@ import signal
 import math
 import glob
 
+GNOME_GLIB_AVAILABLE = True
+
+try:
+    import gi
+    gi.require_version("Gio", "2.0")
+    from gi.repository import Gio, GLib
+    GNOME_GLIB_AVAILABLE = True
+except ImportError:
+    pass
+
 xdg_session_type = os.environ.get('XDG_SESSION_TYPE')
 
 display_var = os.environ.get('DISPLAY')
@@ -998,78 +1008,62 @@ enable_key(EV_KEY.BTN_MIDDLE)
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
 
-def check_gnome_layout():
-    global stop_threads, gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
+def on_gnome_layout_changed(settings, key):
 
-    while not stop_threads:
+    global gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
 
-        mru_sources = gsettingsGet('org.gnome.desktop.input-sources', 'mru-sources')
+    if key not in ["mru-sources", "current"]:
+        return
+
+    try:
+        mru_sources = settings.get_value("mru-sources").unpack()
+        sources = settings.get_value("sources").unpack()
+    except Exception as e:
+        log.exception(f"Failed to read GNOME input sources: {e}")
+        return
+
+    if len(mru_sources) > 0:
         try:
-          mru_sources_evaluated = ast.literal_eval(mru_sources.decode())
-        except:
-          mru_sources_evaluated = []
+            mru_layout_index = sources.index(mru_sources[0])
+            mru_layout = mru_sources[0][1].split("+")[0]
+        except ValueError:
+            log.warning("mru-source not found in sources list.")
+            return
 
-        sources = gsettingsGet('org.gnome.desktop.input-sources', 'sources')
-        try:
-          sources_evaluated = ast.literal_eval(sources.decode())
-        except:
-          sources_evaluated = []
+        if display_wayland_var:
+            if keyboard_state and gnome_current_layout_index != mru_layout_index:
+                gnome_current_layout_index = mru_layout_index
+                gnome_current_layout = mru_layout
+                wl_load_keymap_state()
 
-        if len(mru_sources_evaluated) > 0:
-
-            mru_layout_index = sources_evaluated.index(mru_sources_evaluated[0])
-            mru_layout = mru_sources_evaluated[0][1].split("+")[0]
-
-            if display_wayland_var:
-                if keyboard_state and gnome_current_layout_index is not mru_layout_index:
-
-                    gnome_current_layout_index =  mru_layout_index
-                    gnome_current_layout = mru_layout
-                    wl_load_keymap_state()
-
-            elif gnome_current_layout != mru_layout:
-
-                    try:
-                        cmd = ['setxkbmap', mru_layout, '-display', display_var]
-
-                        log.debug(cmd)
-                        subprocess.call(cmd)
-
-                        gnome_current_layout = mru_layout
-                        gnome_current_layout_index =  mru_layout_index
-                    except:
-                        log.exception('setxkbmap set failed')
-
-        else:
-
-            current = gsettingsGet('org.gnome.desktop.input-sources', 'current')
-
-            current_evaluated = None
+        elif gnome_current_layout != mru_layout:
             try:
-              current_evaluated = ast.literal_eval(current.decode().split(" ")[1])
-            except:
-              pass
+                cmd = ['setxkbmap', mru_layout, '-display', display_var]
+                log.debug(cmd)
+                subprocess.call(cmd)
+                gnome_current_layout = mru_layout
+                gnome_current_layout_index = mru_layout_index
+            except Exception:
+                log.exception("setxkbmap set failed")
 
-            if current_evaluated is not None and current_evaluated < len(sources_evaluated):
-                layout = sources_evaluated[current_evaluated][1].split("+")[0]
+    else:
+        try:
+            current = settings.get_uint("current")
+            if current < len(sources):
+                layout = sources[current][1].split("+")[0]
 
-                # first run, would be unnecessary duplicated loading x11 keymap because X.org server notify all clients at start about Mapping and setxkbmap would trigger new second notify
-                if gnome_current_layout == None:
+                if gnome_current_layout is None:
                     gnome_current_layout = layout
-
                 elif gnome_current_layout != layout:
-
                     try:
                         cmd = ['setxkbmap', layout, '-display', display_var]
-
                         log.debug(cmd)
                         subprocess.call(cmd)
-
                         gnome_current_layout = layout
-                    except:
-                        log.exception('setxkbmap set failed')
-
-        sleep(0.5)
+                    except Exception:
+                        log.exception("setxkbmap set failed")
+        except Exception as e:
+            log.exception(f"Failed to process GNOME input source: {e}")
 
 
 def is_device_enabled(device_name):
@@ -2558,6 +2552,32 @@ def cleanup():
         log.exception("Clean up error")
         pass
 
+def check_stop_threads():
+    global stop_threads, check_gnome_layout_loop
+
+    if stop_threads:
+        log.info("Stopping GNOME layout monitoring...")
+        if check_gnome_layout_loop is not None:
+            check_gnome_layout_loop.quit()
+        return False
+    return True
+
+def check_gnome_layout():
+    global check_gnome_layout_loop
+
+    settings = Gio.Settings.new("org.gnome.desktop.input-sources")
+    settings.connect("changed", on_gnome_layout_changed)
+
+    loop = GLib.MainLoop()
+
+    # Check `stop_threads` every 500ms (0.5s)
+    GLib.timeout_add(500, check_stop_threads)
+
+    try:
+        loop.run()
+    except KeyboardInterrupt:
+        loop.quit()
+        log.info("Stopped monitoring GNOME layout.")
 
 def signal_handler(signal, frame):
     raise Exception()
@@ -2634,10 +2654,11 @@ try:
     threads.append(t)
     t.start()
 
-    t = threading.Thread(target=check_gnome_layout)
-    t.daemon = True
-    threads.append(t)
-    t.start()
+    if GNOME_GLIB_AVAILABLE:
+        t = threading.Thread(target=check_gnome_layout)
+        t.daemon = True
+        threads.append(t)
+        t.start()
 
     listening_touchpad_events_started = True
     listen_touchpad_events()
