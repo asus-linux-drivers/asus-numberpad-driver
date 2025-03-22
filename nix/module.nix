@@ -31,6 +31,12 @@ in {
       '';
     };
 
+    display = lib.mkOption {
+      type = lib.types.str;
+      default = ":0";
+      description = "The DISPLAY environment variable. Default is :0.";
+    };
+
     wayland = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -104,6 +110,7 @@ in {
           ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
           ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
           ''WAYLAND_DISPLAY=${cfg.waylandDisplay}''
+          ''DISPLAY=${cfg.display}''
         ];
       };
     };
