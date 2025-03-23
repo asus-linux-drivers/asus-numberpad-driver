@@ -48,7 +48,7 @@ in {
 
     waylandDisplay = lib.mkOption {
       type = lib.types.str;
-      default = "wayland-x";
+      default = "wayland-0";
       description =
         "The WAYLAND_DISPLAY environment variable. Default is a placeholder.";
     };
