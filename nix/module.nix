@@ -92,7 +92,7 @@ in {
     # Load specific kernel modules
     boot.kernelModules = [ "uinput" "i2c-dev" ];
 
-    systemd.services.asus-numberpad-driver = {
+    systemd.user.services.asus-numberpad-driver = {
       description = "Asus Numberpad Driver";
       wantedBy = [ "default.target" ];
       startLimitBurst=20;
