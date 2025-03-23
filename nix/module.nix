@@ -48,9 +48,16 @@ in {
 
     waylandDisplay = lib.mkOption {
       type = lib.types.str;
-      default = "wayland-0";
+      default = "wayland-x";
       description =
-        "The WAYLAND_DISPLAY environment variable. Default is wayland-0.";
+        "The WAYLAND_DISPLAY environment variable. Default is a placeholder.";
+    };
+
+    ignoreWaylandDisplayEnv = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description =
+        "If true, WAYLAND_DISPLAY will not be set in the service environment.";
     };
 
     runtimeDir = lib.mkOption {
@@ -116,11 +123,10 @@ in {
         Environment = [
           "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"
           "XDG_RUNTIME_DIR=${cfg.runtimeDir}"
-          # ''WAYLAND_DISPLAY=${cfg.waylandDisplay}''
           "DISPLAY=${cfg.display}"
-        ];
+        ] ++ lib.optional (!cfg.ignoreWaylandDisplayEnv)
+          "WAYLAND_DISPLAY=${cfg.waylandDisplay}";
       };
     };
-
   };
 }
