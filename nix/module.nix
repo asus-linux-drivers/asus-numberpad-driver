@@ -50,7 +50,7 @@ in {
       type = lib.types.str;
       default = "wayland-0";
       description =
-        "The WAYLAND_DISPLAY environment variable. Default is a placeholder.";
+        "The WAYLAND_DISPLAY environment variable. Default is wayland-0.";
     };
 
     ignoreWaylandDisplayEnv = lib.mkOption {
