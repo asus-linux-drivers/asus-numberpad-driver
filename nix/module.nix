@@ -1,14 +1,15 @@
-
-inputs: { config, lib, pkgs, ... }:
+inputs:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.services.asus-numberpad-driver;
   defaultPackage = inputs.self.packages.${pkgs.system}.default;
 
   # Function to convert configuration options to string
-  toConfigFile = cfg: builtins.concatStringsSep "\n" (
-    [ "[main]" ] ++ lib.attrsets.mapAttrsToList (key: value: "${key} = ${value}") cfg.config
-  );
+  toConfigFile = cfg:
+    builtins.concatStringsSep "\n" ([ "[main]" ]
+      ++ lib.attrsets.mapAttrsToList (key: value: "${key} = ${value}")
+      cfg.config);
 
   # Writable directory for the config file
   configDir = "/etc/asus-numberpad-driver/";
@@ -19,12 +20,13 @@ in {
     layout = lib.mkOption {
       type = lib.types.str;
       default = "up5401ea";
-      description = "The layout identifier for the numberpad driver (e.g. up5401ea). This value is required.";
+      description =
+        "The layout identifier for the numberpad driver (e.g. up5401ea). This value is required.";
     };
 
     config = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
-      default = {};
+      default = { };
       description = ''
         Configuration options for the numberpad driver.
         These options will be written to a configuration file for the driver.
@@ -40,19 +42,29 @@ in {
     wayland = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Enable this option to run under Wayland. Disable it for X11.";
+      description =
+        "Enable this option to run under Wayland. Disable it for X11.";
     };
 
     waylandDisplay = lib.mkOption {
       type = lib.types.str;
       default = "wayland-0";
-      description = "The WAYLAND_DISPLAY environment variable. Default is wayland-0.";
+      description =
+        "The WAYLAND_DISPLAY environment variable. Default is wayland-0.";
+    };
+
+    ignoreWaylandDisplayEnv = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description =
+        "If true, WAYLAND_DISPLAY will not be set in the service environment.";
     };
 
     runtimeDir = lib.mkOption {
       type = lib.types.str;
       default = "/run/user/1000/";
-      description = "The XDG_RUNTIME_DIR environment variable, specifying the runtime directory.";
+      description =
+        "The XDG_RUNTIME_DIR environment variable, specifying the runtime directory.";
     };
   };
 
@@ -66,7 +78,8 @@ in {
     ];
 
     # Write the configuration file to the writable directory
-    environment.etc."asus-numberpad-driver/numberpad_dev".text = toConfigFile cfg;
+    environment.etc."asus-numberpad-driver/numberpad_dev".text =
+      toConfigFile cfg;
 
     # Enable i2c
     hardware.i2c.enable = true;
@@ -92,14 +105,15 @@ in {
     # Load specific kernel modules
     boot.kernelModules = [ "uinput" "i2c-dev" ];
 
-    systemd.services.asus-numberpad-driver = {
+    systemd.user.services.asus-numberpad-driver = {
       description = "Asus Numberpad Driver";
       wantedBy = [ "default.target" ];
-      startLimitBurst=20;
-      startLimitIntervalSec=300;
+      startLimitBurst = 20;
+      startLimitIntervalSec = 300;
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
+        ExecStart =
+          "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
         StandardOutput = null;
         StandardError = null;
         Restart = "on-failure";
@@ -107,13 +121,12 @@ in {
         TimeoutSec = 5;
         WorkingDirectory = "${defaultPackage}";
         Environment = [
-          ''XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}''
-          ''XDG_RUNTIME_DIR=${cfg.runtimeDir}''
-          ''WAYLAND_DISPLAY=${cfg.waylandDisplay}''
-          ''DISPLAY=${cfg.display}''
-        ];
+          "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"
+          "XDG_RUNTIME_DIR=${cfg.runtimeDir}"
+          "DISPLAY=${cfg.display}"
+        ] ++ lib.optional (!cfg.ignoreWaylandDisplayEnv)
+          "WAYLAND_DISPLAY=${cfg.waylandDisplay}";
       };
     };
-
   };
 }

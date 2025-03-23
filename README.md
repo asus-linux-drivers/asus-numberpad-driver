@@ -131,7 +131,10 @@ or for NixOS you can use flakes for the installation of this driver.
 
 > [!IMPORTANT]
 > In case the layout isn't provided, the default numpad layout is "up5401ea" make sure to change it to your layout in the configuration.
+
 > The default value for runtimeDir is `/run/usr/1000/`, for waylandDisplay is `wayland-0` and wayland is `true`.
+
+> Enabling `ignoreWaylandDisplayEnv` removes the explicit declaration of `WAYLAND_DISPLAY` in the service, allowing it to function correctly when switching between desktop environments or window managers that may have different `WAYLAND_DISPLAY` environment variables.
 
 <details>
 <summary>The driver installation (NixOS)</summary>
@@ -164,7 +167,9 @@ This repo contains a Flake that exposes a NixOS Module that manages and offers o
     }
 }
 ```
+
 Then you can enable the program in your `configuration.nix` file:
+
 ```nix
 # configuration.nix
 
@@ -177,6 +182,7 @@ Then you can enable the program in your `configuration.nix` file:
     wayland = true;
     runtimeDir = "/run/user/1000/";
     waylandDisplay = "wayland-0";
+    ignoreWaylandDisplayEnv = "false";
     config = {
       # e.g. "activation_time" = "0.5";
       # More Configuration Options
@@ -186,6 +192,7 @@ Then you can enable the program in your `configuration.nix` file:
 }
 
 ```
+
 </details>
 
 <details>
@@ -221,8 +228,14 @@ The home manager config sets up toggling the calculator using `dconf`:
 
 }
 ```
-</details>
 
+> The key for the caclulator toggling script should be associated with XF86Calculator, allowing it to toggle any calculator application, not just the one specified in the configuration. This means that the key binding can be used to manage various calculator applications across different key binding configurations. For e.g.:
+
+```
+"XF86Calculator".action = sh -c "if pidof gnome-calculator > /dev/null; then kill $(pidof gnome-calculator); else gnome-calculator; fi";
+```
+
+</details>
 
 ## Uninstallation
 
