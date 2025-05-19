@@ -5,7 +5,7 @@ source non_sudo_check.sh
 # i2cdetect is /usr/sbin/i2cdetect and some distributions do not add sbin to $PATH (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/154)
 # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/218
 if [[ $(type /usr/sbin/i2cdetect 2>/dev/null) ]] && [[ $(type /usr/sbin/i2ctransfer 2>/dev/null) ]]; then
-    INTERFACES=$(for i in $(sudo /usr/sbin/i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
+    INTERFACES=$(for i in $(sudo /usr/sbin/i2cdetect -l | grep DesignWare | sed -E "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
 
     if [ -z "$INTERFACES" ]; then
         echo "No i2c interface can be found. Make sure you have installed libevdev packages"
