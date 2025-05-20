@@ -344,6 +344,7 @@ xdotool key XF86Calculator
 
 **How to start NumberPad without systemd service?**
 
+- install in standard way using `bash install.sh` and answer no to the question about using `systemd`
 - layout name is required as first argument and as second argument can be optionally passed path to directory where will be autocreated config `numberpad_dev` (default is current working directory):
 
 ```
