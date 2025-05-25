@@ -22,78 +22,78 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     # pip pywayland requires gcc
     if [[ $(command -v apt-get 2>/dev/null) ]]; then
         PACKAGE_MANAGER="apt"
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libsystemd-dev
-        # wayland (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198#issuecomment-2483268464)
+        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config
+        sudo apt-get -y install libsystemd-dev
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo apt-get -y install libwayland-dev
         fi
+
     elif [[ $(command -v pacman 2>/dev/null) ]]; then
         PACKAGE_MANAGER="pacman"
-        # arch does not have header packages (python3-dev), headers are shipped with base? python package should contains almost latest version python3.*
-        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf systemd
-        # wayland (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198#issuecomment-2483268464)
+        sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf
+        sudo pacman --noconfirm --needed -S systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo pacman --noconfirm --needed -S wayland
         fi
+
     elif [[ $(command -v dnf 2>/dev/null) ]]; then
-        # dnf5 has --help
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/204
         PACKAGE_MANAGER="dnf"
-        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config systemd-devel
-        # wayland
+        sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config
+        sudo dnf -y install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
+
     elif [[ $(command -v yum 2>/dev/null) ]]; then
         PACKAGE_MANAGER="yum"
-        # yum was replaced with newer dnf above
-        sudo yum --y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config systemd-devel
-        # wayland
+        sudo yum -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config
+        sudo yum -y install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
-            sudo yum --y install wayland-devel
+            sudo yum -y install wayland-devel
         fi
+
     elif [[ $(command -v zypper 2>/dev/null) ]]; then
         PACKAGE_MANAGER="zypper"
-        sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config systemd-devel
-        # wayland
+        sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config
+        sudo zypper --non-interactive install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo zypper --non-interactive install wayland-devel
         fi
+
     elif [[ $(command -v xbps-install 2>/dev/null) ]]; then
         PACKAGE_MANAGER="xbps-install"
-        sudo xbps-install -Suy ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config systemd
-        # wayland
+        sudo xbps-install -Suy ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config
+        sudo xbps-install -Suy systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo xbps-install -Suy wayland-devel
         fi
+
     elif [[ $(command -v emerge 2>/dev/null) ]]; then
         PACKAGE_MANAGER="portage"
-        sudo emerge app-i18n/ibus dev-libs/libevdev net-misc/curl x11-apps/xinput sys-apps/i2c-tools dev-lang/python dev-python/virtualenv dev-libs/libxml2 x11-libs/libxkbcommon sys-devel/gcc virtual/pkgconfig sys-apps/systemd
-        # wayland
+        sudo emerge app-i18n/ibus dev-libs/libevdev net-misc/curl x11-apps/xinput sys-apps/i2c-tools dev-lang/python dev-python/virtualenv dev-libs/libxml2 x11-libs/libxkbcommon sys-devel/gcc virtual/pkgconfig
+        sudo emerge sys-apps/systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo emerge dev-libs/wayland
         fi
+
     elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
         PACKAGE_MANAGER="rpm-ostree"
-        sudo rpm-ostree install xinput virtualenv python3-devel wayland-protocols-devel pkg-config systemd-devel
-        # wayland
+        sudo rpm-ostree install xinput virtualenv python3-devel wayland-protocols-devel pkg-config
+        sudo rpm-ostree install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo rpm-ostree install wayland-devel
         fi
+
     elif [[ $(command -v eopkg 2>/dev/null) ]]; then
         PACKAGE_MANAGER="eopkg"
-        sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel libxml2-devel libxkbcommon-devel gcc pkgconf systemd-devel
-
-        # python3-virtualenv not found
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/231
-        python3 -m pip install --user virtualenv
-
-        # wayland
+        sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2-devel libxkbcommon-devel gcc pkg-config
+        sudo eopkg install -y systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
+
     else
-        echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
+        echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-dialpad-driver/issues)."
     fi
 
     if [[ $? != 0 ]]; then
