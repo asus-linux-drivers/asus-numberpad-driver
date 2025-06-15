@@ -500,16 +500,16 @@ try_times = 5
 try_sleep = 0.1
 
 gsettings_failure_count = 0
-gsettings_max_failure_count = 3
+gsettings_max_failure_count = 1
 
 qdbus_failure_count = 0
-qdbus_max_failure_count = 3
+qdbus_max_failure_count = 1
 
 getting_device_via_xinput_status_failure_count = 0
-getting_device_via_xinput_status_max_failure_count = 3
+getting_device_via_xinput_status_max_failure_count = 1
 
 getting_device_via_synclient_status_failure_count = 0
-getting_device_via_synclient_status_max_failure_count = 3
+getting_device_via_synclient_status_max_failure_count = 1
 
 # Numpad layout model
 model = None
