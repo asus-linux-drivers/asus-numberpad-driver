@@ -1,5 +1,18 @@
 # Changelog
 
+### 6.5.1 (16.6.2025)
+
+### Fixed
+
+- Updated offline table for auto suggestions from gathered data (GA)
+- Reduced maximum allowed number of failures (gsettings, qdbus, xinput)
+- Installation without systemd (lib package for `systemd` moved on separate line as it can throw error)
+- Different runtime `WAYLAND_DISPLAY` (credits @scientiac)
+- Device check (option of `sed` for GNU only to POSIX-compliant)
+- NixOS module (credits @scientiac)
+- Delay when is layout changed on gnome (re-implemented using `GLib`)
+- Support for `eopkg` package manager
+
 ### 6.5.0 (22.02.2025)
 
 ### Fixed
