@@ -28,7 +28,7 @@ import signal
 import math
 import glob
 
-GNOME_GLIB_AVAILABLE = True
+GNOME_GLIB_AVAILABLE = False
 
 try:
     import gi
