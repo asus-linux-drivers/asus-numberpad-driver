@@ -14,7 +14,7 @@ from time import sleep, time
 from typing import Optional
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_LED, EV_MSC, EV_SYN, Device, InputEvent, const, device
-from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, AsyncNotifier
+from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, AsyncNotifier, ProcessEvent
 import Xlib.display
 import Xlib.X
 import Xlib.XK
@@ -2482,22 +2482,30 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
         sleep(1)
 
 
+class ConfigChangeHandler(ProcessEvent):
+
+    def process_default(self, event):
+        global config_file_path
+
+        if os.path.basename(event.pathname) == os.path.basename(config_file_path):
+            if not config_lock.locked():
+                log.info("check_config_values_changes: detected external change of config file -> loading changes")
+                # because file might be read so fast that changes will not be there yet
+                sleep(0.1)
+                load_all_config_values()
+            else:
+                log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+
+
 def check_config_values_changes():
     global config_lock, stop_threads, event_notifier
 
     while not stop_threads:
         try:
-            event_notifier.process_events()
+
             if event_notifier.check_events():
                 event_notifier.read_events()
-
-                if not config_lock.locked():
-                    log.info("check_config_values_changes: detected external change of config file -> loading changes")
-                    # because file might be read so fast that changes will not be there yet
-                    sleep(0.1)
-                    load_all_config_values()
-                else:
-                    log.info("check_config_values_changes: detected internal change of config file -> do nothing -> would be deadlock")
+                event_notifier.process_events()
 
         except KeyboardInterrupt:
             break
@@ -2626,7 +2634,8 @@ try:
     mask = IN_CLOSE_WRITE | IN_IGNORED | IN_MOVED_TO
     watch_manager.add_watch(path, mask)
 
-    event_notifier = AsyncNotifier(watch_manager)
+    handler = ConfigChangeHandler()
+    event_notifier = AsyncNotifier(watch_manager, handler)
 
     # if keyboard with numlock indicator was found
     # thread for listening change of system numlock
