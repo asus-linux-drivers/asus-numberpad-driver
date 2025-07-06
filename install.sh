@@ -163,8 +163,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     source $INSTALL_DIR_PATH/.env/bin/activate
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
-    pip3 install -r requirements.txt || pip3 install -r requirements.nosystemd.txt
-    deactivate
+    pip3 install -r requirements.txt
+    if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+        pip3 install -r requirements.wayland.txt
+    fi
 
     echo
 

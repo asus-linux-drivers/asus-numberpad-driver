@@ -1,8 +1,0 @@
-libevdev
-numpy
-pyinotify
-python-xlib
-smbus2
-pyasyncore
-pywayland
-xkbcommon<1.1

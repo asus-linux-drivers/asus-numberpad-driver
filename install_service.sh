@@ -22,6 +22,8 @@ echo
 read -r -p "Do you want install systemctl service? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
+    pip3 install -r requirements.systemd.txt
+
     SERVICE=1
 
     SERVICE_FILE_PATH=asus_numberpad_driver.service
