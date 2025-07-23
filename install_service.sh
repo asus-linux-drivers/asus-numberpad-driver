@@ -22,6 +22,28 @@ echo
 read -r -p "Do you want install systemctl service? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
+    if [[ $(command -v apt-get 2>/dev/null) ]]; then
+        sudo apt-get -y install libsystemd-dev python3-systemd
+    elif [[ $(command -v pacman 2>/dev/null) ]]; then
+        sudo pacman --noconfirm --needed -S systemd python-systemd
+    elif [[ $(command -v dnf 2>/dev/null) ]]; then
+        sudo dnf -y install systemd-devel python3-systemd
+    elif [[ $(command -v yum 2>/dev/null) ]]; then
+        sudo yum -y install systemd-devel python3-systemd
+    elif [[ $(command -v zypper 2>/dev/null) ]]; then
+        sudo zypper --non-interactive install systemd-devel python3-systemd
+    elif [[ $(command -v xbps-install 2>/dev/null) ]]; then
+        sudo xbps-install -Suy systemd python3-systemd
+    elif [[ $(command -v emerge 2>/dev/null) ]]; then
+        sudo emerge sys-apps/systemd dev-python/python-systemd
+    elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
+        sudo rpm-ostree install systemd-devel python3-systemd
+    elif [[ $(command -v eopkg 2>/dev/null) ]]; then
+        sudo eopkg install -y systemd-devel python3-systemd
+    else
+        echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
+    fi
+
     pip3 install -r requirements.systemd.txt
 
     SERVICE=1
