@@ -208,7 +208,9 @@ def set_defaults_keysym_name_associated_to_evdev_key_reflecting_current_layout()
         mod_name_to_specific_keysym_name('Control'): '',
         'u': '',
         # unicode shortcut - end sequence
-        'space': ''
+        'space': '',
+        # numpad keys
+        'asterisk': ''
     }
 
 
@@ -306,6 +308,10 @@ def load_evdev_keys_for_x11():
     reset_udev_device()
 
   keymap_loaded = True
+  
+  # Manual mapping for asterisk key to fix keysym resolution issue
+  set_evdev_key_for_char('asterisk', EV_KEY.KEY_KPASTERISK)
+  enable_key(EV_KEY.KEY_KPASTERISK)
 
   log.debug("X11 loaded keymap succesfully")
   log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
@@ -421,6 +427,10 @@ def wl_load_keymap_state():
         reset_udev_device()
 
     keymap_loaded = True
+    
+    # Manual mapping for asterisk key to fix keysym resolution issue
+    set_evdev_key_for_char('asterisk', EV_KEY.KEY_KPASTERISK)
+    enable_key(EV_KEY.KEY_KPASTERISK)
 
     log.debug("Wayland loaded keymap succesfully")
     log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
