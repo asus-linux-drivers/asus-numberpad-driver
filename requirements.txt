@@ -6,3 +6,4 @@ smbus2
 pyasyncore
 pywayland
 xkbcommon<1.1
+xcffib
