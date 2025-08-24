@@ -23,10 +23,11 @@ from pywayland.client import Display
 from pywayland.protocol.wayland import WlSeat
 import mmap
 from smbus2 import SMBus, i2c_msg
-import ast
 import signal
 import math
 import glob
+import xcffib
+import xcffib.xkb
 
 GNOME_GLIB_AVAILABLE = False
 
@@ -46,6 +47,7 @@ display_wayland_var = os.environ.get('WAYLAND_DISPLAY')
 display_wayland = None
 keyboard_state = None
 display = None
+xkb_conn = None
 keymap_loaded = False
 listening_touchpad_events_started = False
 
@@ -69,6 +71,9 @@ if xdg_session_type == "x11":
     try:
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
+      xkb_conn = xcffib.connect()
+      xkb_conn_setup = xkb_conn.get_setup()
+      log.info("X11 detected and connected succesfully to the xcffib")
     except:
       log.error("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
       sys.exit(1)
@@ -257,42 +262,137 @@ def enable_key(key_or_key_combination, reset_udev = False):
     if len(enabled_evdev_keys) > enabled_keys_count and reset_udev:
       reset_udev_device()
 
+def resolve_keycode_with_xcffib_xkb(keysym):
+    global xkb_conn, xkb_conn_setup, xkb_active_group, xkb_map
+
+    try:
+        min_keycode, max_keycode = xkb_conn_setup.min_keycode, xkb_conn_setup.max_keycode
+
+        key_sym_maps = getattr(xkb_map, "syms_rtrn", [])
+        if not key_sym_maps:
+            return (None, None)
+
+        for kc in range(min_keycode, max_keycode + 1):
+
+            # Iterate entries by index; keycode is min_kc + index
+            for idx, entry in enumerate(key_sym_maps):
+                kc    = min_keycode + idx
+                syms  = getattr(entry, "syms", [])
+                n     = getattr(entry, "nSyms", len(syms))
+                width = getattr(entry, "width", 2)  # levels per group, fallback to 2
+
+                if not syms or n == 0 or width <= 0:
+                    continue
+
+                limit = min(n, len(syms))
+                for i in range(limit):
+                    group = i // width
+                    if group != xkb_active_group:
+                        continue
+                    if syms[i] == keysym:
+                        level = i %  width
+                        return (kc, level)
+
+        return (None, None)
+
+    except Exception:
+        log.exception("resolve_keycode_with_xkb() failed unexpectedly")
+        return (None, None)
+
+def resolve_keycode_with_xlib(keysym):
+    global display
+
+    keycode = display.keysym_to_keycode(keysym)
+    if not keycode:
+        return (None, None)
+
+    level = None
+    for l in (0, 1, 2, 3, 4):
+        if display.keycode_to_keysym(keycode, l) == keysym:
+            level = l
+            break
+
+    return (keycode, level)
+
+def load_xkb_map_and_active_group():
+    global xkb_conn, xkb_active_group, xkb_map
+
+    xkb = xkb_conn(xcffib.xkb.key)
+    if not xkb.UseExtension(1, 0).reply().supported:
+        return (None, None)
+
+    state = xkb.GetState(xcffib.xkb.ID.UseCoreKbd).reply()
+
+    # xkb has support up to 4 groups max
+    xkb_active_group = state.group % 4
+
+    core_kbd_id = xkb.GetDeviceInfo(xcffib.xkb.ID.UseCoreKbd, 0, 0, 0, 0, 0, 0).reply().deviceID
+
+    components = (
+        xcffib.xkb.MapPart.KeyTypes |
+        xcffib.xkb.MapPart.KeySyms |
+        xcffib.xkb.MapPart.ModifierMap |
+        xcffib.xkb.MapPart.ExplicitComponents |
+        xcffib.xkb.MapPart.KeyActions |
+        xcffib.xkb.MapPart.VirtualMods |
+        xcffib.xkb.MapPart.VirtualModMap
+    )
+
+    xkb_map = xkb.GetMap(
+        core_kbd_id,
+        components,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+    ).reply()
 
 def load_evdev_key_for_x11(char):
     global display, keysym_name_associated_to_evdev_key_reflecting_current_layout
 
     keysym = Xlib.XK.string_to_keysym(char)
-
     if keysym == 0:
-      return
+        return
 
-    keycode = display.keysym_to_keycode(keysym)
+    # try xkb via xcffib first
+    keycode, level = resolve_keycode_with_xcffib_xkb(keysym)
+
+    # fallback to python-xlib (does not ship an xkb module)
+    if keycode is None:
+        keycode, level = resolve_keycode_with_xlib(keysym)
+        if keycode is None or level is None:
+            return
+
     key = EV_KEY.codes[int(keycode) - 8]
 
-    # bare
-    if display.keycode_to_keysym(keycode, 0) == keysym:
-      pass
-    # shift
-    elif display.keycode_to_keysym(keycode, 1) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), key]
-    # altgr
-    elif display.keycode_to_keysym(keycode, 2) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
-    # shift altgr
-    elif display.keycode_to_keysym(keycode, 3) == keysym:
-      key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
+    if level == 0:
+        pass
+    elif level == 1:  # Shift
+        key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), key]
+    elif level == 2:  # AltGr
+        key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
+    elif level == 3:  # Shift + AltGr
+        key = [
+            load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')),
+            load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')),
+            key
+        ]
+    elif level == 4:  # Level5 (ISO_Level5_Shift)
+        key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Meta')), key]
 
     set_evdev_key_for_char(char, key)
-
     enable_key(key)
-
     return key
-
 
 def load_evdev_keys_for_x11():
   global enabled_evdev_keys, keymap_loaded, udev
 
   log.debug("X11 will try to load keymap")
+
+  try:
+    load_xkb_map_and_active_group()
+  except:
+    pass
 
   enabled_keys_count = len(enabled_evdev_keys)
 
@@ -2414,7 +2514,6 @@ def check_touchpad_status():
 
     numlock_lock.release()
 
-
 def check_system_numlock_status():
     global stop_threads
 
@@ -2514,7 +2613,7 @@ def check_config_values_changes():
 
 
 def cleanup():
-    global numlock, is_idled, display, display_wayland, stop_threads, event_notifier, watch_manager
+    global numlock, is_idled, display, display_wayland, stop_threads, event_notifier, watch_manager, xkb_conn
 
     log.info("Clean up started")
 
@@ -2551,6 +2650,12 @@ def cleanup():
             # because may be already closed (e.g. closed connection by server in load_keymap_listener_x11)
             except:
                 pass
+
+        try:
+            if xkb_conn is not None:
+                xkb_conn.disconnect()
+        except Exception:
+            pass
 
         if watch_manager:
             watch_manager.close()
