@@ -4,12 +4,12 @@
   ...
 }:
 let
-  mainPkg = python311Packages.callPackage ./default.nix {};
+  mainPkg = python313Packages.callPackage ./default.nix {};
 in
 mainPkg.overrideAttrs (oa: {
     nativeBuildInputs =
       [
-        python311Packages.pip
+        python313Packages.pip
       ]
       ++ (oa.nativeBuildInputs or []);
 })
