@@ -1,11 +1,11 @@
 { lib
-, python311Packages
+, python313Packages
 , pkgs
 }:
 
 let
   # Define the Python packages required
-  pythonPackages = pkgs.python311.withPackages (ps: with ps; [
+  pythonPackages = pkgs.python313.withPackages (ps: with ps; [
     numpy
     libevdev
     xlib
@@ -15,9 +15,10 @@ let
     pywayland
     xkbcommon
     systemd
+    xcffib
   ]);
 in
-python311Packages.buildPythonPackage {
+python313Packages.buildPythonPackage {
   pname = "asus-numberpad-driver";
   version = "6.5.1";
   src = ../.;
@@ -34,7 +35,7 @@ python311Packages.buildPythonPackage {
     libxkbcommon
     libgcc
     gcc
-    pythonPackages  # Python dependencies already include python311
+    pythonPackages  # Python dependencies already include python313
   ];
 
   doCheck = false;
