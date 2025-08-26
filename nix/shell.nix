@@ -1,6 +1,5 @@
 {
-  python311Packages,
-  pkgs,
+  python313Packages,
   ...
 }:
 let
