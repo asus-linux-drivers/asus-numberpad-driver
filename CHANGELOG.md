@@ -1,6 +1,20 @@
 # Changelog
 
-### 6.5.1 (16.6.2025)
+## 6.6.0 (8.10.2025)
+
+### Fixed
+
+- Default value of `GNOME_GLIB_AVAILABLE`
+- Installing `pip` package `pywayland` when is not required
+- Added missing `python3` dependency when using `systemd`
+
+### Feature
+
+- Attempt to enhance used `xlib` not shipping `xkb` module with `xcffib`
+- Added check whether is python atleast in version 3.10 because `xcffib` requirements
+- By default NumberPad automatically disable after 2 mins
+
+## 6.5.1 (16.6.2025)
 
 ### Fixed
 
@@ -13,7 +27,7 @@
 - Delay when is layout changed on gnome (re-implemented using `GLib`)
 - Support for `eopkg` package manager
 
-### 6.5.0 (22.02.2025)
+## 6.5.0 (22.02.2025)
 
 ### Fixed
 
@@ -24,7 +38,7 @@
 - Added support for `eopkg` package manager
 - Added possibility to disable top left icon slide function separately for activated and not activated NumberPad via `top_left_icon_slide_func_disabled`
 
-### 6.4.1 (12.12.2024)
+## 6.4.1 (12.12.2024)
 
 ### Fixed
 
@@ -37,7 +51,7 @@
 
 - Init package manager `rpm-ostree`
 
-### 6.4.0 (4.10.2024)
+## 6.4.0 (4.10.2024)
 
 ### Fixed
 
@@ -62,7 +76,7 @@
 - Send runtime logs to the journal
 - Not allow lowering x or y axis during movement
 
-### 6.3.4 (19.9.2024)
+## 6.3.4 (19.9.2024)
 
 ### Fixed
 
@@ -72,7 +86,7 @@
 - Obtaining touchpad status enabled/disabled using `qdbus` for `kde` (credits @sleddev)
 - Toggling tap-to-click using `qdbus` for `kde` (credits @sleddev)
 
-### 6.3.3 (7.9.2024)
+## 6.3.3 (7.9.2024)
 
 ### Fixed
 
@@ -85,7 +99,7 @@
 - Missing `sudo` when uninstalling (credits @Triw-12)
 - Activation when is `brightness` not defined yet
 
-### 6.3.2 (1.8.2024)
+## 6.3.2 (1.8.2024)
 
 ### Fixed
 
@@ -93,7 +107,7 @@
 - Missing check whether is installed `i2ctransfer` tool
 - Accepting `-1` as starting x or y axis for touch
 
-### 6.3.1 (20.7.2024)
+## 6.3.1 (20.7.2024)
 
 ### Fixed
 
@@ -110,7 +124,7 @@
 - Allowed to activate NumberPad with slide gesture with beginning on the top left icon (together with calc app)
 - Updated offline table for auto suggestions from gathered data (GA)
 
-### 6.2.0 (13.6.2024)
+## 6.2.0 (13.6.2024)
 
 ### Feature
 
@@ -120,7 +134,7 @@
 
 - Fixed setting up the last brightness when is NumberPad started in response to activated numlock key
 
-### 6.1.0 (1.6.2024)
+## 6.1.0 (1.6.2024)
 
 ### Feature
 
@@ -143,7 +157,7 @@
 - Unnecessary udev reset during starting for wayland
 - Loading keymap on x11 twice during the start
 
-### 6.0.0 (3.5.2024)
+## 6.0.0 (3.5.2024)
 
 ### Feature
 
@@ -159,7 +173,7 @@
 - Fixed removing other shortcuts during first installation
 
 
-### 5.1.1 (4.4.2024)
+## 5.1.1 (4.4.2024)
 
 ### Fixed
 
