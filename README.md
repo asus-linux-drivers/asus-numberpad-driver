@@ -62,6 +62,9 @@ Get the latest dev version using `git`:
 ```bash
 $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
+# now you are using not stable master branch with the latest changes
+# jump to the latest release (stable version) using:
+$ git checkout v6.6.0
 ```
 
 or download the latest release (stable version) from [the release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install for current user and current Python3 ([How to install the driver with specific Python3 version using pyenv?](#faq)):
