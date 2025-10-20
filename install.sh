@@ -96,6 +96,14 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
+    [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1 && {
+        echo
+        echo "You are using plasma desktop environment. It is recommended to install manually 'qt6-tools', 'qt5-tools' or similar package to have 'qdbus' command available for proper work of the driver." >&2
+        read -n1 -r -p "Press any key to continue..."
+        echo
+    }
+
     if [[ $? != 0 ]]; then
         echo "Something went wrong when installing packages"
         source install_begin_send_anonymous_report.sh
