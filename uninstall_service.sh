@@ -4,7 +4,7 @@ source non_sudo_check.sh
 
 # ENV VARS
 if [ -z "$SERVICE_INSTALL_DIR_PATH" ]; then
-    SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+    SERVICE_INSTALL_DIR_PATH="$HOME/.config/systemd/user"
 fi
 
 SERVICE_INSTALL_FILE_NAME="asus_numberpad_driver@.service"

@@ -74,13 +74,12 @@ INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
 CONFIG_FILE_NAME="numberpad_dev"
 LOGS_DIR_PATH="/var/log/asus-numberpad-driver" # only for install and uninstall logs
-SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+SERVICE_INSTALL_DIR_PATH="$HOME/.config/systemd/user"
 INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 
 # e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
 $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
 INSTALL_UDEV_DIR_PATH="/etc/udev"\
-SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
 bash install.sh
 ```
 
@@ -250,13 +249,12 @@ INSTALL_DIR_PATH="/usr/share/asus-numberpad-driver"
 CONFIG_FILE_DIR_PATH="$INSTALL_DIR_PATH"
 CONFIG_FILE_NAME="numberpad_dev"
 LOGS_DIR_PATH="/var/log/asus-numberpad-driver" # only for install and uninstall logs
-SERVICE_INSTALL_DIR_PATH="/usr/lib/systemd/user"
+SERVICE_INSTALL_DIR_PATH="$HOME/.config/systemd/user"
 INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 
 # e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
 $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
 INSTALL_UDEV_DIR_PATH="/etc/udev/"\
-SERVICE_INSTALL_DIR_PATH="/home/$USER/.config/systemd/user/"\
 bash uninstall.sh
 ```
 
