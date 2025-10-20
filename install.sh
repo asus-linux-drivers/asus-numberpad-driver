@@ -97,12 +97,22 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
-    [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1 && {
-        echo
-        echo "You are using plasma desktop environment. It is recommended to install manually 'qt6-tools', 'qt5-tools' or similar package to have 'qdbus' command available for proper work of the driver." >&2
-        read -n1 -r -p "Press any key to continue..."
-        echo
-    }
+    if [ "$DESKTOP_SESSION" == "plasma" ]
+    then
+        qdbus=$(which qdbus)
+        plasma_ver=$(plasmashell --version | grep -oE '[0-9]+' | head -1)
+
+        if [ -n "$qdbus" ]
+        then
+            if [ "$plasma_ver" -eq 5 ]; then
+                sudo pacman -S --noconfirm --needed qt5-tools
+            elif [ "$plasma_ver" -eq 6 ]; then
+                sudo pacman -S --noconfirm --needed qt6-tools
+            else
+                echo "Unknown Plasma version: $plasma_ver"
+            fi
+        fi
+    fi
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when installing packages"
