@@ -194,15 +194,15 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # xcffib (https://pypi.org/project/xcffib/) requires python >=3.10
-    PYTHON_VERSION=$($PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
     if ! $PYTHON -c "import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)"; then
+        PYTHON_VERSION=$($PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
         echo "Python >= 3.10 is required (found $PYTHON_VERSION)."
         echo "Please install Python 3.10 or higher before continuing."
         exit 1
     fi
 
     # create Python3 virtual environment
-    virtualenv --python="$PYTHON_VERSION" $INSTALL_DIR_PATH/.env
+    virtualenv --python="$PYTHON" $INSTALL_DIR_PATH/.env
     source $INSTALL_DIR_PATH/.env/bin/activate
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
