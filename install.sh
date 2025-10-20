@@ -27,9 +27,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo apt-get -y install libwayland-dev
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo apt-get -y install qdbus
-        fi
 
     elif [[ $(command -v pacman 2>/dev/null) ]]; then
         PACKAGE_MANAGER="pacman"
@@ -37,9 +34,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo pacman --noconfirm --needed -S systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo pacman --noconfirm --needed -S wayland
-        fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo pacman --noconfirm --needed -S qdbus
         fi
 
     elif [[ $(command -v dnf 2>/dev/null) ]]; then
@@ -49,7 +43,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
-        # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
         if [ "$DESKTOP_SESSION" == "plasma" ]; then
             sudo dnf -y install qdbus
         fi
@@ -61,9 +54,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo yum -y install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo yum -y install qdbus
-        fi
 
     elif [[ $(command -v zypper 2>/dev/null) ]]; then
         PACKAGE_MANAGER="zypper"
@@ -71,9 +61,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo zypper --non-interactive install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo zypper --non-interactive install wayland-devel
-        fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo zypper --non-interactive install qdbus
         fi
 
     elif [[ $(command -v xbps-install 2>/dev/null) ]]; then
@@ -83,9 +70,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo xbps-install -Suy wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo xbps-install -Suy qdbus
-        fi
 
     elif [[ $(command -v emerge 2>/dev/null) ]]; then
         PACKAGE_MANAGER="portage"
@@ -93,9 +77,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         sudo emerge sys-apps/systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo emerge dev-libs/wayland
-        fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo emerge dev-qt/qdbus
         fi
 
     elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
@@ -105,9 +86,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo rpm-ostree install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo rpm-ostree install qdbus
-        fi
 
     elif [[ $(command -v eopkg 2>/dev/null) ]]; then
         PACKAGE_MANAGER="eopkg"
@@ -116,14 +94,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo eopkg install -y qdbus
-        fi
 
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
-
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when installing packages"
