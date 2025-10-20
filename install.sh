@@ -202,7 +202,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # create Python3 virtual environment
-    virtualenv --python="$PYTHON_VERSION" $INSTALL_DIR_PATH/.env
+    virtualenv --python="$PYTHON" $INSTALL_DIR_PATH/.env
     source $INSTALL_DIR_PATH/.env/bin/activate
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
