@@ -43,9 +43,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
-            sudo dnf -y install qdbus
-        fi
 
     elif [[ $(command -v yum 2>/dev/null) ]]; then
         PACKAGE_MANAGER="yum"
