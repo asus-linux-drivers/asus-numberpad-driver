@@ -22,6 +22,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     # pip pywayland requires gcc
     if [[ $(command -v apt-get 2>/dev/null) ]]; then
         PACKAGE_MANAGER="apt"
+        sudo apt-get update
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libxcb-render0-dev
         sudo apt-get -y install libsystemd-dev
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
