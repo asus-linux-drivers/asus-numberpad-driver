@@ -141,13 +141,13 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
                 ;;
         esac
         # Optional: Verify installation
+        echo "------------------"
         if command -v qdbus >/dev/null 2>&1; then
-            echo "------------------"
             echo "qdbus installed successfully."
-            echo "------------------"
         else
             echo "Warning: qdbus not available after install. Manual intervention needed."
         fi
+        echo "------------------"
     fi
 
     if [[ $? != 0 ]]; then
