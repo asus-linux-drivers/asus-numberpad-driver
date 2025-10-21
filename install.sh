@@ -91,18 +91,64 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
-
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 
-    # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
-    [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1 && {
-        echo
-        echo "You are using plasma desktop environment. It is recommended to install manually 'qt6-tools' (Plasma 6), 'qt5-tools' (Plasma 5) or similar package adequate for your plasma desktop environment version to have 'qdbus' command available for proper work of the driver." >&2
-        read -n1 -r -p "Press any key to continue..."
-        echo
-    }
+    echo "------------------"
+    echo "Using $PACKAGE_MANAGER"
+    echo "------------------"
+
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/258
+    if [ "$DESKTOP_SESSION" == "plasma" ]
+    then
+        case $PACKAGE_MANAGER in
+            "apt")
+                QDBUS_PKG=$(apt-file search --regexp '^/usr/bin/qdbus$' 2>/dev/null | head -n1 | awk '{print $1}' | sed 's/:.*//')
+                [ -n "$QDBUS_PKG" ] && sudo apt-get -y install "$QDBUS_PKG"
+                ;;
+            "pacman")
+                QDBUS_PKG=$(pacman -Fy /usr/bin/qdbus 2>/dev/null | awk '/extra\// {print $1}' | head -n1)
+                [ -n "$QDBUS_PKG" ] && sudo pacman --noconfirm --needed -S "$QDBUS_PKG"
+                ;;
+            "dnf")
+                QDBUS_PKG=$(dnf provides /usr/bin/qdbus 2>/dev/null | grep -oP '(qt\d+-qttools-[^-]+-[^-]+)' | head -n1)
+                [ -n "$QDBUS_PKG" ] && sudo dnf -y install "$QDBUS_PKG"
+                ;;
+            "yum")
+                QDBUS_PKG=$(yum provides /usr/bin/qdbus 2>/dev/null | grep -oP '(qt\d+-qttools-[^-]+-[^-]+)' | head -n1)
+                [ -n "$QDBUS_PKG" ] && sudo yum -y install "$QDBUS_PKG"
+                ;;
+            "zypper")
+                QDBUS_PKG=$(zypper search --provides qdbus 2>/dev/null | awk 'NR>8 && $2 ~ /qt/ {print $2; exit}')
+                [ -n "$QDBUS_PKG" ] && sudo zypper --non-interactive install "$QDBUS_PKG"
+                ;;
+            "xbps-install")
+                QDBUS_PKG=$(xbps-query -Rs $(xbps-query -p provides -X /usr/bin/qdbus 2>/dev/null) 2>/dev/null | awk '{print $1}' | head -n1 | sed 's/-[0-9].*//')
+                [ -n "$QDBUS_PKG" ] && sudo xbps-install -Suy "$QDBUS_PKG"
+                ;;
+            "portage")
+                QDBUS_PKG="dev-qt/qdbus"  # Emerge doesn't have a direct "provides" query; hardcoded but reliable
+                sudo emerge "$QDBUS_PKG"
+                ;;
+            "rpm-ostree")
+                QDBUS_PKG=$(rpm-ostree rpm-md --provides=/usr/bin/qdbus 2>/dev/null | grep -oP '(qt\d+-qttools-[^-]+-[^-]+)' | head -n1)
+                [ -n "$QDBUS_PKG" ] && sudo rpm-ostree install "$QDBUS_PKG"
+                ;;
+            "eopkg")
+                QDBUS_PKG=$(eopkg search --provides qdbus 2>/dev/null | awk '/Package/{print $2}' | head -n1)
+                [ -n "$QDBUS_PKG" ] && sudo eopkg install -y "$QDBUS_PKG"
+                ;;
+        esac
+        # Optional: Verify installation
+        if command -v qdbus >/dev/null 2>&1; then
+            echo "------------------"
+            echo "qdbus installed successfully."
+            echo "------------------"
+        else
+            echo "Warning: qdbus not available after install. Manual intervention needed."
+        fi
+    fi
 
     if [[ $? != 0 ]]; then
         echo "Something went wrong when installing packages"
