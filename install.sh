@@ -104,8 +104,9 @@ install_packages() {
         $INSTALL_CMD $WAYLAND_PKG
     fi
     if [ "$DESKTOP_SESSION" == "plasma" ]; then
-        QDBUS_PKG=$(eval "$QDBUS_QUERY") || QDBUS_PKG="$QDBUS_FALLBACK"
+        QDBUS_PKG=$(eval "$QDBUS_QUERY")
         [ -n "$QDBUS_PKG" ] && $INSTALL_CMD "$QDBUS_PKG"
+        echo "------------------"
         if command -v qdbus >/dev/null 2>&1; then
             echo "qdbus installed successfully."
         else
