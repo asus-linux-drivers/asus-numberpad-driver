@@ -37,16 +37,8 @@ detect_package_manager() {
         WAYLAND_PKG="wayland-devel"
         UPDATE_CMD="sudo dnf -y update"
         INSTALL_CMD="sudo dnf -y install"
-        QDBUS_QUERY="dnf provides /usr/bin/qdbus 2>/dev/null | awk '/qt[56]-qttools.*'$(uname -m)'/ {print \$1; exit} /qt-.*'$(uname -m)'/ {print \$1; exit}' | head -n1"
+        QDBUS_QUERY="dnf provides *qdbus 2>/dev/null | awk '/qt[56]-qttools.*'$(uname -m)'/ {print \$1; exit} /qt-.*'$(uname -m)'/ {print \$1; exit}' | head -n1"
         QDBUS_FALLBACK="qt6-qttools"
-    elif command -v yum >/dev/null 2>&1; then
-        PACKAGE_MANAGER="yum"
-        BASE_PKGS="ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel systemd-devel"
-        WAYLAND_PKG="wayland-devel"
-        UPDATE_CMD="sudo yum -y update"
-        INSTALL_CMD="sudo yum -y install"
-        QDBUS_QUERY=QDBUS_QUERY="yum provides *qdbus 2>/dev/null | awk '/qt[56]-qttools.*'$(uname -m)'/ {print \$1; exit} /qt-.*'$(uname -m)'/ {print \$1; exit}' | head -n1"
-        QDBUS_FALLBACK="qt5-qttools"
     elif command -v zypper >/dev/null 2>&1; then
         PACKAGE_MANAGER="zypper"
         BASE_PKGS="ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel systemd-devel"
