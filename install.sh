@@ -13,6 +13,13 @@ source install_logs.sh
 LOGS_INSTALL_LOG_FILE_NAME=install-"$(date +"%d-%m-%Y-%H-%M-%S")".log
 LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
+# Determine Plasma version
+if [ "$DESKTOP_SESSION" == "plasma" ] && command -v plasmashell >/dev/null 2>&1; then
+    PLASMA_VER=$(plasmashell --version | grep -oE '[0-9]+' | head -1)
+else
+    PLASMA_VER=6  # Default to Plasma 6 for modern systems if plasmashell is missing
+fi
+
 # Function to detect package manager and set package lists
 detect_package_manager() {
     if command -v apt-get >/dev/null 2>&1; then
@@ -45,7 +52,7 @@ detect_package_manager() {
         WAYLAND_PKG="wayland-devel"
         UPDATE_CMD="sudo zypper --non-interactive refresh"
         INSTALL_CMD="sudo zypper --non-interactive install"
-        QDBUS_QUERY="zypper search --provides qdbus 2>/dev/null | awk 'NR>8 && \$2 ~ /qt/ {print \$2; exit}'"
+        QDBUS_QUERY="zypper search --provides qdbus 2>/dev/null | grep -e '.*qt'$PLASMA_VER'.*qdbus.*' | awk '{print \$2}'"
         QDBUS_FALLBACK="qt6-tools-qdbus"
     elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
