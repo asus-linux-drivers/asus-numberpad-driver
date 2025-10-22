@@ -28,8 +28,8 @@ detect_package_manager() {
         WAYLAND_PKG="libwayland-dev"
         UPDATE_CMD="sudo apt-get update"
         INSTALL_CMD="sudo apt-get -y install"
-        QDBUS_QUERY="apt-file search --regexp '^/usr/bin/qdbus$' 2>/dev/null | head -n1 | awk '{print \$1}' | sed 's/:.*//'"
-        QDBUS_FALLBACK="qdbus"
+        QDBUS_QUERY="apt-file update 2>/dev/null; apt-file search qdbus-qt$PLASMA_VER | cut -d ':' -f1 | head -n 1"
+        QDBUS_FALLBACK="qdbus-qt6"
     elif command -v pacman >/dev/null 2>&1; then
         PACKAGE_MANAGER="pacman"
         BASE_PKGS="ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf libxcb systemd"
