@@ -56,11 +56,11 @@ detect_package_manager() {
         QDBUS_FALLBACK="qt6-tools-qdbus"
     elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
-        BASE_PKGS="ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel systemd"
+        BASE_PKGS="ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel systemd xtools"
         WAYLAND_PKG="wayland-devel"
         UPDATE_CMD="sudo xbps-install -Suy"
         INSTALL_CMD="sudo xbps-install -Suy"
-        QDBUS_QUERY="xbps-query -Rs \$(xbps-query -p provides -X /usr/bin/qdbus 2>/dev/null) 2>/dev/null | awk '{print \$1}' | head -n1 | sed 's/-[0-9].*//'"
+        QDBUS_QUERY="xlocate qdbus|grep /usr/lib/qt$PLASMA_VER/bin/qdbus$|head -n1|awk '{print \$1}'"
         QDBUS_FALLBACK="qt6-tools"
     elif command -v emerge >/dev/null 2>&1; then
         PACKAGE_MANAGER="portage"
