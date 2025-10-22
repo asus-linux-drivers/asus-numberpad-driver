@@ -36,7 +36,7 @@ detect_package_manager() {
         WAYLAND_PKG="wayland"
         UPDATE_CMD="sudo pacman -Syu --noconfirm"
         INSTALL_CMD="sudo pacman --noconfirm --needed -S"
-        QDBUS_QUERY="sudo pacman -Fy /usr/bin/qdbus 2>/dev/null | awk '/extra\// {print \$1}' | head -n1"
+        QDBUS_QUERY="pacman -Fy qdbus 2>/dev/null | grep \"qt$PLASMA_VER-tools\" | awk '{print \$1}'"
         QDBUS_FALLBACK="qt6-tools"
     elif command -v dnf >/dev/null 2>&1; then
         PACKAGE_MANAGER="dnf"
