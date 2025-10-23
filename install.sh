@@ -56,7 +56,7 @@ detect_package_manager() {
         QDBUS_FALLBACK="qt6-tools-qdbus"
     elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
-        BASE_PKGS="ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel systemd xtools"
+        BASE_PKGS="ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel xtools"
         WAYLAND_PKG="wayland-devel"
         UPDATE_CMD="sudo xbps-install -Suy"
         INSTALL_CMD="sudo xbps-install -Suy"
