@@ -106,6 +106,8 @@ install_packages() {
         QDBUS_PKG=$(eval "$QDBUS_QUERY")
         [ -n "$QDBUS_PKG" ] && $INSTALL_CMD "$QDBUS_PKG"
         echo "------------------"
+        if [ "$PACKAGE_MANAGER" == "xbps-install" ]; then
+            export PATH="$PATH:$(xbps-query -Rf \"$QDBUS_PKG\"|grep qdbus$)"
         if command -v qdbus >/dev/null 2>&1; then
             echo "qdbus installed successfully."
         else
