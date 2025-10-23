@@ -60,7 +60,7 @@ detect_package_manager() {
         WAYLAND_PKG="wayland-devel"
         UPDATE_CMD="sudo xbps-install -Suy"
         INSTALL_CMD="sudo xbps-install -Suy"
-        QDBUS_QUERY="xlocate qdbus|grep /usr/lib/qt$PLASMA_VER/bin/qdbus$|head -n1|awk '{print \$1}'"
+        QDBUS_QUERY="xlocate qdbus | grep /usr/lib/qt$PLASMA_VER/bin/qdbus$ | head -n 1|awk '{print \$1}'"
         QDBUS_FALLBACK="qt6-tools"
     elif command -v emerge >/dev/null 2>&1; then
         PACKAGE_MANAGER="portage"
@@ -107,7 +107,7 @@ install_packages() {
         [ -n "$QDBUS_PKG" ] && $INSTALL_CMD "$QDBUS_PKG"
         echo "------------------"
         if [ "$PACKAGE_MANAGER" == "xbps-install" ]; then
-            export PATH="$PATH:$(xbps-query -Rf \"$QDBUS_PKG\"|grep qdbus$)"
+            export PATH="$PATH:$(xbps-query -Rf \"$QDBUS_PKG\" | grep qdbus$ | head -n 1)"
         fi
         if command -v qdbus >/dev/null 2>&1; then
             echo "qdbus installed successfully."
