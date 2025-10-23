@@ -108,6 +108,7 @@ install_packages() {
         echo "------------------"
         if [ "$PACKAGE_MANAGER" == "xbps-install" ]; then
             export PATH="$PATH:$(xbps-query -Rf \"$QDBUS_PKG\"|grep qdbus$)"
+        fi
         if command -v qdbus >/dev/null 2>&1; then
             echo "qdbus installed successfully."
         else
