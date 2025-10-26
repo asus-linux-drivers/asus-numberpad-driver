@@ -736,6 +736,8 @@ def send_value_to_touchpad_via_i2c(value):
             data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00, 0x0d, 0x14, 0x03, int(value, 16), 0xad]
             msg = i2c_msg.write(device_addr, data)
             bus.i2c_rdwr(msg)
+    except PermissionError:
+        log.error('Permission denied during I2C communication. Please ensure you are in the "i2c" group.')
     except Exception as e:
         log.error('Error during sending via i2c: \"%s\"', e)
 
@@ -1067,8 +1069,11 @@ try:
     bus = SMBus()
     bus.open(int(device_id))
     bus.close()
-except:
-    log.error("Can't open the I2C bus connection (id: %s)", device_id)
+except PermissionError:
+    log.error("Permission denied when opening I2C bus (id: %s). Please ensure you are in the 'i2c' group and that udev rules are applied. Try logging out and back in, or reboot.", device_id)
+    sys.exit(1)
+except Exception as e:
+    log.error("Can't open the I2C bus connection (id: %s): %s", device_id, e)
     sys.exit(1)
 
 
