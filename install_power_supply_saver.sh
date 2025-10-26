@@ -32,6 +32,8 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
 
+    sudo mkdir -p $INSTALL_UDEV_DIR_PATH/rules.d
+
     cat "udev/80-numberpad-power-supply.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/80-numberpad-power-supply.rules" >/dev/null
 
     if [[ $? != 0 ]]; then
