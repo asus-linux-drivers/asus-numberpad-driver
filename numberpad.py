@@ -22,7 +22,7 @@ from xkbcommon import xkb
 from pywayland.client import Display
 from pywayland.protocol.wayland import WlSeat
 import mmap
-from smbus2 import SMBus, i2c_msg
+from periphery import I2C
 import signal
 import math
 import glob
@@ -732,12 +732,14 @@ def send_value_to_touchpad_via_i2c(value):
     global device_id, device_addr
 
     try:
-        with SMBus(int(device_id)) as bus:
-            data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00, 0x0d, 0x14, 0x03, int(value, 16), 0xad]
-            msg = i2c_msg.write(device_addr, data)
-            bus.i2c_rdwr(msg)
+        path = f"/dev/i2c-{device_id}"
+        with I2C(path) as i2c:
+            data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00,
+                    0x0d, 0x14, 0x03, int(value, 16), 0xad]
+            msg = I2C.Message(data)
+            i2c.transfer(device_addr, [msg])
     except Exception as e:
-        log.error('Error during sending via i2c: \"%s\"', e)
+        log.error('Error during sending via i2c: "%s"', e)
 
 
 def parse_value_from_config(value):
@@ -1064,13 +1066,12 @@ while try_times > 0:
 
 # Open a handle to "/dev/i2c-x", representing the I2C bus
 try:
-    bus = SMBus()
-    bus.open(int(device_id))
-    bus.close()
-except:
-    log.error("Can't open the I2C bus connection (id: %s)", device_id)
+    path = f"/dev/i2c-{device_id}"
+    i2c = I2C(path)
+    i2c.close()
+except Exception as e:
+    log.error("Can't open the I2C bus connection (id: %s): %s", device_id, e)
     sys.exit(1)
-
 
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
