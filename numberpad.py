@@ -1896,6 +1896,19 @@ def unpressed_numpad_key(replaced_by_key=None):
         set_none_to_current_mt_slot()
 
         if enabled_touchpad_pointer == 1:
+            ungrab
+    if events:
+        try:
+            udev.send_events(events)
+        except OSError as e:
+            log.warning("Cannot send press event, %s", e)
+
+    if replaced_by_key:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
+    else:
+        set_none_to_current_mt_slot()
+
+        if enabled_touchpad_pointer == 1:
             ungrab_current_slot()
 
 
