@@ -4,13 +4,13 @@ source non_sudo_check.sh
 
 echo $INSTALL_UDEV_DIR_PATH
 
-sudo rm -f $INSTALL_UDEV_DIR_PATH/rules.d/99-asus-numberpad-driver-uinput.rules
+sudo rm -f $INSTALL_UDEV_DIR_PATH/rules.d/55-asus-numberpad-driver-uinput.rules
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when removing the uinput udev rule"
 fi
 
-sudo rm -f $INSTALL_UDEV_DIR_PATH/rules.d/99-asus-numberpad-driver-i2c-dev.rules
+sudo rm -f $INSTALL_UDEV_DIR_PATH/rules.d/55-asus-numberpad-driver-i2c-dev.rules
 if [[ $? != 0 ]]; then
     echo "Something went wrong when removing the i2c-dev udev rule"
 fi

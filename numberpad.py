@@ -738,6 +738,8 @@ def send_value_to_touchpad_via_i2c(value):
                     0x0d, 0x14, 0x03, int(value, 16), 0xad]
             msg = I2C.Message(data)
             i2c.transfer(device_addr, [msg])
+    except PermissionError:
+        log.error('Permission denied during I2C communication. Please ensure you are in the "i2c" group.')
     except Exception as e:
         log.error('Error during sending via i2c: "%s"', e)
 
@@ -1069,6 +1071,9 @@ try:
     path = f"/dev/i2c-{device_id}"
     i2c = I2C(path)
     i2c.close()
+except PermissionError:
+    log.error("Permission denied when opening I2C bus (id: %s). Please ensure you are in the 'i2c' group and that udev rules are applied. Try logging out and back in, or reboot.", device_id)
+    sys.exit(1)
 except Exception as e:
     log.error("Can't open the I2C bus connection (id: %s): %s", device_id, e)
     sys.exit(1)
@@ -1879,6 +1884,19 @@ def unpressed_numpad_key(replaced_by_key=None):
             InputEvent(EV_SYN.SYN_REPORT, 0)
         ]
 
+    if events:
+        try:
+            udev.send_events(events)
+        except OSError as e:
+            log.warning("Cannot send press event, %s", e)
+
+    if replaced_by_key:
+        abs_mt_slot_numpad_key[abs_mt_slot_value] = replaced_by_key
+    else:
+        set_none_to_current_mt_slot()
+
+        if enabled_touchpad_pointer == 1:
+            ungrab
     if events:
         try:
             udev.send_events(events)
