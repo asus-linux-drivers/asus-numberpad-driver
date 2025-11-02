@@ -731,15 +731,39 @@ def config_get(key, key_default):
 def send_value_to_touchpad_via_i2c(value):
     global device_id, device_addr
 
+    data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00,
+            0x0d, 0x14, 0x03, int(value, 16), 0xad]
+
     try:
         path = f"/dev/i2c-{device_id}"
+
         with I2C(path) as i2c:
-            data = [0x05, 0x00, 0x3d, 0x03, 0x06, 0x00, 0x07, 0x00,
-                    0x0d, 0x14, 0x03, int(value, 16), 0xad]
             msg = I2C.Message(data)
             i2c.transfer(device_addr, [msg])
+
+        log.debug("Used python-periphery on %s...", path)
+
+        return True
+
     except Exception as e:
-        log.error('Error during sending via i2c: "%s"', e)
+        log.debug("periphery.I2C failed: %s; falling back to i2ctransfer", e)
+
+    try:
+        hex_data = [f"0x{b:02x}" for b in data]
+        cmd = ["i2ctransfer", "-f", "-y", str(device_id), f"w{len(data)}@0x{device_addr:x}"] + hex_data
+
+        log.debug("Trying I2C via i2ctransfer: %s", " ".join(cmd))
+        subprocess.run(cmd, check=True, capture_output=True)
+        log.debug("I2C transfer successful via i2ctransfer")
+        return True
+
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr.decode().strip() if e.stderr else str(e)
+        log.error("i2ctransfer failed: %s", stderr)
+    except Exception as e:
+        log.error("Error during fallback I2C transfer: %s", e)
+
+    return False
 
 
 def parse_value_from_config(value):
@@ -1070,8 +1094,14 @@ try:
     i2c = I2C(path)
     i2c.close()
 except Exception as e:
-    log.error("Can't open the I2C bus connection (id: %s): %s", device_id, e)
-    sys.exit(1)
+    log.debug("periphery.I2C failed: %s, trying raw command: open...", e)
+    try:
+        with open(path, "rb+", buffering=0) as f:
+            pass
+        log.debug(f"Successfully opened {path}")
+    except Exception as e2:
+        log.error("Can not open the I2C bus connection (id: %s): %s", device_id, e2)
+        sys.exit(1)
 
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
