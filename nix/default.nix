@@ -10,7 +10,6 @@ let
     libevdev
     xlib
     pyinotify
-    smbus2
     pyasyncore
     pywayland
     xkbcommon
