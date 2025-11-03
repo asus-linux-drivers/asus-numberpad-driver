@@ -16,6 +16,7 @@ let
     xkbcommon
     systemd
     xcffib
+    python-periphery
   ]);
 in
 python313Packages.buildPythonPackage {
