@@ -13,7 +13,7 @@ let
     pyasyncore
     pywayland
     xkbcommon
-    systemd
+    systemd-python
     xcffib
     python-periphery
   ]);
