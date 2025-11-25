@@ -3,7 +3,7 @@ inputs:
 
 let
   cfg = config.services.asus-numberpad-driver;
-  defaultPackage = inputs.self.packages.${pkgs.system}.default;
+  defaultPackage = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # Function to convert configuration options to string
   toConfigFile = cfg:
