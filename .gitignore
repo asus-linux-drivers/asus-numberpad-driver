@@ -1,3 +1,8 @@
 __pycache__
 *~
 numberpad_dev
+.venv/
+*.pyc
+.env/
+tests/
+*.code-workspace

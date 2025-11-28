@@ -208,7 +208,14 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
       fi
     fi
 
+    source install_coactivator_select.sh
+
+    echo
+
     source install_service.sh
+
+    # Apply co-activator setting after service has created the config file
+    source install_coactivator_apply.sh
 
     echo
 
