@@ -37,6 +37,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when `$ bash ./install.sh` is run, changes previously made in the config file will not be overwritten without user permission, similarly when `$ bash ./uninstall.sh` is run the config file will be kept. In either case, when the config file or parts of it do not exist they will be automatically created or completed with default values)
 - Automatic NumberPad layout detection
 - Activation/deactivation of NumberPad by pressing and holding the top-right icon or another spot associated with the key `KEY_NUMLOCK` (activation time by default is 1s)
+- Optional co-activator key requirement (Shift, Ctrl, LAlt, RAlt) to prevent accidental NumberPad activation while using the touchpad normally
 - Fast activation/deactivation of NumberPad via slide gesture beginning at top right
 - A customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system
 keyboard shortcuts - for example in [my toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh); by default is NumberPad activated if is not already and the first slide gesture activates the calculator app and the next one closes it)
@@ -609,6 +610,39 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 | **Backlight**                                 |          |                   |
 | `backlight_levels`                            |          |                   | array of backlight levels in hex format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hard-coded)
 
+### Co-activator keys
+
+To prevent accidental NumberPad activation while using the touchpad normally, you can configure a co-activator key. This requires holding a modifier key (like Alt) while touching the Num_Lock area to activate/deactivate the NumberPad.
+
+During installation, you will be prompted to select a co-activator key:
+
+```
+Select co-activator key:
+1) None
+2) Shift
+3) Ctrl
+4) RAlt
+5) LAlt
+6) Quit
+```
+
+The co-activator is configured by modifying the `keys` array in your layout file. When a co-activator is set, the `Num_Lock` entry becomes an array:
+
+```python
+# Without co-activator (default):
+keys = [
+    ["Num_Lock", "slash", "asterisk", "minus"],
+    ...
+]
+
+# With LAlt as co-activator:
+keys = [
+    [["Num_Lock", "LAlt"], "slash", "asterisk", "minus"],
+    ...
+]
+```
+
+You can also manually edit your layout file (e.g., `/usr/share/asus-numberpad-driver/layouts/ux433fa.py`) to add or change the co-activator key.
 
 
 ### Configuration file
