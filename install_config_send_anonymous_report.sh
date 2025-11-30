@@ -42,7 +42,7 @@ DISTANCE_TO_MOVE_ONLY_POINTER=$(cat $CONFIG_FILE_PATH | grep distance_to_move_on
 IDLE_BRIGHTNESS=$(cat $CONFIG_FILE_PATH | grep idle_brightness | cut -d '=' -f2 | head -n 1 | xargs)
 IDLE_ENABLED=$(cat $CONFIG_FILE_PATH | grep idle_enabled | cut -d '=' -f2 | head -n 1 |  xargs)
 IDLE_TIME=$(cat $CONFIG_FILE_PATH | grep idle_time | cut -d '=' -f2 | head -n 1 | xargs)
-DRIVER_VERSION=$(cat CHANGELOG.md | grep -Po '(?<=### )[^ ]*' | head -1)
+DRIVER_VERSION=$(cat CHANGELOG.md | grep -Po '(?<=## )[^ ]*' | head -1)
 
 CURL_PAYLOAD='{
     "client_id": "'${CLIENT_ID}'",
