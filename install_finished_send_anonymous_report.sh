@@ -48,6 +48,7 @@ CURL_PAYLOAD='{
                 "systemctl_service_installed": "'${SERVICE}'",
                 "external_keyboard_toggle_installed": "'${EXTERNAL_KEYBOARD_TOGGLE}'",
                 "power_supply_saver_installed": "'${POWER_SUPPLY_SAVER}'",
+                "coactivator_key": "'${COACTIVATOR_KEY}'",
                 "install_duration_seconds": "'${INSTALL_DURATION}'",
                 "touchpad": "'${TOUCHPAD}'",
                 "laptop": "'${LAPTOP}'",
