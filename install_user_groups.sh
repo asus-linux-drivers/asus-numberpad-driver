@@ -7,9 +7,9 @@ if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
     INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 fi
 
-sudo groupadd "input"
-sudo groupadd "i2c"
-sudo groupadd "uinput"
+sudo groupadd --system "input"
+sudo groupadd --system "i2c"
+sudo groupadd --system "uinput"
 
 sudo usermod -a -G "i2c,input,uinput,numberpad" $USER
 
