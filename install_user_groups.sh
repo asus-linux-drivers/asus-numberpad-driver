@@ -43,10 +43,37 @@ fi
 # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/231
 sudo mkdir -p /etc/modules-load.d
 
-echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660"' | sudo tee $INSTALL_UDEV_DIR_PATH/rules.d/99-asus-numberpad-driver-uinput.rules >/dev/null
-echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-numberpad-driver.conf >/dev/null
-echo 'SUBSYSTEM=="i2c-dev", GROUP="i2c", MODE="0660"' | sudo tee $INSTALL_UDEV_DIR_PATH/rules.d/99-asus-numberpad-driver-i2c-dev.rules >/dev/null
-echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-numberpad-driver.conf >/dev/null
+# autodetects KERNEL and SUBSYSTEM values for /dev/uinput
+read UINPUT_KERNEL UINPUT_SUBSYSTEM < <(
+    udevadm info --attribute-walk --name=/dev/uinput \
+    | awk -F '==' '
+        /KERNEL==/ && !k { gsub(/"/,"",$2); k=$2 }
+        /SUBSYSTEM==/ && !s { gsub(/"/,"",$2); s=$2 }
+        k && s { print k, s; exit }
+    '
+)
+
+# autodetects SUBSYSTEM for /dev/i2c-0
+I2C_SUBSYSTEM=$(
+    udevadm info --attribute-walk --name=/dev/i2c-0 \
+    | awk -F '==' '
+        /SUBSYSTEM==/ { gsub(/"/,"",$2); print $2; exit }
+    '
+)
+
+echo "Udevadm detected values:"
+echo "  uinput: KERNEL=$UINPUT_KERNEL  SUBSYSTEM=$UINPUT_SUBSYSTEM"
+echo "  i2c:    SUBSYSTEM=$I2C_SUBSYSTEM"
+
+# create uinput udev rule
+echo 'SUBSYSTEM=="'"$UINPUT_SUBSYSTEM"'", KERNEL=="'"$UINPUT_KERNEL"'", GROUP="uinput", MODE="0660"' \
+  | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-dialpad-driver-uinput.rules >/dev/null
+echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-dialpad-driver.conf >/dev/null
+
+# create i2c udev rule
+echo 'KERNEL=="i2c-[0-9]*", SUBSYSTEM=="'"$I2C_SUBSYSTEM"'", GROUP="i2c", MODE="0660"' \
+  | sudo tee -a "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-dialpad-driver-i2c-dev.rules >/dev/null
+echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-dialpad-driver.conf >/dev/null
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when adding uinput module to auto loaded modules"
