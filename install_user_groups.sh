@@ -7,9 +7,9 @@ if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
     INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 fi
 
-sudo groupadd "input"
-sudo groupadd "i2c"
-sudo groupadd "uinput"
+sudo groupadd --system "input"
+sudo groupadd --system "i2c"
+sudo groupadd --system "uinput"
 
 sudo usermod -a -G "i2c,input,uinput,numberpad" $USER
 
@@ -72,7 +72,7 @@ echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-dialpad-driver.conf >/d
 
 # create i2c udev rule
 echo 'KERNEL=="i2c-[0-9]*", SUBSYSTEM=="'"$I2C_SUBSYSTEM"'", GROUP="i2c", MODE="0660"' \
-  | sudo tee -a "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-dialpad-driver-i2c-dev.rules >/dev/null
+  | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-dialpad-driver-i2c-dev.rules >/dev/null
 echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-dialpad-driver.conf >/dev/null
 
 if [[ $? != 0 ]]; then
