@@ -7,6 +7,14 @@ if [ -z "$INSTALL_UDEV_DIR_PATH" ]; then
     INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
 fi
 
+UINPUT_GID=$(getent group "uinput" | cut -d: -f3)
+
+# https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/19#issuecomment-3625958498
+if [ -n "$UINPUT_GID" ] && [ "$UINPUT_GID" -ge 1000 ]; then
+    echo "The group 'uinput' was not system (GID=$gid), removing..."
+    sudo groupdel "uinput"
+fi
+
 sudo groupadd --system "input"
 sudo groupadd --system "i2c"
 sudo groupadd --system "uinput"
