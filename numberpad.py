@@ -444,6 +444,63 @@ def isEventList(events):
         return False
 
 
+def is_numlock_with_coactivator_keys_entry(key_entry):
+    """Check if key_entry is a list and contains 'Num_Lock' anywhere."""
+    if not isinstance(key_entry, list):
+        return False
+
+    return "Num_Lock" in key_entry
+
+
+def are_modifier_keys_pressed(modifier_names):
+
+    global display, keyboard_state, xkb_conn
+    
+    if not modifier_names:
+        return True
+
+    # wayland
+    if keyboard_state:
+        try:
+            for modifier_name in modifier_names:
+                #modifier_keysym = mod_name_to_specific_keysym_name(modifier_name)  
+                idx = keyboard_state.keymap.mod_get_index(modifier_name)
+                if idx >= 0 and not keyboard_state.mod_index_is_active(idx, xkb.StateComponent.XKB_STATE_MODS_DEPRESSED):
+                    log.debug("Modifier %s not pressed (wayland xkb)", modifier_name)
+                    return False
+        except Exception:
+            pass
+
+    # x11
+    if xkb_conn:
+
+        X11_MODIFIER_INDEX = {
+            "Shift": 0,
+            "Control": 2,
+            "Alt": 3
+        }
+
+        try:
+            reply = xkb_conn(xcffib.xkb.key).GetState(
+                xcffib.xkb.ID.UseCoreKbd
+            ).reply()
+
+            active_mods = reply.mods
+
+            for modifier_name in modifier_names:
+                idx = X11_MODIFIER_INDEX.get(modifier_name)
+                if idx is not None and not (active_mods & (1 << idx)):
+                    log.debug("Modifier %s not pressed (xcffib)", modifier_name)
+                    return False
+
+        except Exception:
+            log.exception("Failed to get X11 modifier state via XKB")
+
+    log.debug("All modifier keys pressed: %s", modifier_names)
+
+    return True
+
+
 def load_evdev_key_for_wayland(char, keyboard_state):
     global gnome_current_layout_index
 
@@ -648,10 +705,13 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
 
 for row in keys:
     for field in row:
-        if not isEvent(field) and not isEventList(field):
-            set_evdev_key_for_char(field, '')
-        if isEvent(field):
-            enable_key(field)
+
+        actual_field = "Num_Lock" if is_numlock_with_coactivator_keys_entry(field) else field
+
+        if not isEvent(actual_field) and not isEventList(actual_field):
+            set_evdev_key_for_char(actual_field, '')
+        if isEvent(actual_field):
+            enable_key(actual_field)
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 # loaded in load_all_config_values
@@ -690,6 +750,8 @@ CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS = "top_right_icon_slide_func_
 CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT = 1200
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK = "numpad_disables_sys_numlock"
 CONFIG_NUMPAD_DISABLES_SYS_NUMLOCK_DEFAULT = True
+CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY = "top_right_icon_coactivator_key"
+CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT = ""  # Empty means no co-activator required
 CONFIG_DISABLE_DUE_INACTIVITY_TIME = "disable_due_inactivity_time"
 CONFIG_DISABLE_DUE_INACTIVITY_TIME_DEFAULT = 120
 CONFIG_TOUCHPAD_DISABLES_NUMPAD = "touchpad_disables_numpad"
@@ -1525,12 +1587,17 @@ def get_system_numlock():
         return bool(state)
 
 
-def local_numlock_pressed(do_not_deactivate = False):
-    global brightness, numlock
+def local_numlock_pressed(do_not_deactivate = False, do_not_require_coactivator_keys = False):
+    global brightness, numlock, coactivator_keys
 
     #log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
     numlock_lock.acquire()
     #log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
+
+    if not do_not_require_coactivator_keys and not numlock and not are_modifier_keys_pressed(coactivator_keys):
+        log.info("Numlock activation blocked: co-activator key(s) not pressed: %s", coactivator_keys)
+        numlock_lock.release()
+        return
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
@@ -1629,7 +1696,13 @@ def load_all_config_values():
     activation_time = float(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
 
-    key_numlock_is_used = any(get_evdev_key_for_char('Num_Lock') in x for x in keys)
+    key_numlock_is_used = False
+
+    for row in keys:
+        for field in row:
+            if is_numlock_with_coactivator_keys_entry(field) or field == "Num_Lock":
+                key_numlock_is_used = bool(get_evdev_key_for_char("Num_Lock"))
+
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad_new = True
         if sys_numlock_enables_numpad is not sys_numlock_enables_numpad_new:
@@ -1639,6 +1712,7 @@ def load_all_config_values():
     top_left_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
     top_left_icon_slide_func_activates_numpad = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT))
     top_right_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
+    coactivator_keys = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT).strip().split()
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
@@ -1688,7 +1762,7 @@ def load_all_config_values():
     config_lock.release()
 
     if enabled is not numlock:
-        local_numlock_pressed()
+        local_numlock_pressed(False, True)
 
 
 abs_mt_slot_value: int = 0
@@ -1927,6 +2001,12 @@ def unpressed_numpad_key(replaced_by_key=None):
 def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
     global keysym_name_associated_to_evdev_key_reflecting_current_layout
 
+    if is_numlock_with_coactivator_keys_entry(numpad_layout_key):
+        numpad_layout_key = "Num_Lock"
+
+    if isinstance(numpad_layout_key, list):
+        pass
+
     if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
         return numpad_layout_key
     elif numpad_layout_key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
@@ -1937,7 +2017,7 @@ def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
             return numpad_layout_key
 
 
-def get_touched_key():
+def get_touched_key_entry():
     global abs_mt_slot_x_values, abs_mt_slot_y_values, keys_ignore_offset
 
     try:
@@ -1951,10 +2031,18 @@ def get_touched_key():
         if row < 0 or col < 0:
             return None
 
-        return get_evdev_key_for_numpad_layout_key(keys[row][col])
+        return keys[row][col]
 
     except IndexError:
         return None
+
+
+def get_touched_key():
+    key_entry = get_touched_key_entry()
+    return (
+        get_evdev_key_for_numpad_layout_key(key_entry),
+        [key_entry] if not isinstance(key_entry, list) else key_entry.copy()
+    )
 
 
 def is_not_finger_moved_to_another_key():
@@ -2255,7 +2343,8 @@ def listen_touchpad_events():
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
-        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_disabled
+        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_disabled, \
+        coactivator_keys
 
     try:
 
@@ -2347,12 +2436,21 @@ def listen_touchpad_events():
             if e.matches(EV_MSC.MSC_TIMESTAMP):
 
                 # top right icon (numlock) activation
-                touched_key = get_touched_key()
+                touched_key, touched_key_entry = get_touched_key()
                 top_right_icon = is_pressed_touchpad_top_right_icon()
-                if (top_right_icon or touched_key == get_evdev_key_for_char('Num_Lock')) and takes_numlock_longer_then_set_up_activation_time():
+                if top_right_icon and takes_numlock_longer_then_set_up_activation_time():
+                    local_numlock_pressed()
+                    continue
 
-                  local_numlock_pressed()
-                  continue
+                elif touched_key == get_evdev_key_for_char('Num_Lock') and takes_numlock_longer_then_set_up_activation_time():
+                    touched_key_entry.remove("Num_Lock")
+                    coactivator_keys = " ".join(touched_key_entry)
+                    if not are_modifier_keys_pressed(coactivator_keys):
+                        log.info("Numlock activation blocked: co-activator key(s) not pressed: %s", coactivator_keys)
+                    else:
+                        local_numlock_pressed(False, True)
+                    continue
+
 
                 # top left icon (brightness change) activation
                 if numlock and is_pressed_touchpad_top_left_icon() and\

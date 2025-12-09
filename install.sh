@@ -208,6 +208,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
       fi
     fi
 
+    source install_coactivator_select.sh
+
+    echo
+
     source install_service.sh
 
     echo
