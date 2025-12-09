@@ -214,9 +214,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     source install_service.sh
 
-    # Apply co-activator setting after service has created the config file
-    source install_coactivator_apply.sh
-
     echo
 
     source install_external_keyboard_toggle.sh

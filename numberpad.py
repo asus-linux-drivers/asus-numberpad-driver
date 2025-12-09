@@ -444,156 +444,60 @@ def isEventList(events):
         return False
 
 
-def is_coactivator_key_entry(key_entry):
-    """Check if a key entry in the keys array is a co-activator format.
-
-    Co-activator format: ["Num_Lock", "LAlt"] or ["Num_Lock", "Shift"]
-    where the first element is the primary key and subsequent elements
-    are co-activator keys that must be held for activation.
-    """
+def is_numlock_with_coactivator_keys_entry(key_entry):
+    """Check if key_entry is a list and contains 'Num_Lock' anywhere."""
     if not isinstance(key_entry, list):
         return False
-    if len(key_entry) < 2:
-        return False
-    # First element should be a string (primary key like "Num_Lock")
-    if not isinstance(key_entry[0], str):
-        return False
-    # Subsequent elements should be strings (co-activator keys)
-    for i in range(1, len(key_entry)):
-        if not isinstance(key_entry[i], str):
-            return False
-    return True
+
+    return "Num_Lock" in key_entry
 
 
-def get_primary_key_from_entry(key_entry):
-    """Extract the primary key from a key entry.
+def are_modifier_keys_pressed(modifier_names):
 
-    If it's a co-activator format ["Num_Lock", "LAlt"], returns "Num_Lock".
-    Otherwise returns the key_entry as-is.
-    """
-    if is_coactivator_key_entry(key_entry):
-        return key_entry[0]
-    return key_entry
-
-
-def get_coactivator_keys_from_entry(key_entry):
-    """Extract co-activator keys from a key entry.
-
-    If it's a co-activator format ["Num_Lock", "LAlt"], returns ["LAlt"].
-    Otherwise returns an empty list.
-    """
-    if is_coactivator_key_entry(key_entry):
-        return key_entry[1:]
-    return []
-
-
-def find_numlock_coactivators():
-    """Find co-activator keys for Num_Lock in the keys array.
-
-    Scans the keys array to find any Num_Lock entry with co-activators.
-    Returns the list of co-activator key names, or empty list if none.
-    """
-    global keys
-
-    for row in keys:
-        for key_entry in row:
-            if is_coactivator_key_entry(key_entry):
-                if key_entry[0] == "Num_Lock":
-                    return key_entry[1:]
-    return []
-
-
-def is_modifier_key_pressed(modifier_name):
-    """Check if a specific modifier key is currently pressed.
-
-    Supports: Shift, Ctrl, LAlt, RAlt, Alt (either Alt)
-    Works via X11 display query or falls back to kernel evdev.
-    """
-    global display
-
-    # Map modifier names to X11 keysym names and evdev key codes
-    modifier_map = {
-        'Shift': (['Shift_L', 'Shift_R'], [EV_KEY.KEY_LEFTSHIFT, EV_KEY.KEY_RIGHTSHIFT]),
-        'Ctrl': (['Control_L', 'Control_R'], [EV_KEY.KEY_LEFTCTRL, EV_KEY.KEY_RIGHTCTRL]),
-        'LAlt': (['Alt_L'], [EV_KEY.KEY_LEFTALT]),
-        'RAlt': (['Alt_R'], [EV_KEY.KEY_RIGHTALT]),
-        'Alt': (['Alt_L', 'Alt_R'], [EV_KEY.KEY_LEFTALT, EV_KEY.KEY_RIGHTALT]),
-    }
-
-    if modifier_name not in modifier_map:
-        log.warning("Unknown modifier key: %s", modifier_name)
-        return False
-
-    x11_names, evdev_keys = modifier_map[modifier_name]
-
-    # Try X11 first
-    if display:
-        try:
-            keymap = display.query_keymap()
-            for x11_name in x11_names:
-                try:
-                    kc = display.keysym_to_keycode(Xlib.XK.string_to_keysym(x11_name))
-                    if kc:
-                        index = kc >> 3
-                        bit = 1 << (kc & 7)
-                        if keymap[index] & bit:
-                            log.debug("Modifier %s pressed (X11: %s)", modifier_name, x11_name)
-                            return True
-                except Exception:
-                    continue
-        except Exception as e:
-            log.debug("X11 modifier check failed: %s", e)
-
-    # Fallback: check kernel evdev devices
-    try:
-        # Scan /proc/bus/input/devices for keyboards
-        with open('/proc/bus/input/devices', 'r') as f:
-            content = f.read()
-
-        # Find event devices that have keyboard capability
-        for match in re.finditer(r'H: Handlers=.*?(event\d+)', content):
-            evnum = match.group(1)
-            devpath = f'/dev/input/{evnum}'
-
-            try:
-                with open(devpath, 'rb') as fd:
-                    dev = Device(fd)
-                    # Check if device has the modifier keys
-                    for evdev_key in evdev_keys:
-                        if dev.has(evdev_key):
-                            try:
-                                if dev.value[evdev_key]:
-                                    log.debug("Modifier %s pressed (evdev: %s)", modifier_name, devpath)
-                                    return True
-                            except Exception:
-                                pass
-            except Exception:
-                continue
-    except Exception as e:
-        log.debug("Evdev modifier check failed: %s", e)
-
-    return False
-
-
-def are_coactivators_pressed(coactivator_keys):
-    """Check if all specified co-activator keys are currently pressed.
-
-    Args:
-        coactivator_keys: List of modifier key names (e.g., ["LAlt"], ["Shift", "Ctrl"])
-
-    Returns:
-        True if all co-activator keys are pressed, False otherwise.
-        Returns True if the list is empty (no co-activators required).
-    """
-    if not coactivator_keys:
+    global display, keyboard_state, xkb_conn
+    
+    if not modifier_names:
         return True
 
-    for key in coactivator_keys:
-        if not is_modifier_key_pressed(key):
-            log.debug("Co-activator key not pressed: %s", key)
-            return False
+    # wayland
+    if keyboard_state:
+        try:
+            for modifier_name in modifier_names:
+                #modifier_keysym = mod_name_to_specific_keysym_name(modifier_name)  
+                idx = keyboard_state.keymap.mod_get_index(modifier_name)
+                if idx >= 0 and not keyboard_state.mod_index_is_active(idx, xkb.StateComponent.XKB_STATE_MODS_DEPRESSED):
+                    log.debug("Modifier %s not pressed (wayland xkb)", modifier_name)
+                    return False
+        except Exception:
+            pass
 
-    log.debug("All co-activator keys pressed: %s", coactivator_keys)
+    # x11
+    if xkb_conn:
+
+        X11_MODIFIER_INDEX = {
+            "Shift": 0,
+            "Control": 2,
+            "Alt": 3
+        }
+
+        try:
+            reply = xkb_conn(xcffib.xkb.key).GetState(
+                xcffib.xkb.ID.UseCoreKbd
+            ).reply()
+
+            active_mods = reply.mods
+
+            for modifier_name in modifier_names:
+                idx = X11_MODIFIER_INDEX.get(modifier_name)
+                if idx is not None and not (active_mods & (1 << idx)):
+                    log.debug("Modifier %s not pressed (xcffib)", modifier_name)
+                    return False
+
+        except Exception:
+            log.exception("Failed to get X11 modifier state via XKB")
+
+    log.debug("All modifier keys pressed: %s", modifier_names)
+
     return True
 
 
@@ -801,8 +705,8 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
 
 for row in keys:
     for field in row:
-        # Handle co-activator format: extract primary key for evdev mapping
-        actual_field = get_primary_key_from_entry(field) if is_coactivator_key_entry(field) else field
+
+        actual_field = "Num_Lock" if is_numlock_with_coactivator_keys_entry(field) else field
 
         if not isEvent(actual_field) and not isEventList(actual_field):
             set_evdev_key_for_char(actual_field, '')
@@ -1683,12 +1587,17 @@ def get_system_numlock():
         return bool(state)
 
 
-def local_numlock_pressed(do_not_deactivate = False):
-    global brightness, numlock
+def local_numlock_pressed(do_not_deactivate = False, do_not_require_coactivator_keys = False):
+    global brightness, numlock, coactivator_keys
 
     #log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
     numlock_lock.acquire()
     #log.debug("local_numlock_pressed: numlock_lock.acquire called succesfully")
+
+    if not do_not_require_coactivator_keys and not numlock and not are_modifier_keys_pressed(coactivator_keys):
+        log.info("Numlock activation blocked: co-activator key(s) not pressed: %s", coactivator_keys)
+        numlock_lock.release()
+        return
 
     is_touchpad_enabled = is_device_enabled(touchpad_name)
     if not ((not touchpad_disables_numpad and not is_touchpad_enabled) or is_touchpad_enabled):
@@ -1787,22 +1696,13 @@ def load_all_config_values():
     activation_time = float(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
     sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
 
-    # Check if Num_Lock is used in keys array (handles both simple and co-activator formats)
-    def check_numlock_in_row(row):
-        for key_entry in row:
-            primary_key = get_primary_key_from_entry(key_entry)
-            if primary_key == 'Num_Lock':
-                return True
-            # Also check using evdev key comparison for non-coactivator entries
-            if not is_coactivator_key_entry(key_entry):
-                try:
-                    if get_evdev_key_for_char('Num_Lock') == key_entry:
-                        return True
-                except:
-                    pass
-        return False
+    key_numlock_is_used = False
 
-    key_numlock_is_used = any(check_numlock_in_row(row) for row in keys)
+    for row in keys:
+        for field in row:
+            if is_numlock_with_coactivator_keys_entry(field) or field == "Num_Lock":
+                key_numlock_is_used = bool(get_evdev_key_for_char("Num_Lock"))
+
     if (not top_right_icon_height > 0 or not top_right_icon_width > 0) and not key_numlock_is_used:
         sys_numlock_enables_numpad_new = True
         if sys_numlock_enables_numpad is not sys_numlock_enables_numpad_new:
@@ -1812,6 +1712,7 @@ def load_all_config_values():
     top_left_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
     top_left_icon_slide_func_activates_numpad = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT))
     top_right_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
+    coactivator_keys = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT).strip().split()
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
@@ -1861,7 +1762,7 @@ def load_all_config_values():
     config_lock.release()
 
     if enabled is not numlock:
-        local_numlock_pressed()
+        local_numlock_pressed(False, True)
 
 
 abs_mt_slot_value: int = 0
@@ -2100,9 +2001,11 @@ def unpressed_numpad_key(replaced_by_key=None):
 def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
     global keysym_name_associated_to_evdev_key_reflecting_current_layout
 
-    # Handle co-activator format: extract primary key
-    if is_coactivator_key_entry(numpad_layout_key):
-        numpad_layout_key = get_primary_key_from_entry(numpad_layout_key)
+    if is_numlock_with_coactivator_keys_entry(numpad_layout_key):
+        numpad_layout_key = "Num_Lock"
+
+    if isinstance(numpad_layout_key, list):
+        pass
 
     if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
         return numpad_layout_key
@@ -2115,10 +2018,6 @@ def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
 
 
 def get_touched_key_entry():
-    """Get the raw key entry from the keys array at the touched position.
-
-    This returns the original entry which may be a co-activator format array.
-    """
     global abs_mt_slot_x_values, abs_mt_slot_y_values, keys_ignore_offset
 
     try:
@@ -2139,23 +2038,11 @@ def get_touched_key_entry():
 
 
 def get_touched_key():
-    global abs_mt_slot_x_values, abs_mt_slot_y_values, keys_ignore_offset
-
-    try:
-        col = math.floor((abs_mt_slot_x_values[abs_mt_slot_value] - minx_numpad) / col_width)
-        row = math.floor((abs_mt_slot_y_values[abs_mt_slot_value] - miny_numpad) / row_height)
-
-        if([max(row, 0), max(col, 0)] in keys_ignore_offset):
-            row = max(row, 0)
-            col = max(col, 0)
-
-        if row < 0 or col < 0:
-            return None
-
-        return get_evdev_key_for_numpad_layout_key(keys[row][col])
-
-    except IndexError:
-        return None
+    key_entry = get_touched_key_entry()
+    return (
+        get_evdev_key_for_numpad_layout_key(key_entry),
+        [key_entry] if not isinstance(key_entry, list) else key_entry.copy()
+    )
 
 
 def is_not_finger_moved_to_another_key():
@@ -2456,7 +2343,8 @@ def listen_touchpad_events():
         unsupported_abs_mt_slot, numlock_touch_start_time, touchpad_name, last_event_time,\
         keys_ignore_offset, enabled_touchpad_pointer, abs_mt_slot_x_init_values, abs_mt_slot_y_init_values,\
         key_pointer_button_is_touched, is_idled, minx_numpad, miny_numpad, col_width, row_height, maxy_numpad, maxx_numpad,\
-        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_disabled
+        top_left_icon_slide_func_activates_numpad, current_slot_x, current_slot_y, top_left_icon_slide_func_disabled, \
+        coactivator_keys
 
     try:
 
@@ -2548,38 +2436,21 @@ def listen_touchpad_events():
             if e.matches(EV_MSC.MSC_TIMESTAMP):
 
                 # top right icon (numlock) activation
-                touched_key = get_touched_key()
-                touched_key_entry = get_touched_key_entry()
+                touched_key, touched_key_entry = get_touched_key()
                 top_right_icon = is_pressed_touchpad_top_right_icon()
-                if (top_right_icon or touched_key == get_evdev_key_for_char('Num_Lock')) and takes_numlock_longer_then_set_up_activation_time():
+                if top_right_icon and takes_numlock_longer_then_set_up_activation_time():
+                    local_numlock_pressed()
+                    continue
 
-                  # Check for co-activator keys requirement
-                  # Priority: 1) key entry co-activators, 2) keys array co-activators, 3) config co-activator
-                  coactivators = []
+                elif touched_key == get_evdev_key_for_char('Num_Lock') and takes_numlock_longer_then_set_up_activation_time():
+                    touched_key_entry.remove("Num_Lock")
+                    coactivator_keys = " ".join(touched_key_entry)
+                    if not are_modifier_keys_pressed(coactivator_keys):
+                        log.info("Numlock activation blocked: co-activator key(s) not pressed: %s", coactivator_keys)
+                    else:
+                        local_numlock_pressed(False, True)
+                    continue
 
-                  # Check if touched key entry has co-activators (highest priority)
-                  if touched_key_entry and is_coactivator_key_entry(touched_key_entry):
-                      coactivators = get_coactivator_keys_from_entry(touched_key_entry)
-                      log.debug("Co-activators from key entry: %s", coactivators)
-                  else:
-                      # Check keys array for Num_Lock co-activators
-                      coactivators = find_numlock_coactivators()
-                      log.debug("Co-activators from keys array: %s", coactivators)
-
-                  # If no co-activators found yet, check config option
-                  if not coactivators:
-                      config_coactivator = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT)
-                      log.debug("Config co-activator value: '%s'", config_coactivator)
-                      if config_coactivator and config_coactivator.strip():
-                          coactivators = [config_coactivator.strip()]
-                          log.debug("Co-activators from config: %s", coactivators)
-
-                  log.debug("Final co-activators list: %s", coactivators)
-                  if are_coactivators_pressed(coactivators):
-                      local_numlock_pressed()
-                  else:
-                      log.info("Numlock activation blocked: co-activator key(s) not pressed: %s", coactivators)
-                  continue
 
                 # top left icon (brightness change) activation
                 if numlock and is_pressed_touchpad_top_left_icon() and\
@@ -2626,18 +2497,7 @@ def listen_touchpad_events():
 
                     continue
                 elif is_slided_from_top_right_icon():
-                    # Check for co-activator keys requirement for slide gesture
-                    coactivators = find_numlock_coactivators()
-                    # If no co-activators found in keys array, check config option
-                    if not coactivators:
-                        config_coactivator = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT)
-                        if config_coactivator and config_coactivator.strip():
-                            coactivators = [config_coactivator.strip()]
-
-                    if are_coactivators_pressed(coactivators):
-                        local_numlock_pressed()
-                    else:
-                        log.info("Numlock slide activation blocked: co-activator key(s) not pressed: %s", coactivators)
+                    local_numlock_pressed()
                     continue
 
             if e.matches(EV_ABS.ABS_MT_POSITION_Y):
@@ -2665,18 +2525,7 @@ def listen_touchpad_events():
                 is_not_finger_moved_to_another_key()
 
                 if is_slided_from_top_right_icon():
-                    # Check for co-activator keys requirement for Y-axis slide gesture
-                    coactivators = find_numlock_coactivators()
-                    # If no co-activators found in keys array, check config option
-                    if not coactivators:
-                        config_coactivator = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT)
-                        if config_coactivator and config_coactivator.strip():
-                            coactivators = [config_coactivator.strip()]
-
-                    if are_coactivators_pressed(coactivators):
-                        local_numlock_pressed()
-                    else:
-                        log.info("Numlock Y-slide activation blocked: co-activator key(s) not pressed: %s", coactivators)
+                    local_numlock_pressed()
                     continue
 
             if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
