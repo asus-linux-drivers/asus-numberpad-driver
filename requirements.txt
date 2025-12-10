@@ -2,7 +2,7 @@ libevdev
 numpy
 pyinotify
 python-xlib
-smbus2
+python-periphery
 pyasyncore
 pywayland
 xkbcommon<1.1

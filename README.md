@@ -37,6 +37,7 @@ If you find this project useful, please do not forget to give it a [![GitHub sta
 - Customization through 2-way sync [configuration file](https://github.com/asus-linux-drivers/asus-numberpad-driver#configuration-file) (when `$ bash ./install.sh` is run, changes previously made in the config file will not be overwritten without user permission, similarly when `$ bash ./uninstall.sh` is run the config file will be kept. In either case, when the config file or parts of it do not exist they will be automatically created or completed with default values)
 - Automatic NumberPad layout detection
 - Activation/deactivation of NumberPad by pressing and holding the top-right icon or another spot associated with the key `KEY_NUMLOCK` (activation time by default is 1s)
+- Optional co-activator key requirement (`Shift`, `Control`, `Alt`) to prevent accidental NumberPad activation
 - Fast activation/deactivation of NumberPad via slide gesture beginning at top right
 - A customizable slide gesture beginning at top left can be used (by default the key `EV_KEY.KEY_CALC` is transmitted to `XF86Calculator`, so that the preferred calculator app is loaded and responds to the system
 keyboard shortcuts - for example in [my toggling script](https://github.com/asus-linux-drivers/asus-numberpad-driver/blob/master/scripts/io_elementary_calculator_toggle.sh); by default is NumberPad activated if is not already and the first slide gesture activates the calculator app and the next one closes it)
@@ -609,6 +610,47 @@ Example: If you want to set the size of top right icon to bigger and you have ch
 | **Backlight**                                 |          |                   |
 | `backlight_levels`                            |          |                   | array of backlight levels in hex format `0x00` for brightness change by `top_left_icon` (values for turn on (`0x01`) and turn off (`0x00`) are hard-coded)
 
+### Keyboard layout co-activator keys
+
+To prevent accidental NumberPad activation while using the touchpad, you can configure a co-activator key. This requires holding a modifier key like `Alt` while touching the `Num_Lock` area to activate the NumberPad.
+
+During installation, you will be prompted to select a co-activator key:
+
+```
+Select co-activator key:
+1) None
+2) Shift
+3) Control
+4) Alt
+6) Quit
+```
+
+The co-activator is configured by modifying the `keys` array in your layout file. When a co-activator is set, the `Num_Lock` entry becomes an array:
+
+```python
+# without co-activator (default):
+keys = [
+    ["Num_Lock", "slash", "asterisk", "minus"],
+    ...
+]
+
+# with Alt as co-activator:
+keys = [
+    [["Num_Lock", "Alt"], "slash", "asterisk", "minus"],
+    ...
+]
+```
+
+Also the co-activator is configured by modifying the `coactivator_keys` in your config file. When a co-activator is set, the `coactivator_keys` value becomes:
+
+```
+...
+coactivator_keys = Alt
+```
+
+Config value applies on slide gestures from the top left or top right icon or by touching the top right icon that IS NOT part of the grid.
+
+You can also manually edit your layout file (`/usr/share/asus-numberpad-driver/layouts/<layout-name>.py`) to add or change the co-activator key after installation.
 
 
 ### Configuration file
@@ -642,6 +684,7 @@ idle_brightness = 30
 idle_time = 30
 idle_enabled = 0
 top_left_icon_slide_func_disabled = 0
+top_right_icon_coactivator_key = Shift
 ```
 
 | Option                                        | Required | Default           | Description |
@@ -654,6 +697,7 @@ top_left_icon_slide_func_disabled = 0
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` at each inactivation of NumberPad `EV_KEY.KEY_NUMLOCK` is sent. This is useful to not send NumLock when a laptop is connected to an external keyboard and one wants to disable NumberPad on laptop keeping NumLock on the external keyboard enabled
 | `enabled_touchpad_pointer`                  |          | `3`           | valid values are `0`, `1`, `2`, `3` <br><br>when set to `1` the touchpad pointer can be used for moving and for clicking the left, right and middle pointer buttons when NumberPad is activated, `0` disables this usage and `2` allowes only pointer button clicks, `3` allowes only touchpad pointer movements without clicks (touchpad tap-to-click is disabled/enabled using `gsettings` on `gnome`, `qdbus` on `kde` and using `xinput` for `X11` with this order priority)
 | `press_key_when_is_done_untouch`                  |          | `1`           | valid values are `0`, `1` <br><br>when set to `1` the touchpad sends keys when the finger is released (e.g. allows moving with the pointer and allows canceling sending when is the finger before untouch moved outside of the grid spot for touched character or moved inside the grid spot more than is defined by `distance_to_move_only_pointer`)
+| `coactivator_keys`                     |          | ``            | empty default means no co-activator keys are required (valid values are `Shift`, `Control` or `Alt` delimeted by space)<br><br>this works only for activation using slide gestures from the top left or top right icon or by touching the top right icon that IS NOT part of the grid (when the top right icon is part of grid, the co-activator must be configured inside layout keys - as described under the heading Keyboard layout co-activator keys)
 | **Key layout**                                |          |
 | `activation_time`              |          | `1.0` [seconds]             | amount of time you have to hold `top_right_icon` or another predefined key `EV_KEY.KEY_NUMLOCK` for NumberPad activation/deactivation<br><br>decimal numbers allowed
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled when two fingers somewhere on the Touchpad while using NumberPad for calculating;
