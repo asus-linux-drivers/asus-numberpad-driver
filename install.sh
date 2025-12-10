@@ -19,85 +19,119 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
 
 {
+    # determine plasma version
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
+    if command -v plasmashell >/dev/null 2>&1; then
+        PLASMA_VER=$(plasmashell --version | grep -oE '[0-9]+' | head -1)
+    else
+        PLASMA_VER=6  # default to plasma 6 for modern systems if plasmashell is missing
+    fi
+
     # pip pywayland requires gcc
-    if [[ $(command -v apt-get 2>/dev/null) ]]; then
+    if command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt"
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libxcb-render0-dev
         sudo apt-get -y install libsystemd-dev
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo apt-get -y install libwayland-dev
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo apt-get -y install qdbus-qt$PLASMA_VER
+        fi
 
-    elif [[ $(command -v pacman 2>/dev/null) ]]; then
+    elif command -v pacman >/dev/null 2>&1; then
         PACKAGE_MANAGER="pacman"
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf libxcb
         sudo pacman --noconfirm --needed -S systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo pacman --noconfirm --needed -S wayland
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo pacman --noconfirm --needed -S qt$PLASMA_VER-tools
+        fi
 
-    elif [[ $(command -v dnf 2>/dev/null) ]]; then
+    elif command -v dnf >/dev/null 2>&1; then
         PACKAGE_MANAGER="dnf"
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
         sudo dnf -y install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
-
-    elif [[ $(command -v yum 2>/dev/null) ]]; then
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo dnf -y install qt$PLASMA_VER-qttools
+        fi
+    elif command -v yum >/dev/null 2>&1; then
         PACKAGE_MANAGER="yum"
         sudo yum -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
         sudo yum -y install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo yum -y install wayland-devel
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo yum -y install qt$PLASMA_VER-qttools
+        fi
 
-    elif [[ $(command -v zypper 2>/dev/null) ]]; then
+    elif command -v zypper >/dev/null 2>&1; then
         PACKAGE_MANAGER="zypper"
         sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
         sudo zypper --non-interactive install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo zypper --non-interactive install wayland-devel
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo zypper --non-interactive install qt$PLASMA_VER-tools-qdbus
+        fi
 
-    elif [[ $(command -v xbps-install 2>/dev/null) ]]; then
+    elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
         sudo xbps-install -Suy ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
         sudo xbps-install -Suy systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo xbps-install -Suy wayland-devel
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo xbps-install -Suy qt$PLASMA_VER-tools
+        fi
 
-    elif [[ $(command -v emerge 2>/dev/null) ]]; then
+    elif command -v emerge >/dev/null 2>&1; then
         PACKAGE_MANAGER="portage"
         sudo emerge app-i18n/ibus dev-libs/libevdev net-misc/curl x11-apps/xinput sys-apps/i2c-tools dev-lang/python dev-python/virtualenv dev-libs/libxml2 x11-libs/libxkbcommon sys-devel/gcc virtual/pkgconfig x11-libs/libxcb
         sudo emerge sys-apps/systemd
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo emerge dev-libs/wayland
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo emerge dev-qt/qdbus
+        fi
 
-    elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
+    elif command -v rpm-ostree >/dev/null 2>&1; then
         PACKAGE_MANAGER="rpm-ostree"
         sudo rpm-ostree install xinput virtualenv python3-devel wayland-protocols-devel pkg-config libxcb-devel
         sudo rpm-ostree install systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo rpm-ostree install wayland-devel
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo rpm-ostree install qt$PLASMA_VER-tools
+        fi
 
-    elif [[ $(command -v eopkg 2>/dev/null) ]]; then
+    elif command -v eopkg >/dev/null 2>&1; then
         PACKAGE_MANAGER="eopkg"
         sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2-devel libxkbcommon-devel gcc pkg-config libxcb-devel
         sudo eopkg install -y systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
+        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+            sudo eopkg install -y qt$PLASMA_VER-tools
+        fi
 
     else
-        echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
+        echo "Warning: Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 
     if [[ $? != 0 ]]; then
-        echo "Something went wrong when installing packages"
+        echo "Error: Something went wrong during installing packages"
         source install_begin_send_anonymous_report.sh
         exit 1
     else
@@ -105,14 +139,12 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
-    [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1 && {
+    if [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1; then
         echo
-        echo "You are using plasma desktop environment. It is recommended to install manually 'qt6-tools' (Plasma 6), 'qt5-tools' (Plasma 5) or similar package adequate for your plasma desktop environment version to have 'qdbus' command available for proper work of the driver." >&2
-        read -n1 -r -p "Press any key to continue..."
+        echo "Warning: You are using Plasma desktop environment and qdbus is not available after installation. Manual intervention is required for the driver to function properly." >&2
+        read -n1 -r -p "Press any key to continue.."
         echo
-    }
-    # resets for sure eventual return code 1 from statement above (! command -v qdbus >/dev/null)
-    true
+    fi
 
     echo
 
@@ -142,7 +174,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
     sudo mkdir -p "$INSTALL_DIR_PATH/layouts"
-    sudo chown -R $USER "$INSTALL_DIR_PATH"
+    sudo chown -R "$USER" "$INSTALL_DIR_PATH"
     sudo install numberpad.py "$INSTALL_DIR_PATH"
     sudo install -t "$INSTALL_DIR_PATH/layouts" layouts/*.py
 
@@ -151,7 +183,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             # default will be autocreated, that is why is removed
-            sudo rm -f $CONFIG_FILE_PATH
+            sudo rm -f "$CONFIG_FILE_PATH"
             if [[ $? != 0 ]]; then
                 echo "$CONFIG_FILE_PATH cannot be removed correctly..."
                 exit 1
@@ -162,7 +194,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
             ;;
         esac
     else
-        echo "Default config will be autocreated during the first run and available for futher modifications here:"
+        echo "Default config will be autocreated during the first run and available for further modifications here:"
         echo "$CONFIG_FILE_PATH"
     fi
 
@@ -182,9 +214,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         exit 1
     fi
 
-    # create Python3 virtual environment
-    virtualenv --python="$PYTHON" $INSTALL_DIR_PATH/.env
-    source $INSTALL_DIR_PATH/.env/bin/activate
+    # create Python virtual environment
+    virtualenv --python="$PYTHON" "$INSTALL_DIR_PATH/.env"
+    source "$INSTALL_DIR_PATH/.env/bin/activate"
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
     pip3 install -r requirements.txt
