@@ -2286,7 +2286,7 @@ def listen_touchpad_events():
                 if is_key_pointer_button(current_slot_key):
                 #    #log.info("skipping because current slot is pointer button")
                     continue
-            # enabled_touchpad_pointer value 1 only! is processed futher
+            # enabled_touchpad_pointer value 1 only! is processed further
             # POINTER_BUTTON own handling instead of touchpad driver ends
 
 
