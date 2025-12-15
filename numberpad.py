@@ -1680,6 +1680,7 @@ def load_all_config_values():
     global backlight_levels
     global idled
     global top_left_icon_slide_func_disabled
+    global coactivator_keys
 
     #log.debug("load_all_config_values: config_lock.acquire will be called")
     config_lock.acquire()
