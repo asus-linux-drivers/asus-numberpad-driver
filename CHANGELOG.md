@@ -1,5 +1,21 @@
 # Changelog
 
+## 6.7.0 (16.12.2025)
+
+### Fixed
+
+- Missing auto-installation of `qdbus` in supported distributions when using KDE Plasma (credits @g3nsvrv)
+- The package `smbus2` was replaced by `python-periphery` because has missing support for `python3.14` (yet) and `i2ctransfer` was added as alternative for `i2c` communication
+- Nix `system` has been changed to `stdenv.hostPlatform.system` (credits @SamueleFacenda)
+- Sending driver's version to GA
+- `uinput`, `i2c`, `input` changed to a system groups (@vitaminace33)
+- Setting up appropriate (not a static) `KERNEL` and `SUBSYSTEM` for `i2c` and `uinput` udev rules
+
+### Feature
+
+- Added co-activator key selection for NumberPad activation (credits @s-badran)
+- Updated offline table for auto suggestions from gathered data (GA)
+
 ## 6.6.0 (8.10.2025)
 
 ### Fixed
