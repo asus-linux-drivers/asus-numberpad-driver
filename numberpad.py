@@ -2005,9 +2005,6 @@ def get_evdev_key_for_numpad_layout_key(numpad_layout_key):
     if is_numlock_with_coactivator_keys_entry(numpad_layout_key):
         numpad_layout_key = "Num_Lock"
 
-    if isinstance(numpad_layout_key, list):
-        pass
-
     if isEvent(numpad_layout_key) or isEventList(numpad_layout_key):
         return numpad_layout_key
     elif numpad_layout_key in keysym_name_associated_to_evdev_key_reflecting_current_layout:
@@ -2051,7 +2048,7 @@ def is_not_finger_moved_to_another_key():
         abs_mt_slot_y_values, numlock_touch_start_time
 
     touched_key_when_pressed = abs_mt_slot_numpad_key[abs_mt_slot_value]
-    touched_key_now = get_touched_key()
+    touched_key_now,_ = get_touched_key()
 
     if touched_key_when_pressed is None:
         return
