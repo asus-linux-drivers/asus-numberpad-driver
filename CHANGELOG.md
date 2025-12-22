@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.7.1 (22.12.2025)
+
+### Fixed
+
+- Co-activator key selection for NumberPad activation
+
 ## 6.7.0 (16.12.2025)
 
 ### Fixed
