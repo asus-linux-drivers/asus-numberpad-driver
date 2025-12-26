@@ -35,7 +35,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo apt-get -y install libwayland-dev
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo apt-get -y install qdbus-qt$PLASMA_VER
         fi
 
@@ -46,7 +46,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo pacman --noconfirm --needed -S wayland
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo pacman --noconfirm --needed -S qt$PLASMA_VER-tools
         fi
 
@@ -57,7 +57,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo dnf -y install qt$PLASMA_VER-qttools
         fi
     elif command -v yum >/dev/null 2>&1; then
@@ -67,7 +67,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo yum -y install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo yum -y install qt$PLASMA_VER-qttools
         fi
 
@@ -78,7 +78,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo zypper --non-interactive install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo zypper --non-interactive install qt$PLASMA_VER-tools-qdbus
         fi
 
@@ -89,7 +89,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo xbps-install -Suy wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo xbps-install -Suy qt$PLASMA_VER-tools
         fi
 
@@ -100,7 +100,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo emerge dev-libs/wayland
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo emerge dev-qt/qdbus
         fi
 
@@ -111,7 +111,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo rpm-ostree install wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo rpm-ostree install qt$PLASMA_VER-tools
         fi
 
@@ -122,7 +122,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
-        if [ "$DESKTOP_SESSION" == "plasma" ]; then
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo eopkg install -y qt$PLASMA_VER-tools
         fi
 
