@@ -43,17 +43,27 @@ Type=Application
 Name=KCalc Toggle
 Exec=$SCRIPT_DIR/calculator_toggle.sh
 NoDisplay=true
+Categories=Qt;KDE;Utility;Calculator;X-KDE-Utilities-Desktop;
 X-KDE-StartupNotify=false
+X-KDE-Shortcuts=Calculator
 EOF
 
     chmod 644 "$DESKTOP_FILE"
     update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1
 
+    if ! grep -q "^\[services\]\[org.kde.kcalc.desktop\]" "$SHORTCUTS_FILE" 2>/dev/null; then
+        cat >> "$SHORTCUTS_FILE" <<EOF
+
+[services][org.kde.kcalc.desktop]
+_launch=
+EOF
+    fi
+
     if ! grep -q "^\[$DESKTOP_FILE_NAME\]" "$SHORTCUTS_FILE" 2>/dev/null; then
         cat >> "$SHORTCUTS_FILE" <<EOF
 
 [$DESKTOP_FILE_NAME]
-_launch=XF86Calculator,none,Toggle KCalc calculator
+_launch=Calculator
 EOF
     fi
 

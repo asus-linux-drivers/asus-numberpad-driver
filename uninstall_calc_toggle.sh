@@ -6,6 +6,14 @@ source non_sudo_check.sh
 #
 # None
 
+DESKTOP_DIR="$HOME/.local/share/applications"
+DESKTOP_FILE_NAME="kcalc-toggle.desktop"
+DESKTOP_FILE="$DESKTOP_DIR/$DESKTOP_FILE_NAME"
+
+rm $DESKTOP_FILE
+
+update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1
+
 existing_shortcut_string=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
 
 filtered_existing_shortcut_string="["
