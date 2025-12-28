@@ -21,10 +21,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 {
     # determine plasma version
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
-    if command -v plasmashell >/dev/null 2>&1; then
-        PLASMA_VER=$(plasmashell --version | grep -oE '[0-9]+' | head -1)
+    if command -v kinfo >/dev/null 2>&1; then
+        PLASMA_VER=$(kinfo 2>/dev/null | awk -F': ' '/KDE Plasma Version/ {print $2}' | cut -d. -f1)
     else
-        PLASMA_VER=6  # default to plasma 6 for modern systems if plasmashell is missing
+        PLASMA_VER=6  # default to plasma 6 for modern systems
     fi
 
     # pip pywayland requires gcc
@@ -139,7 +139,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
-    if [ "$DESKTOP_SESSION" == "plasma" ] && ! command -v qdbus >/dev/null 2>&1; then
+    if [ "$DESKTOP_SESSION" == plasma* ] && \
+   ! command -v qdbus >/dev/null 2>&1 && \
+   ! command -v qdbus6 >/dev/null 2>&1; then
         echo
         echo "Warning: You are using Plasma desktop environment and qdbus is not available after installation. Manual intervention is required for the driver to function properly." >&2
         read -n1 -r -p "Press any key to continue.."

@@ -28,8 +28,11 @@ import math
 import glob
 import xcffib
 import xcffib.xkb
+import shutil
 
 GNOME_GLIB_AVAILABLE = False
+
+QDBUS = shutil.which("qdbus") or shutil.which("qdbus6")
 
 try:
     import gi
@@ -921,7 +924,7 @@ def qdbusSet(value):
     if qdbus_failure_count < qdbus_max_failure_count:
         try:
             cmd = [
-                'qdbus',
+                QDBUS,
                 'org.kde.KWin',
                 f'/org/kde/KWin/InputDevice/event{touchpad}',
                 'org.kde.KWin.InputDevice.tapToClick',
@@ -941,7 +944,7 @@ def qdbusGet(service, path, interface, property_name):
     if qdbus_failure_count < qdbus_max_failure_count:
         try:
             cmd = [
-                'qdbus',
+                QDBUS,
                 service,
                 path,
                 'org.freedesktop.DBus.Properties.Get',
