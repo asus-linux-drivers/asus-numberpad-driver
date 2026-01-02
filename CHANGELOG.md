@@ -12,7 +12,6 @@
 
 - Added toggling of default calculator app KCalc on KDE
 
-
 ## 6.7.1 (22.12.2025)
 
 ### Fixed
