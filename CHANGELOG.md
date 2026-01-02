@@ -1,5 +1,18 @@
 # Changelog
 
+## 6.8.0 (2.1.2026)
+
+### Fixed
+
+- Detection of plasma environment (e.g. `plasmawayland` or `plasma-x11`)
+- Missing support for `qdbus6`
+- Plasma version detection using `kinfo`
+
+### Feature
+
+- Added toggling of default calculator app KCalc on KDE
+
+
 ## 6.7.1 (22.12.2025)
 
 ### Fixed
