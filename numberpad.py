@@ -3,7 +3,6 @@
 import configparser
 import importlib
 import logging
-from systemd.journal import JournalHandler
 import math
 import os
 import re
@@ -29,6 +28,13 @@ import glob
 import xcffib
 import xcffib.xkb
 import shutil
+
+SYSTEMD_JOURNAL_AVAILABLE = False
+try:
+    from systemd.journal import JournalHandler
+    SYSTEMD_JOURNAL_AVAILABLE = True
+except ImportError:
+    pass
 
 GNOME_GLIB_AVAILABLE = False
 
@@ -59,7 +65,8 @@ logging.basicConfig(
     level=os.environ.get('LOG', 'INFO')
 )
 log = logging.getLogger('asus-numberpad-driver')
-log.addHandler(JournalHandler())
+if SYSTEMD_JOURNAL_AVAILABLE:
+    log.addHandler(JournalHandler())
 
 xauth_in_tmp_dir = glob.glob('/tmp/xauth_*')
 if len(xauth_in_tmp_dir) > 0:
