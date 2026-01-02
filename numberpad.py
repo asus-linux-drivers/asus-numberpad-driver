@@ -70,7 +70,8 @@ if SYSTEMD_JOURNAL_AVAILABLE:
 
 xauth_in_tmp_dir = glob.glob('/tmp/xauth_*')
 if len(xauth_in_tmp_dir) > 0:
-  os.environ['XAUTHORITY'] = xauth_in_tmp_dir[0]
+  latest_xauth_file = max(xauth_in_tmp_dir, key=os.path.getmtime)   
+  os.environ['XAUTHORITY'] = latest_xauth_file
   log.info("X11 has xauth file in /tmp folder with filename changed each boot, currently {}".format(os.environ['XAUTHORITY']))
 
 if not xdg_session_type:
