@@ -71,10 +71,10 @@ if [ "$COACTIVATOR_KEY" != "None" ]; then
     fi
 
     # check if the setting already exists
-    if grep -q "coactivator_keys" "$CONFIG_FILE_PATH"; then
-        sudo sed -i "s/coactivator_keys.*/coactivator_keys = $COACTIVATOR_KEY/" "$CONFIG_FILE_PATH"
+    if grep -q "top_right_icon_coactivator_key" "$CONFIG_FILE_PATH"; then
+        sudo sed -i "s/top_right_icon_coactivator_key.*/top_right_icon_coactivator_key = $COACTIVATOR_KEY/" "$CONFIG_FILE_PATH"
     else
         # add new setting under [main] section
-        sudo sed -i "/\[main\]/a coactivator_keys = $COACTIVATOR_KEY" "$CONFIG_FILE_PATH"
+        sudo sed -i "/\[main\]/a top_right_icon_coactivator_key = $COACTIVATOR_KEY" "$CONFIG_FILE_PATH"
     fi
 fi
