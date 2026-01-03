@@ -641,11 +641,11 @@ keys = [
 ]
 ```
 
-Also the co-activator is configured by modifying the `coactivator_keys` in your config file. When a co-activator is set, the `coactivator_keys` value becomes:
+Also the co-activator is configured by modifying the `top_right_icon_coactivator_key` in your config file. When a co-activator is set, the `top_right_icon_coactivator_key` value becomes:
 
 ```
 ...
-coactivator_keys = Alt
+top_right_icon_coactivator_key = Alt
 ```
 
 Config value applies on slide gestures from the top left or top right icon or by touching the top right icon that IS NOT part of the grid.
@@ -697,7 +697,6 @@ top_right_icon_coactivator_key = Shift
 | `numpad_disables_sys_numlock`                  |          | `1`           | when is set to `1` at each inactivation of NumberPad `EV_KEY.KEY_NUMLOCK` is sent. This is useful to not send NumLock when a laptop is connected to an external keyboard and one wants to disable NumberPad on laptop keeping NumLock on the external keyboard enabled
 | `enabled_touchpad_pointer`                  |          | `3`           | valid values are `0`, `1`, `2`, `3` <br><br>when set to `1` the touchpad pointer can be used for moving and for clicking the left, right and middle pointer buttons when NumberPad is activated, `0` disables this usage and `2` allowes only pointer button clicks, `3` allowes only touchpad pointer movements without clicks (touchpad tap-to-click is disabled/enabled using `gsettings` on `gnome`, `qdbus` on `kde` and using `xinput` for `X11` with this order priority)
 | `press_key_when_is_done_untouch`                  |          | `1`           | valid values are `0`, `1` <br><br>when set to `1` the touchpad sends keys when the finger is released (e.g. allows moving with the pointer and allows canceling sending when is the finger before untouch moved outside of the grid spot for touched character or moved inside the grid spot more than is defined by `distance_to_move_only_pointer`)
-| `coactivator_keys`                     |          | ``            | empty default means no co-activator keys are required (valid values are `Shift`, `Control` or `Alt` delimeted by space)<br><br>this works only for activation using slide gestures from the top left or top right icon or by touching the top right icon that IS NOT part of the grid (when the top right icon is part of grid, the co-activator must be configured inside layout keys - as described under the heading Keyboard layout co-activator keys)
 | **Key layout**                                |          |
 | `activation_time`              |          | `1.0` [seconds]             | amount of time you have to hold `top_right_icon` or another predefined key `EV_KEY.KEY_NUMLOCK` for NumberPad activation/deactivation<br><br>decimal numbers allowed
 | `multitouch`                                  |          | `0`           | up to quint tap when enabled<br><br>Example 1: can be enabled when two fingers somewhere on the Touchpad while using NumberPad for calculating;
@@ -713,6 +712,7 @@ top_right_icon_coactivator_key = Shift
 | `top_left_icon_slide_func_disabled`           |          | `0`            | valid value is `0`, `1`, `2`, `3`<br><br>`0` - func is not disabled<br><br>`1` - func is disabled at all<br><br>`2` - func is disabled only when NumberPad is not activated<br><br>`3` - func is disabled only when NumberPad is activated
 | **Top right icon**                            |          |                   | send `numlock` key and activate/deactivate NumberPad<br><br>activating/deactivating touch has to start over icon area declared by `top_right_icon_width` and `top_right_icon_height` for amout of time in `activation_time` or NumberPad is activated/deactivated with slide function from this icon to center and removed, moving atleast as far as specified by the ratios of touchpad width > `top_right_icon_slide_func_activation_radius` and height > `top_right_icon_slide_func_activation_radius` |
 | `top_right_icon_slide_func_activation_radius`|          | `1200` [px]         | minimum radius of slide
+| `top_right_icon_coactivator_key`                     |          | ``            | empty default means no co-activator keys are required (valid values are `Shift`, `Control` or `Alt` delimeted by space)<br><br>this works only for activation using slide gestures from the top left or top right icon or by touching the top right icon that IS NOT part of the grid (when the top right icon is part of grid, the co-activator must be configured inside layout keys - as described under the heading Keyboard layout co-activator keys)
 **Backlight**                                   |          |                   |
 | `default_backlight_level`                     |          | `0x01`            | default backlight level in hex format `0x00` (must be the value from layout `backlight_levels` or value for disabled brightness `0x00` or value for usage of last used brightness `0x01`)
 **Idle**                                   |          |                   |
