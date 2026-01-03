@@ -83,6 +83,11 @@ if xdg_session_type == "x11":
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
       xkb_conn = xcffib.connect()
+      xkb_ext = xkb_conn(xcffib.xkb.key)
+      xkb_ext.UseExtension(
+        xcffib.xkb.MAJOR_VERSION,
+        xcffib.xkb.MINOR_VERSION
+      ).reply()
       xkb_conn_setup = xkb_conn.get_setup()
       log.info("X11 detected and connected succesfully to the xcffib")
     except:
@@ -329,9 +334,6 @@ def load_xkb_map_and_active_group():
     global xkb_conn, xkb_active_group, xkb_map
 
     xkb = xkb_conn(xcffib.xkb.key)
-    if not xkb.UseExtension(1, 0).reply().supported:
-        return (None, None)
-
     state = xkb.GetState(xcffib.xkb.ID.UseCoreKbd).reply()
 
     # xkb has support up to 4 groups max
