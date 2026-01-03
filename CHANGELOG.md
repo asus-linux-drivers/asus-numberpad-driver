@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.8.1 (3.1.2026)
+
+### Fixed
+
+- Co-activator key selection for NumberPad activation 
+- Running not under systemd service (when optional `systemd-python` pip package is not installed)
+- When xauthority has in `tmp` folder multiple files
+
 ## 6.8.0 (2.1.2026)
 
 ### Fixed
