@@ -62,8 +62,8 @@ Get the latest dev version using `git`:
 ```bash
 $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
-# now you are using not stable master branch with the latest changes
-# jump to the latest release (stable version) using:
+# now you are using master branch with the latest changes which may be not stable
+# jump to the latest release of stable version:
 $ git checkout v6.8.1
 ```
 
