@@ -905,7 +905,9 @@ def gsettingsSet(path, name, value):
                 cmd = ['gsettings', 'set', path, name, str(value)]
 
             log.debug(cmd)
-            subprocess.call(cmd)
+            ret = subprocess.call(cmd)
+            if ret != 0:
+                raise subprocess.CalledProcessError(ret, cmd)
         except Exception as e:
             log.debug(e, exc_info=True)
             gsettings_failure_count+=1
@@ -940,11 +942,14 @@ def qdbusSet(value):
                 'org.kde.KWin.InputDevice.tapToClick',
                 str(value)
             ]
-            subprocess.call(cmd)
+            ret = subprocess.call(cmd)
+            if ret != 0:
+                raise subprocess.CalledProcessError(ret, cmd)
         except Exception as e:
             log.debug(e, exc_info=True)
             qdbus_failure_count+=1
     else:
+        qdbus_failure_count += 1
         log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
 
 
@@ -1471,7 +1476,9 @@ def set_touchpad_prop_tap_to_click(value):
         try:
             cmd = ["xinput", "set-prop", touchpad_name, 'libinput Tapping Enabled', str(value)]
             log.debug(cmd)
-            subprocess.call(cmd)
+            ret = subprocess.call(cmd)
+            if ret != 0:
+                raise subprocess.CalledProcessError(ret, cmd)
             return
         except:
             getting_device_via_xinput_status_failure_count+=1
@@ -1483,7 +1490,9 @@ def set_touchpad_prop_tap_to_click(value):
     try:
         cmd = ["synclient", "TapButton1=" + str(value)]
         log.debug(cmd)
-        subprocess.call(cmd)
+        ret = subprocess.call(cmd)
+        if ret != 0:
+            raise subprocess.CalledProcessError(ret, cmd)
         return
     except:
         getting_device_via_synclient_status_failure_count+=1
