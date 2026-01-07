@@ -949,7 +949,6 @@ def qdbusSet(value):
             log.debug(e, exc_info=True)
             qdbus_failure_count+=1
     else:
-        qdbus_failure_count += 1
         log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
 
 
@@ -2638,6 +2637,8 @@ def listen_touchpad_events():
     except device.EventsDroppedException:
         for e in dev.sync(True):
             pass
+
+        listen_touchpad_events()
 
 
 def check_touchpad_status():
