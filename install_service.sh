@@ -48,7 +48,6 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     SERVICE=1
 
-    SERVICE_FILE_PATH=asus_numberpad_driver.service
     SERVICE_WAYLAND_FILE_PATH=asus_numberpad_driver.wayland.service
     SERVICE_X11_FILE_PATH=asus_numberpad_driver.x11.service
     SERVICE_INSTALL_FILE_NAME="asus_numberpad_driver@.service"
