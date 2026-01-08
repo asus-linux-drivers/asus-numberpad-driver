@@ -10,7 +10,7 @@ DESKTOP_DIR="$HOME/.local/share/applications"
 DESKTOP_FILE_NAME="kcalc-toggle.desktop"
 DESKTOP_FILE="$DESKTOP_DIR/$DESKTOP_FILE_NAME"
 
-rm $DESKTOP_FILE
+rm $DESKTOP_FILE >/dev/null 2>&1
 
 update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1
 
