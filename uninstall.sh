@@ -35,12 +35,12 @@ shopt -s extglob
   fi
 
   CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
-	NUMPAD_LAYOUTS_DIR="$INSTALL_DIR_PATH/numpad_layouts/"
+	NUMPAD_LAYOUTS_DIR="$INSTALL_DIR_PATH/layouts/"
 
 	NUMPAD_LAYOUTS_DIR_DIFF=""
 	if test -d "$NUMPAD_LAYOUTS_DIR"
 	then
-	    NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ numpad_layouts $NUMPAD_LAYOUTS_DIR)
+	    NUMPAD_LAYOUTS_DIR_DIFF=$(diff --exclude __pycache__ layouts $NUMPAD_LAYOUTS_DIR)
 	fi
 
 	if [ "$NUMPAD_LAYOUTS_DIR_DIFF" != "" ]
@@ -54,15 +54,15 @@ shopt -s extglob
 			fi
         	;;
     	*)
-			sudo rm -rf "$INSTALL_DIR_PATH/!(numpad_layouts|$CONFIG_FILE_NAME)"
+			sudo rm -rf "$INSTALL_DIR_PATH/!(layouts|$CONFIG_FILE_NAME)"
 			if [[ $? != 0 ]]
 			then
 				echo "Something went wrong when removing files from the $INSTALL_DIR_PATH"
 			fi
 
 			echo
-			echo "Numpad layouts in $INSTALL_DIR_PATH/numpad_layouts have not been removed and remain in system:"
-	        ls /$INSTALL_DIR_PATH/numpad_layouts
+			echo "Numpad layouts in $INSTALL_DIR_PATH/layouts have not been removed and remain in system:"
+	        ls /$INSTALL_DIR_PATH/layouts
         	;;
     	esac
 	else
