@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.8.2 (12.1.2026)
+
+### Fixed
+
+- Co-activator key selection for NumberPad activation
+- Do not exit when is buffer overloaded because restart by parent layer (systemd) is not guaranteed
+- Missing bad evaluation of the returned code from each `subprocess.call`
+
 ## 6.8.1 (3.1.2026)
 
 ### Fixed
