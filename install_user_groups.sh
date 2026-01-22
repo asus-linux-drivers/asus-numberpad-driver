@@ -11,8 +11,16 @@ UINPUT_GID=$(getent group "uinput" | cut -d: -f3)
 
 # https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/19#issuecomment-3625958498
 if [ -n "$UINPUT_GID" ] && [ "$UINPUT_GID" -ge 1000 ]; then
-    echo "The group 'uinput' was not system (GID=$gid), removing..."
+    echo "The group 'uinput' was not system (GID=$UINPUT_GID), removing..."
     sudo groupdel "uinput"
+fi
+
+I2C_GID=$(getent group "i2c" | cut -d: -f3)
+
+# https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/19#issuecomment-3625958498
+if [ -n "$I2C_GID" ] && [ "$I2C_GID" -ge 1000 ]; then
+    echo "The group 'i2c' was not system (GID=$I2C_GID), removing..."
+    sudo groupdel "i2c"
 fi
 
 sudo groupadd --system "input"
