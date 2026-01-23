@@ -57,7 +57,7 @@ keyboard shortcuts - for example in [my toggling script](https://github.com/asus
 
 ## Installation
 
-Get the latest dev version using `git`:
+Get the latest stable or dev version using `git` (**recommended**):
 
 ```bash
 $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
@@ -124,7 +124,7 @@ By installing this rule can be activated power supply saver every time when the 
 $ bash install_power_supply_saver.sh
 ```
 
-or an available package on [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (replace `asus-numberpad-driver` with one of the available models, e.g. `asus-numberpad-driver-ux433fa-git`)
+or an available package on [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K=asus-numberpad-driver&outdated=&SB=p&SO=d&PP=50&submit=Go) (maintained by @[kamack](https://github.com/kamack38)) (replace `asus-numberpad-driver` with one of the available models, e.g. `asus-numberpad-driver-ux433fa-git`)
 
 ```bash
 $ paru -S asus-numberpad-driver-${model}-git
