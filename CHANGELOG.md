@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.8.4 (23.1.2026)
+
+### Fixed
+
+- Previously added `i2c` group as not a system by recreating
+
 ## 6.8.3 (16.1.2026)
 
 ### Fixed
