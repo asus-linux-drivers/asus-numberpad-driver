@@ -4,6 +4,5 @@ pyinotify
 python-xlib
 python-periphery
 pyasyncore
-pywayland
 xkbcommon<1.1
 xcffib
