@@ -18,8 +18,6 @@ import Xlib.display
 import Xlib.X
 import Xlib.XK
 from xkbcommon import xkb
-from pywayland.client import Display
-from pywayland.protocol.wayland import WlSeat
 import mmap
 from periphery import I2C
 import signal
@@ -28,6 +26,14 @@ import glob
 import xcffib
 import xcffib.xkb
 import shutil
+
+PYWAYLAND_AVAILABLE = False
+try:
+    from pywayland.client import Display
+    from pywayland.protocol.wayland import WlSeat
+    PYWAYLAND_AVAILABLE = True
+except ImportError:
+    pass
 
 SYSTEMD_JOURNAL_AVAILABLE = False
 try:
@@ -2849,7 +2855,7 @@ signal.signal(signal.SIGUSR1, signal_handler)
 
 try:
 
-    if xdg_session_type == "wayland":
+    if xdg_session_type == "wayland" and PYWAYLAND_AVAILABLE:
         t = threading.Thread(target=load_keymap_listener_wayland)
         t.daemon = True
         threads.append(t)
