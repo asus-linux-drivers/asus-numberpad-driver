@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.8.5 (27.1.2026)
+
+### Fixed
+
+- Dependency for wayland only only `pywayland` outside of `requirements.wayland.txt`
+
 ## 6.8.4 (23.1.2026)
 
 ### Fixed
