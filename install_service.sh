@@ -39,7 +39,7 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
         sudo rpm-ostree install systemd-devel python3-systemd
     elif [[ $(command -v eopkg 2>/dev/null) ]]; then
-        sudo eopkg install -y systemd-devel python3-systemd
+        sudo eopkg install -y systemd-devel python-systemd
     else
         echo "Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
