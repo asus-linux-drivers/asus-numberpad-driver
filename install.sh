@@ -117,7 +117,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     elif command -v eopkg >/dev/null 2>&1; then
         PACKAGE_MANAGER="eopkg"
-        sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2-devel libxkbcommon-devel gcc pkg-config libxcb-devel
+        sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel virtualenv libxml2-devel libxkbcommon-devel gcc python-pkgconfig libxcb-devel
         sudo eopkg install -y systemd-devel
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
