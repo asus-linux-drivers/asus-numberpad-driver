@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.8.6 (2.2.2026)
+
+### Fixed
+
+- Package names for `eopkg` / `yum` (credits @sHAKaJaada)
+
 ## 6.8.5 (27.1.2026)
 
 ### Fixed
