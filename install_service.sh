@@ -22,7 +22,12 @@ echo
 read -r -p "Do you want install systemctl service? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
-    if [[ $(command -v apt-get 2>/dev/null) ]]; then
+    # Check rpm-ostree FIRST before dnf/yum (for BazziteOS/Fedora Atomic/Silverblue)
+    if [[ $(command -v rpm-ostree 2>/dev/null) ]] && grep -qi "ostree" /etc/os-release 2>/dev/null; then
+        echo "Detected OSTree-based system - systemd packages should already be layered"
+        echo "If not, run: rpm-ostree install systemd-devel python3-systemd"
+        # Don't try to install, assume packages are already layered or will be installed manually
+    elif [[ $(command -v apt-get 2>/dev/null) ]]; then
         sudo apt-get -y install libsystemd-dev python3-systemd
     elif [[ $(command -v pacman 2>/dev/null) ]]; then
         sudo pacman --noconfirm --needed -S systemd python-systemd
@@ -36,8 +41,6 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
         sudo xbps-install -Suy systemd python3-systemd
     elif [[ $(command -v emerge 2>/dev/null) ]]; then
         sudo emerge sys-apps/systemd dev-python/python-systemd
-    elif [[ $(command -v rpm-ostree 2>/dev/null) ]]; then
-        sudo rpm-ostree install systemd-devel python3-systemd
     elif [[ $(command -v eopkg 2>/dev/null) ]]; then
         sudo eopkg install -y systemd-devel python-systemd
     else

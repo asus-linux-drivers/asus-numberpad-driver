@@ -38,6 +38,28 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
 
+    # Check if rules.d directory exists, prompt to create if needed (for immutable systems)
+    if [ ! -d "$INSTALL_UDEV_DIR_PATH/rules.d" ]; then
+        echo "The udev rules directory $INSTALL_UDEV_DIR_PATH/rules.d does not exist."
+        echo "On immutable systems (BazziteOS, Fedora Silverblue, etc.), this directory may need to be created."
+        echo
+        read -r -p "Create the directory now? [Y/n] " response
+        case "$response" in
+            [nN][oO]|[nN])
+                echo "Skipping directory creation. The udev rule installation may fail."
+                ;;
+            *)
+                sudo mkdir -p "$INSTALL_UDEV_DIR_PATH/rules.d"
+                if [[ $? != 0 ]]; then
+                    echo "Warning: Failed to create directory. The udev rule installation may fail."
+                else
+                    echo "Directory created successfully."
+                fi
+                ;;
+        esac
+        echo
+    fi
+
     cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
 
     if [[ $? != 0 ]]; then
