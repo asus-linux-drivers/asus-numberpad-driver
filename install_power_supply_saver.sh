@@ -20,20 +20,39 @@ CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
 echo "Power supply saver"
 echo
-echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this udev rule can be enabled by every detected change of power supply mode to battery mode."
+echo "By default is idle functionality disabled and may be manually enabled in config file later. Or by installing this rule can be enabled by every detected change of power supply mode to battery mode."
 echo
 echo "Idle mode is configured to be enabled after 10s of inactivity and to decrease 30% of brightness."
 echo
 
-read -r -p "Do you want install the udev rule for idle functionality? [y/N]" RESPONSE
+read -r -p "Do you want install the rule for idle functionality? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     POWER_SUPPLY_SAVER=1
 
     echo
 
-    # Create rules.d directory if it does not exist (for immutable systems: https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/280)
-    sudo mkdir -p "$INSTALL_UDEV_DIR_PATH/rules.d"
+    # Check if rules.d directory exists, prompt to create if needed (for immutable systems)
+    if [ ! -d "$INSTALL_UDEV_DIR_PATH/rules.d" ]; then
+        echo "The udev rules directory $INSTALL_UDEV_DIR_PATH/rules.d does not exist."
+        echo "On immutable systems (BazziteOS, Fedora Silverblue, etc.), this directory may need to be created."
+        echo
+        read -r -p "Create the directory now? [Y/n] " response
+        case "$response" in
+            [nN][oO]|[nN])
+                echo "Skipping directory creation. The udev rule installation may fail."
+                ;;
+            *)
+                sudo mkdir -p "$INSTALL_UDEV_DIR_PATH/rules.d"
+                if [[ $? != 0 ]]; then
+                    echo "Warning: Failed to create directory. The udev rule installation may fail."
+                else
+                    echo "Directory created successfully."
+                fi
+                ;;
+        esac
+        echo
+    fi
 
     cat "udev/80-numberpad-power-supply.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/80-numberpad-power-supply.rules" >/dev/null
 
