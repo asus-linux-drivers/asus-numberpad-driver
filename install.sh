@@ -37,7 +37,8 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         echo
         
         # Combine all packages into one install command to minimize reboots
-        PACKAGES="xinput python3-devel wayland-protocols-devel pkg-config libxcb-devel systemd-devel libxkbcommon-devel python3-systemd"
+        # Note: systemd packages are installed separately in install_service.sh if user chooses systemd
+        PACKAGES="xinput python3-devel wayland-protocols-devel pkg-config libxcb-devel libxkbcommon-devel"
         
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             PACKAGES="$PACKAGES wayland-devel"
