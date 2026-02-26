@@ -79,12 +79,44 @@ CONFIG_FILE_NAME="numberpad_dev"
 LOGS_DIR_PATH="/var/log/asus-numberpad-driver" # only for install and uninstall logs
 SERVICE_INSTALL_DIR_PATH="$HOME/.config/systemd/user"
 INSTALL_UDEV_DIR_PATH="/usr/lib/udev"
-
-# e.g. for BazziteOS (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198)
-$ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver"\
-INSTALL_UDEV_DIR_PATH="/etc/udev"\
-bash install.sh
 ```
+
+### Installation on Immutable Systems (BazziteOS, Fedora Silverblue, Kinoite)
+
+For immutable Linux distributions, use custom paths and expect two reboots:
+
+```bash
+# First run - installs system packages
+$ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver" \
+  INSTALL_UDEV_DIR_PATH="/etc/udev" \
+  bash install.sh
+
+# Reboot when prompted (required for package layering)
+$ systemctl reboot
+
+# Second run - completes driver installation
+$ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver" \
+  INSTALL_UDEV_DIR_PATH="/etc/udev" \
+  bash install.sh
+
+# Final reboot (required for group membership)
+$ systemctl reboot
+```
+
+**Why two reboots?** Immutable systems require a reboot after layering packages and another after group membership changes.
+
+**Troubleshooting:** If the service fails with permission errors, you may need to manually add yourself to the input group:
+```bash
+# Try BazziteOS's built-in command first
+$ ujust add-user-to-input-group
+
+# Or manually if the above doesn't work
+$ sudo bash -c "echo 'input:x:104:$USER' >> /etc/group"
+$ sudo usermod -aG input $USER
+$ systemctl reboot
+```
+
+---
 
 or run separately parts of the install script.
 
