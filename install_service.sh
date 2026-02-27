@@ -15,6 +15,9 @@ fi
 if [ -z "$SERVICE_INSTALL_DIR_PATH" ]; then
     SERVICE_INSTALL_DIR_PATH="$HOME/.config/systemd/user"
 fi
+if [ -z "$INSTALL_DIR_PATH" ]; then
+    INSTALL_DIR_PATH="/usr/share/asus-dialpad-driver"
+fi
 
 echo "Systemctl service"
 echo
