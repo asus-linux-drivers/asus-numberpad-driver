@@ -20,7 +20,7 @@ CONFIG_FILE_PATH="$CONFIG_FILE_DIR_PATH/$CONFIG_FILE_NAME"
 
 echo "External keyboard"
 echo
-echo "This is a predefined rule for changing the configuration when an external keyboard is connected/disconnected."
+echo "This is a predefined udev rule for changing the configuration when an external keyboard is connected/disconnected."
 echo
 echo "The application of this rule results in the following changes if an external keyboard is connected:"
 echo
@@ -31,12 +31,15 @@ echo "In summary when an external keyboard is connected then NumberPad activatio
 
 echo
 
-read -r -p "Do you want install the rule for external keyboard? [y/N]" RESPONSE
+read -r -p "Do you want install the udev rule for external keyboard? [y/N]" RESPONSE
 case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     EXTERNAL_KEYBOARD_TOGGLE=1
 
     echo
+
+    # Create rules.d directory if it doesn't exist (for immutable systems)
+    sudo mkdir -p "$INSTALL_UDEV_DIR_PATH/rules.d"
 
     cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
 
