@@ -28,13 +28,30 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
     # Check rpm-ostree FIRST before dnf/yum (for BazziteOS/Fedora Atomic/Silverblue)
     if [[ $(command -v rpm-ostree 2>/dev/null) ]] && grep -qi "ostree" /etc/os-release 2>/dev/null; then
         echo "Detected OSTree-based system"
-        echo "Installing systemd packages via rpm-ostree..."
-        sudo rpm-ostree install systemd-devel python3-systemd
-        if [[ $? != 0 ]]; then
-            echo "Warning: Failed to install systemd packages. They may already be installed."
-            echo "If the service fails to start, run: rpm-ostree install systemd-devel python3-systemd"
+        
+        # Check which packages are missing
+        PACKAGES="systemd-devel python3-systemd"
+        MISSING_PACKAGES=""
+        for pkg in $PACKAGES; do
+            if ! rpm -q "$pkg" >/dev/null 2>&1; then
+                MISSING_PACKAGES="$MISSING_PACKAGES $pkg"
+            fi
+        done
+        
+        if [ -z "$MISSING_PACKAGES" ]; then
+            echo "Systemd packages are already installed."
         else
-            echo "Systemd packages installed. A reboot may be required for changes to take effect."
+            echo "Installing systemd packages via rpm-ostree..."
+            echo "Missing packages:$MISSING_PACKAGES"
+            sudo rpm-ostree install $MISSING_PACKAGES
+            if [[ $? != 0 ]]; then
+                echo "Warning: Failed to install systemd packages. They may already be installed."
+                echo "If the service fails to start, run: rpm-ostree install systemd-devel python3-systemd"
+            else
+                echo "Systemd packages installed successfully."
+                echo "Note: A reboot may be required for changes to take effect."
+                echo "You can continue with the installation and reboot later."
+            fi
         fi
     elif [[ $(command -v apt-get 2>/dev/null) ]]; then
         sudo apt-get -y install libsystemd-dev python3-systemd

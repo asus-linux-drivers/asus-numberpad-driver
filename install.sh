@@ -48,51 +48,65 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
             PACKAGES="$PACKAGES qt$PLASMA_VER-qttools"
         fi
         
-        echo "Running: rpm-ostree install $PACKAGES"
-        sudo rpm-ostree install $PACKAGES
+        # Check which packages are missing
+        MISSING_PACKAGES=""
+        for pkg in $PACKAGES; do
+            if ! rpm -q "$pkg" >/dev/null 2>&1; then
+                MISSING_PACKAGES="$MISSING_PACKAGES $pkg"
+            fi
+        done
         
-        if [[ $? != 0 ]]; then
-            echo
-            echo "ERROR: rpm-ostree install failed!"
-            echo "Common issues:"
-            echo "  - Not enough disk space (run: rpm-ostree cleanup -b && sudo ostree admin cleanup)"
-            echo "  - Packages already layered (this is OK, continue anyway)"
-            echo
-            read -r -p "Do you want to continue anyway? [y/N] " response
-            case "$response" in
-                [yY][eE][sS]|[yY])
-                    echo "Continuing..."
-                    ;;
-                *)
-                    echo "Installation aborted."
-                    source install_begin_send_anonymous_report.sh
-                    exit 1
-                    ;;
-            esac
+        if [ -z "$MISSING_PACKAGES" ]; then
+            echo "All required packages are already installed."
+            echo "Skipping package installation."
         else
-            echo
-            echo "SUCCESS: Packages layered successfully!"
-            echo "IMPORTANT: You must reboot before continuing the installation."
-            echo
-            read -r -p "Do you want to reboot now? [y/N] " response
-            case "$response" in
-                [yY][eE][sS]|[yY])
-                    sudo systemctl reboot
-                    exit 0
-                    ;;
-                *)
-                    echo
-                    echo "Please reboot manually, then run this script again with the same environment variables."
-                    if [ -n "$INSTALL_DIR_PATH" ] || [ -n "$INSTALL_UDEV_DIR_PATH" ]; then
-                        echo "Example:"
-                        echo "  INSTALL_DIR_PATH=\"${INSTALL_DIR_PATH:-/usr/share/asus-numberpad-driver}\" \\"
-                        echo "  INSTALL_UDEV_DIR_PATH=\"${INSTALL_UDEV_DIR_PATH:-/usr/lib/udev}\" \\"
-                        echo "  bash install.sh"
-                    fi
-                    echo
-                    exit 0
-                    ;;
-            esac
+            echo "Missing packages:$MISSING_PACKAGES"
+            echo "Running: rpm-ostree install$MISSING_PACKAGES"
+            sudo rpm-ostree install $MISSING_PACKAGES
+            
+            if [[ $? != 0 ]]; then
+                echo
+                echo "ERROR: rpm-ostree install failed!"
+                echo "Common issues:"
+                echo "  - Not enough disk space (run: rpm-ostree cleanup -b && sudo ostree admin cleanup)"
+                echo "  - Packages already layered (this is OK, continue anyway)"
+                echo
+                read -r -p "Do you want to continue anyway? [y/N] " response
+                case "$response" in
+                    [yY][eE][sS]|[yY])
+                        echo "Continuing..."
+                        ;;
+                    *)
+                        echo "Installation aborted."
+                        source install_begin_send_anonymous_report.sh
+                        exit 1
+                        ;;
+                esac
+            else
+                echo
+                echo "SUCCESS: Packages layered successfully!"
+                echo "IMPORTANT: You must reboot before continuing the installation."
+                echo
+                read -r -p "Do you want to reboot now? [y/N] " response
+                case "$response" in
+                    [yY][eE][sS]|[yY])
+                        sudo systemctl reboot
+                        exit 0
+                        ;;
+                    *)
+                        echo
+                        echo "Please reboot manually, then run this script again with the same environment variables."
+                        if [ -n "$INSTALL_DIR_PATH" ] || [ -n "$INSTALL_UDEV_DIR_PATH" ]; then
+                            echo "Example:"
+                            echo "  INSTALL_DIR_PATH=\"${INSTALL_DIR_PATH:-/usr/share/asus-numberpad-driver}\" \\"
+                            echo "  INSTALL_UDEV_DIR_PATH=\"${INSTALL_UDEV_DIR_PATH:-/usr/lib/udev}\" \\"
+                            echo "  bash install.sh"
+                        fi
+                        echo
+                        exit 0
+                        ;;
+                esac
+            fi
         fi
 
     elif command -v apt-get >/dev/null 2>&1; then
