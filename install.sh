@@ -56,26 +56,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
         if [ -n "$MISSING_PACKAGES" ]; then
             sudo rpm-ostree install $MISSING_PACKAGES
-
-            if [[ $? != 0 ]]; then
-                echo
-                echo "Common issue:"
-                echo "  - Not enough disk space (run: sudo rpm-ostree cleanup -b && sudo ostree admin cleanup)"
-                echo
-            else
-                echo
-                echo "You must reboot before continuing the installation. After reboot run this script again."
-                echo
-                read -r -p "Do you want to reboot now? [y/N] " response
-                case "$response" in
-                    [yY][eE][sS]|[yY])
-                        sudo /sbin/reboot
-                        ;;
-                    *)
-                        exit 0
-                        ;;
-                esac
-            fi
         fi
     elif command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt"
@@ -153,10 +133,17 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         echo "Warning: Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 
-    source install_begin_send_anonymous_report.sh
-
     if [[ $? != 0 ]]; then
         echo "Error: Something went wrong during installing packages"
+
+        if [[ "$PACKAGE_MANAGER" == "rpm-ostree" ]]; then
+            echo
+            echo "Common issue:"
+            echo "  - Not enough disk space (run: sudo rpm-ostree cleanup -b && sudo ostree admin cleanup)"
+            echo
+        fi
+
+        source install_begin_send_anonymous_report.sh
 
         read -r -p "Do you want to continue anyway? [y/N] " response
         case "$response" in
@@ -166,6 +153,23 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
                 exit 1
                 ;;
         esac
+    else
+        source install_begin_send_anonymous_report.sh
+
+        if [[ "$PACKAGE_MANAGER" == "rpm-ostree" ]]; then
+            echo
+            echo "You must reboot before continuing the installation. After reboot run this script again."
+            echo
+            read -r -p "Do you want to reboot now? [y/N] " response
+            case "$response" in
+                [yY][eE][sS]|[yY])
+                    sudo /sbin/reboot
+                    ;;
+                *)
+                    exit 0
+                    ;;
+            esac
+        fi
     fi
 
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
