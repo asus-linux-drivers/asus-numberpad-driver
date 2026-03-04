@@ -28,7 +28,56 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     fi
 
     # pip pywayland requires gcc
-    if command -v apt-get >/dev/null 2>&1; then
+
+    # check rpm-ostree FIRST before dnf/yum (for BazziteOS/Fedora Atomic/Silverblue)
+    # because dnf may exist as a wrapper that blocks usage on immutable systems
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/280
+    if command -v rpm-ostree >/dev/null 2>&1 && grep -qi "ostree" /etc/os-release 2>/dev/null; then
+
+        PACKAGE_MANAGER="rpm-ostree"
+
+        # note: systemd packages are installed separately in install_service.sh if user chooses systemd
+        PACKAGES="xinput python3-devel wayland-protocols-devel pkg-config libxcb-devel libxkbcommon-devel"
+        
+        if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+            PACKAGES="$PACKAGES wayland-devel"
+        fi
+        
+        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
+            PACKAGES="$PACKAGES qt$PLASMA_VER-qttools"
+        fi
+
+        MISSING_PACKAGES=""
+        for pkg in $PACKAGES; do
+            if ! rpm -q "$pkg" >/dev/null 2>&1; then
+                MISSING_PACKAGES="$MISSING_PACKAGES $pkg"
+            fi
+        done
+
+        if [ -n "$MISSING_PACKAGES" ]; then
+            sudo rpm-ostree install $MISSING_PACKAGES
+
+            if [[ $? != 0 ]]; then
+                echo
+                echo "Common issue:"
+                echo "  - Not enough disk space (run: sudo rpm-ostree cleanup -b && sudo ostree admin cleanup)"
+                echo
+            else
+                echo
+                echo "You must reboot before continuing the installation. After reboot run this script again."
+                echo
+                read -r -p "Do you want to reboot now? [y/N] " response
+                case "$response" in
+                    [yY][eE][sS]|[yY])
+                        sudo /sbin/reboot
+                        ;;
+                    *)
+                        exit 0
+                        ;;
+                esac
+            fi
+        fi
+    elif command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt"
         sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libxcb-render0-dev
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
@@ -37,7 +86,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo apt-get -y install qdbus-qt$PLASMA_VER
         fi
-
     elif command -v pacman >/dev/null 2>&1; then
         PACKAGE_MANAGER="pacman"
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf libxcb
@@ -47,7 +95,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo pacman --noconfirm --needed -S qt$PLASMA_VER-tools
         fi
-
     elif command -v dnf >/dev/null 2>&1; then
         PACKAGE_MANAGER="dnf"
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
@@ -66,7 +113,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo yum -y install qt$PLASMA_VER-qttools
         fi
-
     elif command -v zypper >/dev/null 2>&1; then
         PACKAGE_MANAGER="zypper"
         sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
@@ -76,7 +122,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo zypper --non-interactive install qt$PLASMA_VER-tools-qdbus
         fi
-
     elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
         sudo xbps-install -Suy ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
@@ -86,7 +131,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo xbps-install -Suy qt$PLASMA_VER-tools
         fi
-
     elif command -v emerge >/dev/null 2>&1; then
         PACKAGE_MANAGER="portage"
         sudo emerge app-i18n/ibus dev-libs/libevdev net-misc/curl x11-apps/xinput sys-apps/i2c-tools dev-lang/python dev-python/virtualenv dev-libs/libxml2 x11-libs/libxkbcommon sys-devel/gcc virtual/pkgconfig x11-libs/libxcb
@@ -96,18 +140,6 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo emerge dev-qt/qdbus
         fi
-
-    elif command -v rpm-ostree >/dev/null 2>&1; then
-        PACKAGE_MANAGER="rpm-ostree"
-        sudo rpm-ostree install xinput virtualenv python3-devel wayland-protocols-devel pkg-config libxcb-devel
-        sudo rpm-ostree install systemd-devel
-        if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
-            sudo rpm-ostree install wayland-devel
-        fi
-        if [[ "$DESKTOP_SESSION" == plasma* ]]; then
-            sudo rpm-ostree install qt$PLASMA_VER-tools
-        fi
-
     elif command -v eopkg >/dev/null 2>&1; then
         PACKAGE_MANAGER="eopkg"
         sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel virtualenv libxml2-devel libxkbcommon-devel gcc python-pkgconfig libxcb-devel
@@ -117,17 +149,23 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         if [[ "$DESKTOP_SESSION" == plasma* ]]; then
             sudo eopkg install -y qt$PLASMA_VER-tools
         fi
-
     else
         echo "Warning: Not detected package manager. Driver may not work properly because required packages have not been installed. Please create an issue (https://github.com/asus-linux-drivers/asus-numberpad-driver/issues)."
     fi
 
+    source install_begin_send_anonymous_report.sh
+
     if [[ $? != 0 ]]; then
         echo "Error: Something went wrong during installing packages"
-        source install_begin_send_anonymous_report.sh
-        exit 1
-    else
-        source install_begin_send_anonymous_report.sh
+
+        read -r -p "Do you want to continue anyway? [y/N] " response
+        case "$response" in
+            [yY][eE][sS]|[yY])
+                ;;
+            *)
+                exit 1
+                ;;
+        esac
     fi
 
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/255
