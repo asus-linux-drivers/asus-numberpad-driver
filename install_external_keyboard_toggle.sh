@@ -38,7 +38,7 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
 
     echo
 
-    # Create rules.d directory if it doesn't exist (for immutable systems)
+    # create rules.d directory if it does not exist (e.g. immutable systems https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/280)
     sudo mkdir -p "$INSTALL_UDEV_DIR_PATH/rules.d"
 
     cat "udev/90-numberpad-external-keyboard.rules" | INSTALL_DIR_PATH=$INSTALL_DIR_PATH envsubst '$INSTALL_DIR_PATH' | sudo tee "$INSTALL_UDEV_DIR_PATH/rules.d/90-numberpad-external-keyboard.rules" >/dev/null
