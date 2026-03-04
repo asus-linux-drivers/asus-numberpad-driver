@@ -4,7 +4,7 @@
 ![Maintainer](https://img.shields.io/badge/maintainer-ldrahnik-blue)
 ![Contributor](https://img.shields.io/badge/contributor-kamack33-blue)
 [![GitHub Release](https://img.shields.io/github/release/asus-linux-drivers/asus-numberpad-driver.svg?style=flat)](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases)
-[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-numberpad-driver/v6.8.6.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/commit/)
+[![GitHub commits](https://img.shields.io/github/commits-since/asus-linux-drivers/asus-numberpad-driver/v6.8.7.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/commit/)
 [![GitHub issues-closed](https://img.shields.io/github/issues-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://GitHub.com/asus-linux-drivers/asus-numberpad-driver/issues?q=is%3Aissue+is%3Aclosed)
 [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/asus-linux-drivers/asus-numberpad-driver.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/compare)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20about-anything-1abc9c.svg)](https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/new/choose)
@@ -64,7 +64,7 @@ $ git clone https://github.com/asus-linux-drivers/asus-numberpad-driver
 $ cd asus-numberpad-driver
 # now you are using master branch with the latest changes which may be not stable
 # jump to the latest release of stable version:
-$ git checkout v6.8.6
+$ git checkout v6.8.7
 ```
 
 or download the latest release (stable version) from [the release page](https://github.com/asus-linux-drivers/asus-numberpad-driver/releases), extract and install for current user and current Python3 ([How to install the driver with specific Python3 version using pyenv?](#faq)):
@@ -91,15 +91,15 @@ $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver" \
   INSTALL_UDEV_DIR_PATH="/etc/udev" \
   bash install.sh
 
-# Reboot when prompted (required for package layering)
+# Reboot when prompted (required for package layering) or manually
 $ systemctl reboot
 
-# Second run - completes driver installation
+# Second run - completes the driver installation
 $ INSTALL_DIR_PATH="/home/$USER/.local/share/asus-numberpad-driver" \
   INSTALL_UDEV_DIR_PATH="/etc/udev" \
   bash install.sh
 
-# Final reboot (required for group membership)
+# Reboot when prompted (required for package layering) or manually
 $ systemctl reboot
 ```
 
@@ -110,7 +110,7 @@ $ systemctl reboot
 # Try BazziteOS's built-in command first
 $ ujust add-user-to-input-group
 
-# Or manually if the above doesn't work
+# Or manually if the above does not work
 $ sudo bash -c "echo 'input:x:104:$USER' >> /etc/group"
 $ sudo usermod -aG input $USER
 $ systemctl reboot

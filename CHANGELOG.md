@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.8.7 (4.3.2026)
+
+### Fixed
+
+- Support for immutable Linux systems (BazziteOS, Fedora Atomic, Silverblue) (credits @VictorPrado99)
+- Missing `INSTALL_DIR_PATH` when using `install_service.sh` independently without overriding from cmd
+- Added possibility to continue with installation even when something wrong happened
+- Removed systemd packages related to `install_service.sh` from `install.sh`
+
 ## 6.8.6 (2.2.2026)
 
 ### Fixed
