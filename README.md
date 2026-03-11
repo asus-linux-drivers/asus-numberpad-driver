@@ -105,17 +105,6 @@ $ systemctl reboot
 
 **Why two reboots?** Immutable systems require a reboot after layering packages and another after group membership changes.
 
-**Troubleshooting:** If the service fails with permission errors, you may need to manually add yourself to the input group:
-```bash
-# Try BazziteOS's built-in command first
-$ ujust add-user-to-input-group
-
-# Or manually if the above does not work
-$ sudo bash -c "echo 'input:x:104:$USER' >> /etc/group"
-$ sudo usermod -aG input $USER
-$ systemctl reboot
-```
-
 ---
 
 or run separately parts of the install script.

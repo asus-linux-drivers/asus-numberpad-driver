@@ -36,6 +36,21 @@ else
     echo "Added groups input, i2c, uinput, numberpad to current user"
 fi
 
+# workaround when is "failing" (return code is 0) adding of `input` group on BazziteOS using `usermod` or `ujust add-user-to-input-group`: https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/282
+if grep -q "^input:" /etc/group; then
+
+    # current members of group `input`
+    current_members=$(grep "^input:" /etc/group | cut -d: -f4)
+    
+    # is current user already a member of group `input`?
+    if ! echo "$current_members" | grep -qw "$USER"; then
+        sudo sed -i "s/^input:\([^:]*:[^:]*:[^:]*\)/input:\1,$USER/" /etc/group
+    fi
+else
+    # if group `input` does not exist in `/etc/group`` at all
+    sudo bash -c "echo 'input:x:104:$USER' >> /etc/group"
+fi
+
 sudo modprobe uinput
 
 # check if the uinput module is successfully loaded
