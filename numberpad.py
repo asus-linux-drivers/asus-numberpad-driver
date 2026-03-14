@@ -681,6 +681,9 @@ gsettings_max_failure_count = 1
 qdbus_failure_count = 0
 qdbus_max_failure_count = 1
 
+kde_config_failure_count = 0
+kde_config_max_failure_count = 1
+
 getting_device_via_xinput_status_failure_count = 0
 getting_device_via_xinput_status_max_failure_count = 1
 
@@ -1072,6 +1075,8 @@ def get_compose_key_start_events_for_unicode_string(reset_udev = True):
 # Figure out devices from devices file
 touchpad: Optional[str] = None
 touchpad_name: Optional[str] = None
+touchpad_vendor: Optional[str] = None
+touchpad_product: Optional[str] = None
 keyboard: Optional[str] = None
 d_k = None
 fd_k = None
@@ -1079,6 +1084,7 @@ numlock_lock = threading.Lock()
 idle_lock = threading.Lock()
 device_id: Optional[str] = None
 device_addr: Optional[int] = None
+lastILin: Optional[str] = None
 
 # Look into the devices file #
 while try_times > 0:
@@ -1091,6 +1097,9 @@ while try_times > 0:
         for line in lines:
             # Look for the touchpad #
 
+            if line.strip().startswith("I:"):
+                lastILine = line
+
             # https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver/issues/87
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/95
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/110
@@ -1100,6 +1109,14 @@ while try_times > 0:
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
                 touchpad_name = line.split("\"")[1]
+
+                if lastILine:
+                    touchpad_vendor_re = re.search(r"Vendor=([0-9A-Fa-f]+)", lastILine)
+                    touchpad_product_re = re.search(r"Product=([0-9A-Fa-f]+)", lastILine)
+                    if touchpad_vendor_re and touchpad_product_re:
+                        touchpad_vendor = int(touchpad_vendor_re.group(1).strip(), 16)
+                        touchpad_product = int(touchpad_product_re.group(1).strip(), 16)
+                        log.info("Parsed vendor=%d, product=%d from last I: line=%s", touchpad_vendor, touchpad_product, lastILine)
 
                 # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/161
                 if ("ASUF1416" in line or "ASUF1205" in line or "ASUF1204" in line):
@@ -1465,14 +1482,51 @@ def grab_current_slot():
         log.error("Error of grabbing, %s", e)
 
 
-def set_touchpad_prop_tap_to_click(value):
-    global touchpad_name, gsettings_failure_count, gsettings_max_failure_count, qdbus_max_failure_count, qdbus_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count
+def kwriteConfig6SetTouchpadProperty(key, value):
+    global touchpad_name, touchpad_vendor, touchpad_product, kde_config_failure_count
 
-    # 1. priority - gsettings (gnome) or qdbus (kde)
+    try:
+        base_cmd = [
+            "kwriteconfig6",
+            "--file", "kcminputrc",
+            "--group", "Libinput",
+            "--group", str(touchpad_vendor),
+            "--group", str(touchpad_product),
+            "--group", touchpad_name,
+            "--key", key,
+            str(bool(value)).lower()
+        ]
+
+        sudo_user = os.environ.get('SUDO_USER')
+        if sudo_user:
+            cmd = ['runuser', '-u', sudo_user] + base_cmd
+        else:
+            cmd = base_cmd
+
+        log.debug(cmd)
+        ret = subprocess.call(cmd)
+        if ret != 0:
+            raise subprocess.CalledProcessError(ret, cmd)
+
+    except Exception as e:
+        log.debug(e, exc_info=True)
+        kde_config_failure_count += 1
+
+
+def kwriteConfig6SetTouchpadTapToClick(value):
+    return kwriteConfig6SetTouchpadProperty("TapToClick", value)
+
+
+def set_touchpad_prop_tap_to_click(value):
+    global touchpad_name, gsettings_failure_count, gsettings_max_failure_count, qdbus_max_failure_count, qdbus_failure_count, getting_device_via_xinput_status_failure_count, getting_device_via_xinput_status_max_failure_count, getting_device_via_synclient_status_failure_count, getting_device_via_synclient_status_max_failure_count, kde_config_failure_count, kde_config_max_failure_count
+
+    # 1. priority - gsettings (gnome) or qdbus (kde) or kwriteconfig6 (kde)
     if gsettings_failure_count < gsettings_max_failure_count:
         gsettingsSetTouchpadTapToClick(value)
     if qdbus_failure_count < qdbus_max_failure_count:
         qdbusSetTouchpadTapToClick(value)
+    if kde_config_failure_count < kde_config_max_failure_count:
+        kwriteConfig6SetTouchpadTapToClick(value)
 
     # 2. priority - xinput
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
