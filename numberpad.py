@@ -678,9 +678,6 @@ try_sleep = 0.1
 gsettings_failure_count = 0
 gsettings_max_failure_count = 1
 
-qdbus_failure_count = 0
-qdbus_max_failure_count = 1
-
 qdbus_freedesktop_failure_count = 0
 qdbus_freedesktop_max_failure_count = 1
 
@@ -944,7 +941,9 @@ def qdbusFreedesktopSet(value):
 
     if qdbus_freedesktop_failure_count < qdbus_freedesktop_max_failure_count:
         try:
-            cmd = [
+            sudo_user = os.environ.get('SUDO_USER')
+
+            base_cmd = [
                 QDBUS,
                 'org.kde.KWin',
                 f'/org/kde/KWin/InputDevice/event{touchpad}',
@@ -953,40 +952,26 @@ def qdbusFreedesktopSet(value):
                 'tapToClick',
                 str(value)
             ]
+
+            if sudo_user is not None:
+                cmd = ['runuser', '-u', sudo_user] + base_cmd
+            else:
+                cmd = base_cmd
+
+            log.debug(cmd)
             ret = subprocess.call(cmd)
+
             if ret != 0:
                 raise subprocess.CalledProcessError(ret, cmd)
+
         except Exception as e:
             log.debug(e, exc_info=True)
-            qdbus_freedesktop_failure_count+=1
+            qdbus_freedesktop_failure_count += 1
     else:
-        log.debug('Qdbus freedesktop failed more then: \"%s\" so is not try anymore', qdbus_freedesktop_max_failure_count)
-
-
-def qdbusSet(value):
-    global qdbus_failure_count, qdbus_max_failure_count, touchpad
-
-    if qdbus_failure_count < qdbus_max_failure_count:
-        try:
-            cmd = [
-                QDBUS,
-                'org.kde.KWin',
-                f'/org/kde/KWin/InputDevice/event{touchpad}',
-                'org.kde.KWin.InputDevice.tapToClick',
-                str(value)
-            ]
-            ret = subprocess.call(cmd)
-            if ret != 0:
-                raise subprocess.CalledProcessError(ret, cmd)
-        except Exception as e:
-            log.debug(e, exc_info=True)
-            qdbus_failure_count+=1
-    else:
-        log.debug('Qdbus failed more then: \"%s\" so is not try anymore', qdbus_max_failure_count)
-
-
-def qdbusSetTouchpadTapToClick(value):
-    qdbusSet(value)
+        log.debug(
+            'Qdbus freedesktop failed more then: "%s" so is not try anymore',
+            qdbus_freedesktop_max_failure_count
+        )
 
 def qdbusFreedesktopSetTouchpadTapToClick(value):
     qdbusFreedesktopSet(value)
@@ -995,7 +980,9 @@ def qdbusFreedesktopGetTouchpadEnabled():
     global touchpad, qdbus_freedesktop_failure_count
 
     try:
-        cmd = [
+        sudo_user = os.environ.get('SUDO_USER')
+
+        base_cmd = [
             QDBUS,
             'org.kde.KWin',
             f'/org/kde/KWin/InputDevice/event{touchpad}',
@@ -1003,27 +990,19 @@ def qdbusFreedesktopGetTouchpadEnabled():
             'org.kde.KWin.InputDevice',
             'enabled'
         ]
+
+        if sudo_user is not None:
+            cmd = ['runuser', '-u', sudo_user, '--'] + base_cmd
+        else:
+            cmd = base_cmd
+
+        log.debug(cmd)
         result = subprocess.check_output(cmd).rstrip().decode().rstrip()
         return result
-    except:
-        qdbus_freedesktop_failure_count+=1
-        return None
 
-def qdbusGetTouchpadEnabled():
-    global touchpad, qdbus_failure_count
-
-    try:
-        cmd = [
-            QDBUS,
-            'org.kde.KWin',
-            f'/org/kde/KWin/InputDevice/event{touchpad}',
-            'org.kde.KWin.InputDevice',
-            'enabled'
-        ]
-        result = subprocess.check_output(cmd).rstrip().decode().rstrip()
-        return result
-    except:
-        qdbus_failure_count+=1
+    except Exception as e:
+        log.debug(e, exc_info=True)
+        qdbus_freedesktop_failure_count += 1
         return None
 
 def gsettingsGetTouchpadSendEvents():
@@ -1324,14 +1303,6 @@ def is_device_enabled(device_name):
             elif 'false' in value:
                 return False
 
-    if qdbus_failure_count < qdbus_max_failure_count:
-        value = qdbusGetTouchpadEnabled()
-        if value:
-            if 'true' in value:
-                return True
-            elif 'false' in value:
-                return False
-
     if gsettings_failure_count < gsettings_max_failure_count:
         value = gsettingsGetTouchpadSendEvents()
         if value:
@@ -1511,8 +1482,6 @@ def set_touchpad_prop_tap_to_click(value):
         gsettingsSetTouchpadTapToClick(value)
     if qdbus_freedesktop_failure_count < qdbus_freedesktop_max_failure_count:
         qdbusFreedesktopSetTouchpadTapToClick(value)
-    if qdbus_failure_count < qdbus_max_failure_count:
-        qdbusSetTouchpadTapToClick(value)
 
     # 2. priority - xinput
     if getting_device_via_xinput_status_failure_count > getting_device_via_xinput_status_max_failure_count:
