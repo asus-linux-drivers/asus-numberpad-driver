@@ -1,2 +1,5 @@
-SUBSYSTEM=="usb", ACTION=="add", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_connected.sh"
-SUBSYSTEM=="usb", ACTION=="remove", ATTRS{removable}=="removable", ATTRS{product}=="*[Kk]eyboard*", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_disconnected.sh"
+SUBSYSTEM=="input", ENV{ID_BUS}=="usb", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ACTION=="add", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_connected.sh"
+SUBSYSTEM=="input", ENV{ID_BUS}=="bluetooth", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ACTION=="add", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_connected.sh"
+
+SUBSYSTEM=="input", ENV{ID_BUS}=="usb", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ACTION=="remove", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_disconnected.sh"
+SUBSYSTEM=="input", ENV{ID_BUS}=="bluetooth", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ACTION=="remove", RUN+="$INSTALL_DIR_PATH/udev/external_keyboard_is_disconnected.sh"
