@@ -2117,7 +2117,7 @@ def is_not_finger_moved_to_another_key():
 
 
 def check_system_numlock_vs_local():
-    global brightness, numlock
+    global brightness, numlock, sys_numlock_enables_numpad
 
     #log.debug("check_system_numlock_vs_local: numlock_lock.acquire will be called")
     numlock_lock.acquire()
@@ -2130,9 +2130,21 @@ def check_system_numlock_vs_local():
         deactivate_numpad()
         log.info("Numpad deactivated")
     elif sys_numlock and sys_numlock_enables_numpad and not numlock:
-        numlock = True
-        activate_numpad()
-        log.info("Numpad activated")
+
+        if sys_numlock_enables_numpad == 2 and sys_numlock and not numlock:
+
+            log.info("NumPad was not activated because was used sys_numlock_enables_numpad=2 designed for situations when external keyboard was unplugged")
+
+            send_numlock_key(1)
+            send_numlock_key(0)
+            log.info("System numlock deactivated")
+
+            config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, 1)
+
+        elif sys_numlock_enables_numpad == 1:
+            numlock = True
+            activate_numpad()
+            log.info("Numpad activated")
 
     numlock_lock.release()
 
