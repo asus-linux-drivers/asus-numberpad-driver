@@ -317,6 +317,7 @@ To see the exact commands for the package manager look [here](./install.sh) (for
 
 ## Troubleshooting
 
+- The driver can be installed like `LOG=DEBUG bash install.sh` to extend the logs to a debug level (**recommended only for short-term debugging purpose**)
 - The install and uninstall logs are here `/var/log/asus-numberpad-driver/*.log`. The runtime logs can be found using `journalctl -f | grep asus-numberpad-driver` or `journalctl -f --user-unit asus_numberpad_driver@$USER.service`.
 
 - **The start point [x:0,y:0] of touchpad is at the left top!**
