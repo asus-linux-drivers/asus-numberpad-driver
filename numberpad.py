@@ -1731,7 +1731,7 @@ def load_all_config_values():
     multitouch = config_get(CONFIG_MULTITOUCH, CONFIG_MULTITOUCH_DEFAULT)
     one_touch_key_rotation = config_get(CONFIG_ONE_TOUCH_KEY_ROTATION, CONFIG_ONE_TOUCH_KEY_ROTATION_DEFAULT)
     activation_time = float(config_get(CONFIG_ACTIVATION_TIME, CONFIG_ACTIVATION_TIME_DEFAULT))
-    sys_numlock_enables_numpad = config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT)
+    sys_numlock_enables_numpad = int(config_get(CONFIG_NUMLOCK_ENABLES_NUMPAD, CONFIG_NUMLOCK_ENABLES_NUMPAD_DEFAULT))
 
     key_numlock_is_used = False
 
@@ -2129,22 +2129,24 @@ def check_system_numlock_vs_local():
         numlock = False
         deactivate_numpad()
         log.info("Numpad deactivated")
-    elif sys_numlock and sys_numlock_enables_numpad and not numlock:
 
-        if sys_numlock_enables_numpad == 2 and sys_numlock and not numlock:
+    # external keyboard device was unplugged
+    elif sys_numlock_enables_numpad == 2:
 
-            log.info("NumPad was not activated because was used sys_numlock_enables_numpad=2 designed for situations when external keyboard was unplugged")
+        log.info("NumPad was not activated because was used sys_numlock_enables_numpad=2 designed for situations when external keyboard was unplugged")
 
+        if sys_numlock:
             send_numlock_key(1)
             send_numlock_key(0)
             log.info("System numlock deactivated")
 
-            config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, 1)
+        sys_numlock_enables_numpad = 1
+        config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, 1)
 
-        elif sys_numlock_enables_numpad == 1:
-            numlock = True
-            activate_numpad()
-            log.info("Numpad activated")
+    elif sys_numlock and sys_numlock_enables_numpad == 1 and not numlock:
+        numlock = True
+        activate_numpad()
+        log.info("Numpad activated")
 
     numlock_lock.release()
 
