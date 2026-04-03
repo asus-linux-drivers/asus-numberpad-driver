@@ -308,6 +308,7 @@ The project should currently support every layout of NumberPad. Layouts below ar
 | <a id="g513"></a><br><br><br><br><br>g513<br><br><br><br><br><br><br> | With NumLock key<br><br>With left, right keys outside of NumberPad                                                                                             | ![with numlock and buttons outside](images/ASUS-G513.jpg)                                             |
 | <a id="gx701"></a><br><br><br><br><br>gx701<br><br><br><br><br><br><br> | With # symbol<br><br>With NumLock key outside of touchpad<br><br>With left, right keys outside of NumberPad   | ![model gx701](images/ASUS-ROG-Zephyrus-S17-GX701.jpg)                                              |
 | <a id="gx551"></a><br><br><br><br><br>gx551<br><br><br><br><br><br><br> | Without % = symbols<br><br>With NumLock key on the top left<br><br>With left, right keys outside of NumberPad | ![model gx551](images/Asus-GX551.jpg)                                                               |
+| <a id="gx650"></a><br><br><br><br><br>gx650<br><br><br><br><br><br><br> | Without % = symbols<br><br>With NumLock key on the top left<br><br>Without left, right keys outside of NumberPad | ![model gx650](images/Asus-ROG-Zephyrus-GX650.png)                                                               |
 
 ### Dependencies
 
