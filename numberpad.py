@@ -294,26 +294,39 @@ def resolve_keycode_with_xcffib_xkb(keysym):
         if not key_sym_maps:
             return (None, None)
 
+        best_candidate = None  # store the lowest level > 0 across all keycodes
+
+        # iterate over all keycodes in range
         for kc in range(min_keycode, max_keycode + 1):
+            idx = kc - min_keycode
+            if idx >= len(key_sym_maps):
+                continue  # skip if no corresponding entry
 
-            # Iterate entries by index; keycode is min_kc + index
-            for idx, entry in enumerate(key_sym_maps):
-                kc    = min_keycode + idx
-                syms  = getattr(entry, "syms", [])
-                n     = getattr(entry, "nSyms", len(syms))
-                width = getattr(entry, "width", 2)  # levels per group, fallback to 2
+            entry = key_sym_maps[idx]
+            syms = getattr(entry, "syms", [])
+            n = getattr(entry, "nSyms", len(syms))
+            width = getattr(entry, "width", 2)  # levels per group, fallback to 2
 
-                if not syms or n == 0 or width <= 0:
-                    continue
+            if not syms or n <= 0 or width <= 0:
+                continue  # skip empty or invalid entries
 
-                limit = min(n, len(syms))
-                for i in range(limit):
-                    group = i // width
-                    if group != xkb_active_group:
-                        continue
-                    if syms[i] == keysym:
-                        level = i %  width
-                        return (kc, level)
+            limit = min(n, len(syms))
+            for i in range(limit):
+                group = i // width
+                if group != xkb_active_group:
+                    continue  # skip symbols not in active group
+                if syms[i] == keysym:
+                    level = i % width
+                    if level == 0:
+                        # prioritize level 0 immediately
+                        return (kc, 0)
+                    # store the lowest level > 0 across all keycodes
+                    if best_candidate is None or level < best_candidate[1]:
+                        best_candidate = (kc, level)
+
+        # return the lowest level > 0 if level 0 was not found
+        if best_candidate:
+            return best_candidate
 
         return (None, None)
 
