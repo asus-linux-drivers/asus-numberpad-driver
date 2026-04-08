@@ -182,7 +182,6 @@ def mod_name_to_specific_keysym_name(mod_name):
 
                 if layout_is_active:
                     for mod_index in range(0, num_mods):
-
                         is_key_mod = key_state & xkb.StateComponent.XKB_STATE_MODS_DEPRESSED
                         if is_key_mod:
 
@@ -1246,11 +1245,11 @@ enable_key(EV_KEY.BTN_MIDDLE)
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
 
-def on_gnome_layout_changed(settings, key):
+def on_gnome_layout_changed(settings, key, trigger_layout_change = True):
 
     global gnome_current_layout, gnome_current_layout_index, keyboard_state, display_wayland_var
 
-    if key not in ["mru-sources", "current"]:
+    if key not in ["just-fake-key", "mru-sources", "current"]:
         return
 
     try:
@@ -1269,10 +1268,12 @@ def on_gnome_layout_changed(settings, key):
             return
 
         if display_wayland_var:
-            if keyboard_state and gnome_current_layout_index != mru_layout_index:
+            if gnome_current_layout_index != mru_layout_index:
                 gnome_current_layout_index = mru_layout_index
                 gnome_current_layout = mru_layout
-                wl_load_keymap_state()
+
+                if trigger_layout_change:
+                    wl_load_keymap_state()
 
         elif gnome_current_layout != mru_layout:
             try:
@@ -1302,6 +1303,11 @@ def on_gnome_layout_changed(settings, key):
                         log.exception("setxkbmap set failed")
         except Exception as e:
             log.exception(f"Failed to process GNOME input source: {e}")
+
+
+def load_gnome_layout():
+    settings = Gio.Settings.new("org.gnome.desktop.input-sources")
+    on_gnome_layout_changed(settings, "just-fake-key", False)
 
 
 def is_device_enabled(device_name):
@@ -2890,6 +2896,9 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGUSR1, signal_handler)
 
 try:
+
+    if GNOME_GLIB_AVAILABLE:
+        load_gnome_layout()
 
     if xdg_session_type == "wayland" and PYWAYLAND_AVAILABLE:
         t = threading.Thread(target=load_keymap_listener_wayland)
