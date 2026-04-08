@@ -1347,14 +1347,14 @@ def is_device_enabled(device_name):
                 else:
                     return False
 
-        log.error('Getting Device Enabled via xinput failed because was not found Device Enabled for Touchpad.')
+        log.debug('Getting Device Enabled via xinput failed because was not found Device Enabled for Touchpad.')
 
         getting_device_via_xinput_status_failure_count += 1
         return True
     except:
         getting_device_via_xinput_status_failure_count += 1
 
-        log.exception('Getting Device Enabled via xinput failed')
+        log.debug('Getting Device Enabled via xinput failed', exc_info=True)
         return True
 
 
@@ -1515,7 +1515,7 @@ def set_touchpad_prop_tap_to_click(value):
             return
         except:
             getting_device_via_xinput_status_failure_count+=1
-            log.error('Setting libinput Tapping EnabledDevice via xinput failed')
+            log.debug('Setting libinput Tapping EnabledDevice via xinput failed', exc_info=True)
 
     # 3. priority - synclient
     if getting_device_via_synclient_status_failure_count > getting_device_via_synclient_status_max_failure_count:
