@@ -17,6 +17,9 @@ let
     xcffib
     python-periphery
   ]);
+
+  # Add backwards compatibility on packages name changes
+  compat = import ./compat.nix { inherit pkgs; };
 in
 python313Packages.buildPythonPackage {
   pname = "asus-numberpad-driver";
@@ -29,7 +32,7 @@ python313Packages.buildPythonPackage {
     ibus
     libevdev
     curl
-    xinput
+    compat.xinput
     i2c-tools
     libxml2
     libxkbcommon
