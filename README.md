@@ -174,7 +174,8 @@ This repo contains a Flake that exposes a NixOS Module that manages and offers o
     inputs = {
         # ---Snip---
         asus-numberpad-driver = {
-          url = "github:asus-linux-drivers/asus-numberpad-driver";
+          url = "github:asus-linux-drivers/asus-numberpad-driver/v6.8.7"; # use this line for the latest release of stable version
+          # url = "github:asus-linux-drivers/asus-numberpad-driver"; # or this line for using master branch with the latest changes which may be not stable
           inputs.nixpkgs.follows = "nixpkgs";
         };
         # ---Snip---
