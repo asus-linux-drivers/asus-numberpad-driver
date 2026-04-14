@@ -39,7 +39,7 @@ with open('/proc/bus/input/devices', 'r') as f:
 
 		# Look for the keyboard (numlock) # AT Translated Set OR Asus Keyboard
 		if keyboard_detected == 0 and ("Name=\"AT Translated Set 2 keyboard" in line or (("Name=\"ASUE" in line or "Name=\"Asus" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line) and "Keyboard" in line)):
-		  keyboard_detected = 1
+			keyboard_detected = 1
 
 		if keyboard_detected == 1:
 			if "H: " in line:
@@ -55,21 +55,26 @@ with open('/proc/bus/input/devices', 'r') as f:
 				#if keyboard_detected == 2 and touchpad_detected == 2:
 				#	break
 
-for i in range(2, 255):
+# Activate (the latest brightness value will be used)
+cmdOn = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + "0x01" + " 0xad"
+print("0x01")
+os.system(cmdOn)
+
+for i in range(0, 255):
 	value = str(hex(i))
 	valueLowestBrightness = "0x41"
-	cmdOn = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + "0x01" + " 0xad"
-	print("0x01")
-	os.system(cmdOn)
-	sleep(1)
-	cmdLowestBrightness = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + valueLowestBrightness + " 0xad"
-	print(valueLowestBrightness)
-	os.system(cmdLowestBrightness)
-	sleep(1)
+
+	# Always try unlock
+	cmdUnlock = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + "0x60" + " 0xad"
+	print("0x60")
+	os.system(cmdUnlock)
+
 	print("Tested value of registr: " + str(i) + " (hex: " + value + ")")
 	cmdNewValue = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 " + value + " 0xad"
 	os.system(cmdNewValue)
-	input("Press Enter to continue...")
+
+	sleep(0.5)
+	#input("Press Enter to continue...")
 
 cmdoff = "i2ctransfer -f -y " + device_id + " w13@" + str(device_addr) + " 0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00 0x0d 0x14 0x03 0x00 0xad"
 os.system(cmdoff)
