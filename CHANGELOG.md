@@ -1,5 +1,23 @@
 # Changelog
 
+## 6.9.0 (15.4.2026)
+
+### Fixed
+
+- Adding adding `uinput` group on BazziteOS
+- Changing and reading InputDevice property (`enabled`, `tapToClick`, ..) thought `qdbus` on KDE
+- Deprecated `xorg.xinput` to `xinput` for the next stable release of NixOS (credits @jalbstmeijer @MeeSumee)
+- Returning lowest key combinations as possible (best with no modifiers) for appropriate character on X11
+- Applying the current keymap during first loading on Gnome
+- A few error/exception log levels that should be debug
+
+### Feature
+
+- Added possibility during install process replace '.' with ','
+- Added support for external keyboard devices connected via bluetooth
+- Added possibility to run `LOG=DEBUG bash install.sh` which means the installed driver send to the journal log debugging logs (the installed service contains env var `LOG=DEBUG`)
+- Added new layout for GX650 series (top and bottom margin is larger than has GX551 and outside are no physical buttons but which is irelevant for this driver atleast for this moment)
+
 ## 6.8.7 (4.3.2026)
 
 ### Fixed
