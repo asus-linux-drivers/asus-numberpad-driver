@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Adding adding `uinput` group on BazziteOS
+- Adding `uinput` group on BazziteOS
 - Changing and reading InputDevice property (`enabled`, `tapToClick`, ..) thought `qdbus` on KDE
 - Deprecated `xorg.xinput` to `xinput` for the next stable release of NixOS (credits @jalbstmeijer @MeeSumee)
 - Returning lowest key combinations as possible (best with no modifiers) for appropriate character on X11
