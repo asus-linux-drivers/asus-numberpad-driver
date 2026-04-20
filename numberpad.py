@@ -532,7 +532,52 @@ def are_modifier_keys_pressed(modifier_names):
     return True
 
 
-def load_evdev_key_for_wayland(char, keyboard_state, load_only_active_layout = True):
+def build_keysym_index(keyboard_state, load_only_active_layout=True):
+    global gnome_current_layout_index
+
+    keymap = keyboard_state.get_keymap()
+    keysym_index = {}
+
+    for keycode in keymap:
+        num_layouts = keymap.num_layouts_for_key(keycode)
+
+        for layout in range(num_layouts):
+
+            if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
+                layout_is_active = True
+            else:
+                layout_is_active = keyboard_state.layout_index_is_active(
+                    layout,
+                    xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE
+                )
+
+            if load_only_active_layout and not layout_is_active:
+                continue
+
+            num_levels = keymap.num_levels_for_key(keycode, layout)
+
+            for level in range(num_levels):
+
+                syms = keymap.key_get_syms_by_level(keycode, layout, level)
+                if len(syms) != 1:
+                    continue
+
+                keysym = syms[0]
+
+                mod_masks_for_level = keymap.key_get_mods_for_level(keycode, layout, level)
+                if not mod_masks_for_level:
+                    continue
+
+                sorted_masks = sorted(mod_masks_for_level, key=int.bit_count)
+
+                keysym_index.setdefault(keysym, []).append(
+                    (keycode, layout, level, sorted_masks)
+                )
+
+    return keysym_index
+
+
+def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
     global gnome_current_layout_index
 
     keysym = xkb.keysym_from_name(char)
@@ -540,72 +585,68 @@ def load_evdev_key_for_wayland(char, keyboard_state, load_only_active_layout = T
     keymap = keyboard_state.get_keymap()
     num_mods = keymap.num_mods()
 
-    # store the lowest level > 0 across all keycodes
     best_key = None
     best_level = None
     best_mod_bits = None
 
-    for keycode in keymap:
+    candidates = keysym_index.get(keysym)
+    if not candidates:
+        return None
 
-        num_layouts = keymap.num_layouts_for_key(keycode)
-        for layout in range(0, num_layouts):
+    for keycode, layout, level, sorted_mod_masks_for_level in candidates:
 
-            # is layout active?
-            if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
-                layout_is_active = True
+        # layout active check
+        if gnome_current_layout_index is not None:
+            layout_is_active = (gnome_current_layout_index == layout)
+        else:
+            layout_is_active = keyboard_state.layout_index_is_active(
+                layout,
+                xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE
+            )
+
+        for mod_mask in sorted_mod_masks_for_level:
+            mod_bits = mod_mask.bit_count()
+
+            if best_mod_bits is not None and mod_bits > best_mod_bits:
+                break
+
+            mod_evdev_keys = []
+
+            if mod_bits != 0:
+                for mod_index in range(num_mods):
+
+                    if not (mod_mask & (1 << mod_index)):
+                        continue
+
+                    mod_name = keymap.mod_get_name(mod_index)
+                    mod_char = mod_name_to_specific_keysym_name(mod_name)
+
+                    mod_key = load_evdev_key_for_wayland(
+                        mod_char,
+                        keyboard_state,
+                        keysym_index
+                    )
+
+                    if mod_key:
+                        mod_evdev_keys.append(mod_key)
+
+            if mod_evdev_keys:
+                key = mod_evdev_keys + [EV_KEY.codes[int(keycode - 8)]]
             else:
-                layout_is_active = keyboard_state.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+                key = EV_KEY.codes[int(keycode - 8)]
 
-            if load_only_active_layout and not layout_is_active:
-                continue
+            enable_key(key)
 
-            num_levels = keymap.num_levels_for_key(keycode, layout)
-
-            for level in range(0, num_levels):
-                mod_masks_for_level = keymap.key_get_mods_for_level(keycode, layout, level)
-
-                if len(mod_masks_for_level) < 1:
-                    continue
-
-                keysyms = keymap.key_get_syms_by_level(keycode, layout, level)
-
-                if len(keysyms) != 1 or keysyms[0] != keysym:
-                    continue
-
-                sorted_masks = sorted(mod_masks_for_level, key=int.bit_count)
-
-                for mod_mask in sorted_masks:
-                    mod_bits = mod_mask.bit_count()
-
-                    if best_mod_bits is not None and mod_bits > best_mod_bits:
-                        break
-
-                    mod_evdev_keys = []
-                    for mod_index in range(0, num_mods):
-
-                        if (mod_mask & (1 << mod_index)) == 0:
-                            continue
-
-                        mod_name = keymap.mod_get_name(mod_index)
-
-                        mod_as_evdev_key = load_evdev_key_for_wayland(mod_name_to_specific_keysym_name(mod_name), keyboard_state)
-                        mod_evdev_keys.append(mod_as_evdev_key)
-
-                        if not mod_as_evdev_key:
-                            continue
-
-                    if len(mod_evdev_keys) > 0:
-                        key = mod_evdev_keys + [EV_KEY.codes[int(keycode - 8)]]
-                    else:
-                        key = EV_KEY.codes[int(keycode - 8)]
-
-                    enable_key(key)
-
-                    if layout_is_active:
-                        if best_level is None or best_mod_bits is None or mod_bits < best_mod_bits or (mod_bits == best_mod_bits and level < best_level):
-                            best_level = level
-                            best_key = key
-                            best_mod_bits = mod_bits
+            if layout_is_active:
+                if (
+                    best_level is None or
+                    best_mod_bits is None or
+                    mod_bits < best_mod_bits or
+                    (mod_bits == best_mod_bits and level < best_level)
+                ):
+                    best_level = level
+                    best_key = key
+                    best_mod_bits = mod_bits
 
     if best_key is not None:
         set_evdev_key_for_char(char, best_key)
@@ -621,8 +662,13 @@ def wl_load_keymap_state():
 
     enabled_keys = len(enabled_evdev_keys)
 
+    keysym_index = build_keysym_index(
+        keyboard_state,
+        keymap_loaded
+    )
+
     for char in get_keysym_name_associated_to_evdev_key_reflecting_current_layout().copy():
-        load_evdev_key_for_wayland(char, keyboard_state, keymap_loaded)
+        load_evdev_key_for_wayland(char, keyboard_state, keysym_index)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
     #
