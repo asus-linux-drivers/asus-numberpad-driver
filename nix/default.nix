@@ -23,7 +23,7 @@ let
 in
 python313Packages.buildPythonPackage {
   pname = "asus-numberpad-driver";
-  version = "6.9.0";
+  version = "6.9.1";
   src = ../.;
 
   format = "other";

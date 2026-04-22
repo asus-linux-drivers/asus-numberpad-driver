@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.9.1 (22.4.2025)
+
+### Fixed
+
+- Returning lowest simplicity of key combination on Wayland (credits @rfxDarth)
+- The speed of loading keymap using pre-created index on Wayland 
+
 ## 6.9.0 (15.4.2026)
 
 ### Fixed
