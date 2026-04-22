@@ -5,6 +5,8 @@ source non_sudo_check.sh
 LAPTOP_NAME_FULL=$(cat /sys/devices/virtual/dmi/id/product_name)
 # LAPTOP_NAME_FULL="ROG Zephyrus Duo 15 SE GX551QR_GX551QR"
 LAPTOP_NAME=$(echo $LAPTOP_NAME_FULL | rev | cut -d ' ' -f1 | rev | cut -d "_" -f1)
+DEVICE_NAME_FULL=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 2 -d'"' | cut -f 1,2 -d" " | head -1)
+# DEVICE_NAME_FULL="ASUE140D:00 04F3:3145"
 DEVICE_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 2 -d ":" | head -1)
 # DEVICE_ID="3145"
 VENDOR_ID=$(cat /proc/bus/input/devices | grep ".*Touchpad\"$" | sort | cut -f 3 -d" " | cut -f 1 -d ":" | head -1)
@@ -107,7 +109,7 @@ for OPTION in $(ls layouts); do
         echo
         echo "NumberPad layout"
         echo
-        read -r -p "The automatically recommended NumberPad layout for this laptop ($LAPTOP_NAME_FULL) is $SUGGESTED_LAYOUT. Do you want to use the $SUGGESTED_LAYOUT layout? (The photo of the recommended NumberPad layout can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#$SUGGESTED_LAYOUT) [y/N]" RESPONSE
+        read -r -p "The automatically recommended NumberPad layout for this laptop ($LAPTOP_NAME_FULL) and this touchpad ($DEVICE_NAME_FULL) is $SUGGESTED_LAYOUT. Do you want to use the $SUGGESTED_LAYOUT layout? (The photo of the recommended NumberPad layout can be found here https://github.com/asus-linux-drivers/asus-numberpad-driver#$SUGGESTED_LAYOUT) [y/N]" RESPONSE
         case "$RESPONSE" in [yY][eE][sS]|[yY])
 
             echo
