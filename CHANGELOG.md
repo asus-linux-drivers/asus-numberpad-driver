@@ -1,6 +1,12 @@
 # Changelog
 
-## 6.9.1 (22.4.2025)
+## 6.9.2 (27.4.2026)
+
+### Fixed
+
+- Device detection during install process
+
+## 6.9.1 (22.4.2026)
 
 ### Fixed
 
