@@ -192,6 +192,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     echo
 
+    source install_send_anonymous_dsdt_table.sh 
+
+    echo
+
     # do not install __pycache__
     if [[ -d layouts/__pycache__ ]]; then
         rm -rf layouts/__pycache__

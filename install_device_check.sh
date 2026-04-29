@@ -85,10 +85,15 @@ if command -v /usr/sbin/i2cdetect >/dev/null 2>&1 && command -v /usr/sbin/i2ctra
 
     if [ -z "$TOUCHPAD_WITH_NUMBERPAD_DETECTED" ]; then
         echo "The detection was not successful. Touchpad with NumberPad not found. Check whether your touchpad has integrated NumberPad (e.g. on product websites) and in case it has then eventually create an issue here https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/new/choose."
-        
+
         read -p "Do you want try to continue anyway? [y/N]: " CONTINUE
 
         if [[ ! "$CONTINUE" =~ ^[Yy]$ ]]; then
+
+            echo
+
+            source install_send_anonymous_dsdt_table.sh
+
             exit 1
         fi
     fi
