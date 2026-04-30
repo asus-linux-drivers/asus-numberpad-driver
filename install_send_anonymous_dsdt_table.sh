@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 REPO="asus-linux-drivers/asus-dsdt-tables"
 SCRIPT_NAME="dsdt_probe.sh"
 SCRIPT_URL="https://raw.githubusercontent.com/${REPO}/refs/heads/main/${SCRIPT_NAME}"
@@ -36,6 +34,8 @@ case "$RESPONSE" in
         curl -fsSL "$SCRIPT_URL" -o "$LOCAL_PATH"
 
         chmod +x "$LOCAL_PATH"
+
+        echo
 
         SOURCE="asus-linux-drivers/asus-numberpad-driver" bash "$LOCAL_PATH"
 
