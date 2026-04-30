@@ -198,7 +198,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     # do not install __pycache__
     if [[ -d layouts/__pycache__ ]]; then
-        rm -rf layouts/__pycache__
+        sudo rm -rf layouts/__pycache__
     fi
 
     # ENV VARS
