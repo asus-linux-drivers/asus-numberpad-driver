@@ -20,7 +20,6 @@ echo "Only firmware-level data is shared (and anonymously):"
 echo " - DSDT table"
 echo " - registered input devices"
 echo " - laptop model"
-echo " - system UUID"
 echo
 echo "All previously shared tables and the script used to collect them are publicly available at:"
 echo
