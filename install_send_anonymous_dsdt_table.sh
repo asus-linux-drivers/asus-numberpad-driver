@@ -43,6 +43,5 @@ case "$RESPONSE" in
         ;;
 
     *)
-        exit 0
         ;;
 esac
