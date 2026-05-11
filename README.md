@@ -424,11 +424,11 @@ Available devices:
 /dev/input/event12:	ASUE140D:00 04F3:31B9 Touchpad
 /dev/input/event13:	ASUE140D:00 04F3:31B9 Keyboard
 ...
-/dev/input/event22:	Asus Touchpad/Numpad
+/dev/input/event22:	ASUE140D:00 04F3:31B9 NumberPad
 Select the device event number [0-22]: 22
 Input driver version is 1.0.1
 Input device ID: bus 0x0 vendor 0x0 product 0x0 version 0x0
-Input device name: "Asus Touchpad/Numpad"
+Input device name: "ASUE140D:00 04F3:31B9 NumberPad"
 Supported events:
   Event type 0 (EV_SYN)
   Event type 1 (EV_KEY)
