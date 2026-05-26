@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.0.0 (26.5.2026)
+
+### Fixed
+
+- Touchpad detection
+- Touchpad detection for devices with stylus `ELAN9008`
+- Missing `sudo` when removing `__pycache__`
+
+### Feature
+
+- Added optional probe script
+
 ## 6.9.2 (27.4.2026)
 
 ### Fixed
