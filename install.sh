@@ -254,6 +254,15 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         exit 1
     fi
 
+    # openSUSE compatibility
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/296
+    if [ ! -f /usr/include/xkbcommon/xkbcommon.h ] && [ -f /usr/include/libxkbcommon/xkbcommon/xkbcommon.h ]; then
+        sudo ln -s /usr/include/libxkbcommon/xkbcommon /usr/include/xkbcommon
+    fi
+    if [ ! -f /usr/include/wayland-client-core.h ] && [ -f /usr/include/wayland/wayland-client-core.h ]; then
+        sudo ln -sf /usr/include/wayland/* /usr/include/
+    fi
+
     # create Python virtual environment
     virtualenv --python="$PYTHON" "$INSTALL_DIR_PATH/.env"
     source "$INSTALL_DIR_PATH/.env/bin/activate"
