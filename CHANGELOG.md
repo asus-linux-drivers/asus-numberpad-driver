@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.1 (12.6.2026)
+
+### Fixed
+
+- Missing symlink for `wayland` and `xkbcommon` headers to `/usr/include` on OpenSUSE
+
 ## 7.0.0 (26.5.2026)
 
 ### Fixed
