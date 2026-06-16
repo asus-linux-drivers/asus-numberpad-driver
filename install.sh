@@ -55,7 +55,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         done
 
         if [ -n "$MISSING_PACKAGES" ]; then
-            sudo rpm-ostree install $MISSING_PACKAGES
+            sudo rpm-ostree install --allow-inactive $MISSING_PACKAGES
         fi
     elif command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt"
