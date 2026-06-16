@@ -39,7 +39,7 @@ case "$RESPONSE" in [yY][eE][sS]|[yY])
         done
 
         if [ -n "$MISSING_PACKAGES" ]; then
-            sudo rpm-ostree install $MISSING_PACKAGES
+            sudo rpm-ostree install --allow-inactive $MISSING_PACKAGES
         fi
     elif [[ $(command -v apt-get 2>/dev/null) ]]; then
         sudo apt-get -y install libsystemd-dev python3-systemd
