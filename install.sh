@@ -156,7 +156,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     else
         source install_begin_send_anonymous_report.sh
 
-        if [[ "$PACKAGE_MANAGER" == "rpm-ostree" ]]; then
+        if [[ "$PACKAGE_MANAGER" == "rpm-ostree" && -n "$MISSING_PACKAGES" ]]; then
             echo
             echo "You must reboot before continuing the installation. After reboot run this script again."
             echo
