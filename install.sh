@@ -37,7 +37,7 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         PACKAGE_MANAGER="rpm-ostree"
 
         # note: systemd packages are installed separately in install_service.sh if user chooses systemd
-        PACKAGES="curl xinput i2c-tools python3-devel python3-virtualenv wayland-protocols-devel pkg-config libxcb-devel libxkbcommon-devel"
+        PACKAGES="curl xinput i2c-tools python3-devel python3-virtualenv wayland-protocols-devel gcc pkg-config libxcb-devel libxkbcommon-devel"
 
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             PACKAGES="$PACKAGES wayland-devel"
