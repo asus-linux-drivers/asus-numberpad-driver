@@ -326,7 +326,7 @@ To see the exact commands for the package manager look [here](./install.sh) (for
 - **Before debugging make sure you have disabled the asus_numberpad_driver@.service**
 
 ```bash
-$ systemctl stop --user asus_numberpad_driver@<$USER>.service
+$ systemctl stop --user asus_numberpad_driver@$USER.service
 ```
 
 - To show debug logs run the following command in a terminal (**Do not forget to specify the numpad layout and the config file path**):
