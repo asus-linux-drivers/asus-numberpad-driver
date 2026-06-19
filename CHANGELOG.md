@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.2 (19.6.2026)
+
+### Fixed
+
+- Missing dependencies, reboot only when is required and attempt to fix overlapping packages for package manager `rpm-ostree`
+
 ## 7.0.1 (12.6.2026)
 
 ### Fixed
