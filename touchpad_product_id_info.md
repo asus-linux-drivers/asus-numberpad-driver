@@ -30,6 +30,7 @@
 | ASUE1900:00 04F3:31AF ||     |     |
 | ASUE1A00:00 04F3:31DE ||     |     |
 | ASUE1A01:00 04F3:31D4 ||     |     |
+| ASUF1415:00 2808:0224 || confirmed working (device_addr=0x15) ||ASUS Zenbook 14 UX3405CA|[@karandesai2005](https://github.com/karandesai2005) — [writeup](https://github.com/karandesai2005/asus-numpad-linux)|
 | ELAN1200:00 04F3:301A ||     |     |
 | ELAN1200:00 04F3:3022 ||     |     |
 | ELAN1200:00 04F3:303C ||     |     |
