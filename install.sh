@@ -272,6 +272,15 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     source "$INSTALL_DIR_PATH/.env/bin/activate"
     pip3 install --upgrade pip
     pip3 install --upgrade setuptools
+
+    # https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/43
+    # https://github.com/sde1000/python-xkbcommon/issues/26
+    if pkg-config --exists xkbcommon && ! pkg-config --atleast-version=1.5 xkbcommon; then
+        pip3 install -r requirements.txt -c <(echo "xkbcommon<1.1")
+    else
+        pip3 install -r requirements.txt
+    fi
+
     pip3 install -r requirements.txt
     if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
         pip3 install -r requirements.wayland.txt
