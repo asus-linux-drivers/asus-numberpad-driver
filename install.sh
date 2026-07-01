@@ -2,6 +2,10 @@
 
 source non_sudo_check.sh
 
+source install_security_check.sh
+
+echo
+
 START_TIME=${EPOCHREALTIME::-7}
 
 # ENV VARS
