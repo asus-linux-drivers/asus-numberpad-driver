@@ -42,7 +42,8 @@ try:
 except ImportError:
     pass
 
-GNOME_GLIB_AVAILABLE = False
+GLIB_AVAILABLE = False
+DBUS_AND_GLIB_AVAILABLE = False
 
 QDBUS = shutil.which("qdbus") or shutil.which("qdbus6")
 
@@ -50,7 +51,14 @@ try:
     import gi
     gi.require_version("Gio", "2.0")
     from gi.repository import Gio, GLib
-    GNOME_GLIB_AVAILABLE = True
+    GLIB_AVAILABLE = True
+
+    try:
+        import dbus
+        import dbus.mainloop.glib
+        DBUS_AND_GLIB_AVAILABLE = True
+    except ImportError:
+        pass
 except ImportError:
     pass
 
@@ -109,12 +117,13 @@ enabled_evdev_keys = []
 gnome_current_layout = None
 # only to avoid first - x11 even wayland (e.g. Ubuntu 22.04)
 gnome_current_layout_index = None
+kde_current_layout_index = None
 
 watch_manager = None
 event_notifier = None
 
 def mod_name_to_specific_keysym_name(mod_name):
-    global display_wayland
+    global display_wayland, kde_current_layout_index, gnome_current_layout_index
 
     mod_to_specific_keysym_name = {
         'Control': 'Control_L',
@@ -175,7 +184,9 @@ def mod_name_to_specific_keysym_name(mod_name):
             num_layouts = keymap.num_layouts_for_key(keycode)
             for layout in range(0, num_layouts):
 
-                if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
+                if kde_current_layout_index is not None and kde_current_layout_index == layout:
+                    layout_is_active = True
+                elif gnome_current_layout_index is not None and gnome_current_layout_index == layout:
                     layout_is_active = True
                 else:
                     layout_is_active = keyboard_state_clean.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
@@ -533,7 +544,7 @@ def are_modifier_keys_pressed(modifier_names):
 
 
 def build_keysym_index(keyboard_state, load_only_active_layout=True):
-    global gnome_current_layout_index
+    global gnome_current_layout_index, kde_current_layout_index
 
     keymap = keyboard_state.get_keymap()
     keysym_index = {}
@@ -543,7 +554,9 @@ def build_keysym_index(keyboard_state, load_only_active_layout=True):
 
         for layout in range(num_layouts):
 
-            if gnome_current_layout_index is not None and gnome_current_layout_index == layout:
+            if kde_current_layout_index is not None and kde_current_layout_index == layout:
+                layout_is_active = True
+            elif gnome_current_layout_index is not None and gnome_current_layout_index == layout:
                 layout_is_active = True
             else:
                 layout_is_active = keyboard_state.layout_index_is_active(
@@ -578,7 +591,7 @@ def build_keysym_index(keyboard_state, load_only_active_layout=True):
 
 
 def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
-    global gnome_current_layout_index
+    global gnome_current_layout_index, kde_current_layout_index
 
     keysym = xkb.keysym_from_name(char)
 
@@ -596,7 +609,9 @@ def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
     for keycode, layout, level, sorted_mod_masks_for_level in candidates:
 
         # layout active check
-        if gnome_current_layout_index is not None:
+        if kde_current_layout_index is not None:
+            layout_is_active = (kde_current_layout_index == layout)
+        elif gnome_current_layout_index is not None:
             layout_is_active = (gnome_current_layout_index == layout)
         else:
             layout_is_active = keyboard_state.layout_index_is_active(
@@ -1313,6 +1328,15 @@ enable_key(EV_KEY.BTN_MIDDLE)
 
 for key_to_enable in top_left_icon_slide_func_keys:
   enable_key(key_to_enable)
+
+def on_kde_layout_changed(settings):
+    global kde_current_layout_index, display_wayland_var
+
+    kde_current_layout_index = settings
+    print(kde_current_layout_index)
+
+    if display_wayland_var:
+        wl_load_keymap_state()
 
 def on_gnome_layout_changed(settings, key, trigger_layout_change = True):
 
@@ -2939,8 +2963,36 @@ def check_stop_threads():
         log.info("Stopping GNOME layout monitoring...")
         if check_gnome_layout_loop is not None:
             check_gnome_layout_loop.quit()
+        if check_kde_layout_loop is not None:
+            check_kde_layout_loop.quit()
         return False
     return True
+
+def check_kde_layout():
+    global check_kde_layout_loop
+
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    bus = dbus.SessionBus()
+
+    bus.add_signal_receiver(
+        on_kde_layout_changed,
+        dbus_interface="org.kde.KeyboardLayouts",
+        path="/Layouts",
+        signal_name="layoutChanged",
+    )
+
+    loop = GLib.MainLoop()
+    check_kde_layout_loop = loop
+
+    # Check `stop_threads` every 500ms (0.5s)
+    GLib.timeout_add(500, check_stop_threads)
+
+    try:
+        loop.run()
+    except KeyboardInterrupt:
+        loop.quit()
+        log.info("Stopped monitoring KDE layout.")
 
 def check_gnome_layout():
     global check_gnome_layout_loop
@@ -2966,7 +3018,7 @@ signal.signal(signal.SIGUSR1, signal_handler)
 
 try:
 
-    if GNOME_GLIB_AVAILABLE:
+    if GLIB_AVAILABLE:
         load_gnome_layout()
 
     if xdg_session_type == "wayland" and PYWAYLAND_AVAILABLE:
@@ -3038,8 +3090,14 @@ try:
     threads.append(t)
     t.start()
 
-    if GNOME_GLIB_AVAILABLE:
+    if GLIB_AVAILABLE:
         t = threading.Thread(target=check_gnome_layout)
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    if DBUS_AND_GLIB_AVAILABLE:
+        t = threading.Thread(target=check_kde_layout)
         t.daemon = True
         threads.append(t)
         t.start()
