@@ -1360,7 +1360,7 @@ def on_gnome_layout_changed(settings, key, trigger_layout_change = True):
         log.exception(f"Failed to read GNOME input sources: {e}")
         return
 
-    if len(mru_sources) > 0:
+    if len(mru_sources) > 0 and mru_sources[0] in sources:
         try:
             mru_layout_index = sources.index(mru_sources[0])
             mru_layout = mru_sources[0][1].split("+")[0]
