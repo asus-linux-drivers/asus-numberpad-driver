@@ -13,7 +13,12 @@ from time import sleep, time
 from typing import Optional
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_LED, EV_MSC, EV_SYN, Device, InputEvent, const, device
-from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, AsyncNotifier, ProcessEvent
+from pyinotify import WatchManager, IN_CLOSE_WRITE, IN_IGNORED, IN_MOVED_TO, ProcessEvent
+# https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/44
+try:
+    from pyinotify import ThreadedNotifier as Notifier
+except ImportError:
+    from pyinotify import AsyncNotifier as Notifier
 import Xlib.display
 import Xlib.X
 import Xlib.XK
@@ -3070,7 +3075,7 @@ try:
     watch_manager.add_watch(path, mask)
 
     handler = ConfigChangeHandler()
-    event_notifier = AsyncNotifier(watch_manager, handler)
+    event_notifier = Notifier(watch_manager, handler)
 
     # if keyboard with numlock indicator was found
     # thread for listening change of system numlock
