@@ -475,7 +475,7 @@ def get_evdev_key_for_char(char):
 
 
 def isEvent(event):
-    if hasattr(event, "name") and hasattr(EV_KEY, event.name):
+    if hasattr(event, "name") and event in EV_KEY.codes:
         return True
     else:
         return False
