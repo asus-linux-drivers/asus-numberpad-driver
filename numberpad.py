@@ -77,7 +77,10 @@ keyboard_state = None
 display = None
 xkb_conn = None
 keymap_loaded = False
+active_modifiers = set()
+coactivator_modifiers = set()
 listening_touchpad_events_started = False
+coactivator_keys = None
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s',
@@ -221,6 +224,40 @@ def mod_name_to_specific_keysym_name(mod_name):
       return mod_to_specific_keysym_name[mod_name]
 
 
+def listen_keyboard_events():
+    """
+    Listen for keyboard events to track active modifier keys.
+    """
+    global active_modifiers, coactivator_modifiers, keyboard
+
+    if keyboard is None:
+        log.warning("No keyboard detected; skipping keyboard listener.")
+        return
+
+    log.info("Listening to keyboard events...")
+
+    try:
+        fd_k = open('/dev/input/event' + str(keyboard), 'rb')
+        d_k = Device(fd_k)
+
+        for event in d_k.events():
+
+            if event.type == EV_KEY and event.code in coactivator_modifiers:
+
+                if event.value == 1:  # Key Pressed
+                    active_modifiers.add(event.code)
+                elif event.value == 0:  # Key Released
+                    active_modifiers.discard(event.code)
+
+                log.debug(f"Active modifiers: {active_modifiers}")
+
+    except device.EventsDroppedException:
+        for e in dev.sync(True):
+            pass
+    except Exception as e:
+        log.error(f"Error in listen_touchpad_events: {e}")
+
+
 keysym_name_associated_to_evdev_key_reflecting_current_layout = None
 
 # default are for unicode shortcuts + is loaded layout during start (BackSpace, Return - enter, asterisk, minus etc. can be found using xev)
@@ -249,6 +286,8 @@ def set_defaults_keysym_name_associated_to_evdev_key_reflecting_current_layout()
         # unicode shortcut - start sequence
         mod_name_to_specific_keysym_name('Shift'): '',
         mod_name_to_specific_keysym_name('Control'): '',
+        # possible co-activator key (together with Shift and Control above)
+        mod_name_to_specific_keysym_name('Alt'): '',
         'u': '',
         # unicode shortcut - end sequence
         'space': ''
@@ -433,7 +472,7 @@ def load_evdev_key_for_x11(char):
     return key
 
 def load_evdev_keys_for_x11():
-  global enabled_evdev_keys, keymap_loaded, udev
+  global enabled_evdev_keys, keymap_loaded, coactivator_keys, udev
 
   log.debug("X11 will try to load keymap")
 
@@ -457,6 +496,8 @@ def load_evdev_keys_for_x11():
 
   log.debug("X11 loaded keymap succesfully")
   log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
+
+  load_evdev_keys_for_coactivator_modifiers(coactivator_keys)
 
 
 def set_evdev_key_for_char(char, evdev_key):
@@ -502,21 +543,22 @@ def is_numlock_with_coactivator_keys_entry(key_entry):
 
 def are_modifier_keys_pressed(modifier_names):
 
-    global display, keyboard_state, xkb_conn
+    global display, keyboard_state, xkb_conn, active_modifiers
     
     if not modifier_names:
         return True
 
     # wayland
     if keyboard_state:
+
         try:
             for modifier_name in modifier_names:
-                #modifier_keysym = mod_name_to_specific_keysym_name(modifier_name)  
-                idx = keyboard_state.keymap.mod_get_index(modifier_name)
-                if idx >= 0 and not keyboard_state.mod_index_is_active(idx, xkb.StateComponent.XKB_STATE_MODS_DEPRESSED):
-                    log.debug("Modifier %s not pressed (wayland xkb)", modifier_name)
+                modifier_keysym_name = mod_name_to_specific_keysym_name(modifier_name)
+                modifier_evdev_key = load_evdev_key_for_wayland(modifier_keysym_name, keyboard_state)
+                if modifier_evdev_key not in active_modifiers:
+                    log.debug("Modifier %s not pressed (evdev)", modifier_name)
                     return False
-        except Exception:
+        except:
             pass
 
     # x11
@@ -677,7 +719,7 @@ def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
 
 
 def wl_load_keymap_state():
-    global keyboard_state, keymap_loaded, udev
+    global keyboard_state, keymap_loaded, coactivator_keys, udev
 
     log.debug("Wayland will try to load keymap")
 
@@ -701,6 +743,8 @@ def wl_load_keymap_state():
 
     log.debug("Wayland loaded keymap succesfully")
     log.debug(get_keysym_name_associated_to_evdev_key_reflecting_current_layout())
+
+    load_evdev_keys_for_coactivator_modifiers(coactivator_keys)
 
 
 def wl_keyboard_keymap_handler(keyboard, format_, fd, size):
@@ -1809,6 +1853,22 @@ def read_config_file():
         pass
 
 
+def load_evdev_keys_for_coactivator_modifiers(coactivator_keys):
+    global coactivator_modifiers
+
+    if not coactivator_keys:
+        return
+
+    coactivator_modifiers.clear()
+    for coactivator_key_name in coactivator_keys:
+
+        coactivator_keysym_name = mod_name_to_specific_keysym_name(coactivator_key_name)
+        coactivator_evdev_key = get_keysym_name_associated_to_evdev_key_reflecting_current_layout()[coactivator_keysym_name]
+        coactivator_modifiers.add(coactivator_evdev_key)
+
+    log.debug("Loaded co-activator modifiers succesfully")
+
+
 def load_all_config_values():
     global config
     global keys
@@ -1876,6 +1936,7 @@ def load_all_config_values():
     top_left_icon_slide_func_activates_numpad = float(config_get(CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD, CONFIG_TOP_LEFT_ICON_SLIDE_FUNC_ACTIVATES_NUMPAD_DEFAULT))
     top_right_icon_slide_func_activation_radius = float(config_get(CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS, CONFIG_TOP_RIGHT_ICON_SLIDE_FUNC_ACTIVATION_RADIUS_DEFAULT))
     coactivator_keys = config_get(CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY, CONFIG_TOP_RIGHT_ICON_COACTIVATOR_KEY_DEFAULT).strip().split()
+    load_evdev_keys_for_coactivator_modifiers(coactivator_keys)
     enabled_touchpad_pointer = int(config_get(CONFIG_ENABLED_TOUCHPAD_POINTER, CONFIG_ENABLED_TOUCHPAD_POINTER_DEFAULT))
     press_key_when_is_done_untouch = int(config_get(CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH, CONFIG_PRESS_KEY_WHEN_IS_DONE_UNTOUCH_DEFAULT))
     enabled = config_get(CONFIG_ENABLED, CONFIG_ENABLED_DEFAULT)
@@ -3097,6 +3158,12 @@ try:
     t.daemon = True
     threads.append(t)
     t.start()
+
+    if keyboard:
+        t = threading.Thread(target=listen_keyboard_events)
+        t.daemon = True
+        threads.append(t)
+        t.start()
 
     # check changes in config values
     t = threading.Thread(target=check_config_values_changes)
