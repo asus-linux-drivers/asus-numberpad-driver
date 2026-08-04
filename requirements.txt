@@ -1,8 +1,6 @@
 libevdev
 numpy
 pyinotify
-python-xlib
 python-periphery
 pyasyncore
 xkbcommon
-xcffib

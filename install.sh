@@ -43,6 +43,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         # note: systemd packages are installed separately in install_service.sh if user chooses systemd
         PACKAGES="curl xinput i2c-tools python3-devel python3-virtualenv wayland-protocols-devel gcc pkg-config libxcb-devel libxkbcommon-devel"
 
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            PACKAGES="$PACKAGES xinput"
+        fi
+
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             PACKAGES="$PACKAGES wayland-devel"
         fi
@@ -63,7 +67,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         fi
     elif command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt"
-        sudo apt-get -y install ibus libevdev2 curl xinput i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libxcb-render0-dev
+        sudo apt-get -y install ibus libevdev2 curl i2c-tools python3-dev python3-virtualenv libxml2-utils libxkbcommon-dev gcc pkg-config libxcb-render0-dev
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo apt-get -y install xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo apt-get -y install libwayland-dev
         fi
@@ -73,6 +80,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v pacman >/dev/null 2>&1; then
         PACKAGE_MANAGER="pacman"
         sudo pacman --noconfirm --needed -S ibus libevdev curl xorg-xinput i2c-tools python python-virtualenv libxml2 libxkbcommon gcc pkgconf libxcb
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo pacman --noconfirm --needed -S xorg-xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo pacman --noconfirm --needed -S wayland
         fi
@@ -82,6 +92,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v dnf >/dev/null 2>&1; then
         PACKAGE_MANAGER="dnf"
         sudo dnf -y install ibus libevdev curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo dnf -y install xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo dnf -y install wayland-devel
         fi
@@ -91,6 +104,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v yum >/dev/null 2>&1; then
         PACKAGE_MANAGER="yum"
         sudo yum -y install ibus libevdev curl xinput i2c-tools python3-devel virtualenv libxml2 libxkbcommon-devel gcc python-pkgconfig libxcb-devel
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo yum -y install xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo yum -y install wayland-devel
         fi
@@ -100,6 +116,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v zypper >/dev/null 2>&1; then
         PACKAGE_MANAGER="zypper"
         sudo zypper --non-interactive install ibus libevdev2 curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo zypper --non-interactive install xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo zypper --non-interactive install wayland-devel
         fi
@@ -109,6 +128,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v xbps-install >/dev/null 2>&1; then
         PACKAGE_MANAGER="xbps-install"
         sudo xbps-install -Suy ibus-devel libevdev-devel curl xinput i2c-tools python3-devel python3-virtualenv libxml2 libxkbcommon-devel gcc pkg-config libxcb-devel
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo xbps-install -Suy xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo xbps-install -Suy wayland-devel
         fi
@@ -118,6 +140,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v emerge >/dev/null 2>&1; then
         PACKAGE_MANAGER="portage"
         sudo emerge app-i18n/ibus dev-libs/libevdev net-misc/curl x11-apps/xinput sys-apps/i2c-tools dev-lang/python dev-python/virtualenv dev-libs/libxml2 x11-libs/libxkbcommon sys-devel/gcc virtual/pkgconfig x11-libs/libxcb
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo emerge x11-apps/xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo emerge dev-libs/wayland
         fi
@@ -127,6 +152,9 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
     elif command -v eopkg >/dev/null 2>&1; then
         PACKAGE_MANAGER="eopkg"
         sudo eopkg install -y ibus libevdev curl xinput i2c-tools python3-devel virtualenv libxml2-devel libxkbcommon-devel gcc python-pkgconfig libxcb-devel
+        if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+            sudo eopkg install -y xinput
+        fi
         if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
             sudo eopkg install -y wayland-devel
         fi
@@ -281,7 +309,10 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
         pip3 install -r requirements.txt
     fi
 
-    pip3 install -r requirements.txt
+    if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+        pip3 install -r requirements.x11.txt
+    fi
+
     if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
         pip3 install -r requirements.wayland.txt
     fi

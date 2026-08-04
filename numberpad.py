@@ -10,6 +10,19 @@ import subprocess
 import sys
 import threading
 from time import sleep, time
+
+# https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/48
+X11_LIBS_AVAILABLE = False
+try:
+    import Xlib.display
+    import Xlib.X
+    import Xlib.XK
+    import xcffib
+    import xcffib.xkb
+    X11_LIBS_AVAILABLE = True
+except ImportError:
+    pass
+
 from typing import Optional
 import numpy as np
 from libevdev import EV_ABS, EV_KEY, EV_LED, EV_MSC, EV_SYN, Device, InputEvent, const, device
@@ -19,17 +32,13 @@ try:
     from pyinotify import ThreadedNotifier as Notifier
 except ImportError:
     from pyinotify import AsyncNotifier as Notifier
-import Xlib.display
-import Xlib.X
-import Xlib.XK
+
 from xkbcommon import xkb
 import mmap
 from periphery import I2C
 import signal
 import math
 import glob
-import xcffib
-import xcffib.xkb
 import shutil
 
 PYWAYLAND_AVAILABLE = False
@@ -100,7 +109,7 @@ if not xdg_session_type:
   log.error("xdg session type can not be empty. Exiting")
   sys.exit(1)
 
-if xdg_session_type == "x11":
+if xdg_session_type == "x11" and X11_LIBS_AVAILABLE:
     try:
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
@@ -564,7 +573,7 @@ def are_modifier_keys_pressed(modifier_names):
             pass
 
     # x11
-    if xkb_conn:
+    if xkb_conn and X11_LIBS_AVAILABLE:
 
         X11_MODIFIER_INDEX = {
             "Shift": 0,
@@ -981,10 +990,10 @@ def send_value_to_touchpad_via_i2c(value):
 
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.decode().strip() if e.stderr else str(e)
-        log.debug("i2ctransfer failed: %s; falling back to python-periphery", stderr)
+        log.error("i2ctransfer failed: %s; falling back to python-periphery", stderr)
 
     except Exception as e:
-        log.debug("Error during i2ctransfer: %s; falling back to python-periphery", e)
+        log.error("Error during i2ctransfer: %s; falling back to python-periphery", e)
 
     try:
         path = f"/dev/i2c-{device_id}"
