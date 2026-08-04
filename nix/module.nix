@@ -127,6 +127,7 @@ in {
         ] ++ lib.optional (!cfg.ignoreWaylandDisplayEnv)
           "WAYLAND_DISPLAY=${cfg.waylandDisplay}";
       };
+      path = [ pkgs.i2c-tools ];
     };
   };
 }
