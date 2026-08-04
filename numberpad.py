@@ -157,29 +157,31 @@ def mod_name_to_specific_keysym_name(mod_name):
         'Hyper': 'Hyper_L'
     }
 
-    mods_to_indexes_x11 = {
-        "Shift": Xlib.X.ShiftMapIndex,
-        "Lock": Xlib.X.LockMapIndex,
-        "Control": Xlib.X.ControlMapIndex,
-        "Mod1": Xlib.X.Mod1MapIndex,
-        "Mod2": Xlib.X.Mod2MapIndex,
-        "Mod3": Xlib.X.Mod3MapIndex,
-        "Mod4": Xlib.X.Mod4MapIndex,
-        "Mod5": Xlib.X.Mod5MapIndex
-    }
+    if display:
 
-    if display and mod_name in mods_to_indexes_x11:
+        mods_to_indexes_x11 = {
+            "Shift": Xlib.X.ShiftMapIndex,
+            "Lock": Xlib.X.LockMapIndex,
+            "Control": Xlib.X.ControlMapIndex,
+            "Mod1": Xlib.X.Mod1MapIndex,
+            "Mod2": Xlib.X.Mod2MapIndex,
+            "Mod3": Xlib.X.Mod3MapIndex,
+            "Mod4": Xlib.X.Mod4MapIndex,
+            "Mod5": Xlib.X.Mod5MapIndex
+        }
 
-      mods = display.get_modifier_mapping()
-      first_keycode = mods[mods_to_indexes_x11[mod_name]][0]
-      if first_keycode:
-        key = EV_KEY.codes[int(first_keycode) - 8]
-        keysym = display.keycode_to_keysym(first_keycode, 0)
-        for key in Xlib.XK.__dict__:
-          if key.startswith("XK") and Xlib.XK.__dict__[key] == keysym:
-            return key[3:]
-      else:
-        return mod_to_specific_keysym_name[mod_name]
+        if mod_name in mods_to_indexes_x11:
+
+            mods = display.get_modifier_mapping()
+            first_keycode = mods[mods_to_indexes_x11[mod_name]][0]
+            if first_keycode:
+                key = EV_KEY.codes[int(first_keycode) - 8]
+                keysym = display.keycode_to_keysym(first_keycode, 0)
+                for key in Xlib.XK.__dict__:
+                    if key.startswith("XK") and Xlib.XK.__dict__[key] == keysym:
+                        return key[3:]
+            else:
+                return mod_to_specific_keysym_name[mod_name]
     elif display_wayland:
 
         keymap = keyboard_state.get_keymap()

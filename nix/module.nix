@@ -114,8 +114,8 @@ in {
         Type = "simple";
         ExecStart =
           "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
-        StandardOutput = null;
-        StandardError = null;
+        StandardOutput = "null";
+        StandardError = "null";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutSec = 5;
