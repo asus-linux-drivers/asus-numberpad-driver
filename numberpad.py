@@ -37,7 +37,6 @@ from xkbcommon import xkb
 import mmap
 from periphery import I2C
 import signal
-import math
 import glob
 import shutil
 
