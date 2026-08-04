@@ -188,6 +188,7 @@ def mod_name_to_specific_keysym_name(mod_name):
             "Shift": Xlib.X.ShiftMapIndex,
             "Lock": Xlib.X.LockMapIndex,
             "Control": Xlib.X.ControlMapIndex,
+            "Alt": Xlib.X.Mod1MapIndex,
             "Mod1": Xlib.X.Mod1MapIndex,
             "Mod2": Xlib.X.Mod2MapIndex,
             "Mod3": Xlib.X.Mod3MapIndex,
