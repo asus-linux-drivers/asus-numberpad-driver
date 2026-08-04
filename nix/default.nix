@@ -1,22 +1,30 @@
 { lib
 , python313Packages
 , pkgs
+, waylandSupport ? false
+, x11Support ? true
 }:
 
 let
   # Define the Python packages required
-  pythonPackages = pkgs.python313.withPackages (ps: with ps; [
-    numpy
-    libevdev
-    xlib
-    pyinotify
-    pyasyncore
-    pywayland
-    xkbcommon
-    systemd-python
-    xcffib
-    python-periphery
-  ]);
+  pythonPackages = pkgs.python313.withPackages (ps: with ps;
+    [
+      numpy
+      libevdev
+      pyinotify
+      pyasyncore
+      xkbcommon
+      systemd-python
+      python-periphery
+    ]
+    ++ lib.optionals x11Support [
+      xlib
+      xcffib
+    ]
+    ++ lib.optionals waylandSupport [
+      pywayland
+    ]
+  );
 
   # Add backwards compatibility on packages name changes
   compat = import ./compat.nix { inherit pkgs; };
