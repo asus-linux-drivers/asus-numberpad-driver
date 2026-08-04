@@ -109,7 +109,12 @@ if not xdg_session_type:
   log.error("xdg session type can not be empty. Exiting")
   sys.exit(1)
 
-if xdg_session_type == "x11" and X11_LIBS_AVAILABLE:
+if xdg_session_type == "x11":
+
+    if not X11_LIBS_AVAILABLE:
+        log.error("X11 libraries are not available. Please install python-xlib and xcffib.")
+        sys.exit(1)
+
     try:
       display = Xlib.display.Display(display_var)
       log.info("X11 detected and connected succesfully to the display {}".format(display_var))
@@ -124,6 +129,18 @@ if xdg_session_type == "x11" and X11_LIBS_AVAILABLE:
     except:
       log.error("X11 detected but not connected succesfully to the display {}. Exiting".format(display_var))
       sys.exit(1)
+else:
+    if not PYWAYLAND_AVAILABLE:
+        log.error("Wayland library is not available. Please install pywayland.")
+        sys.exit(1)
+
+    try:
+        display_wayland = Display(display_wayland_var)
+        display_wayland.connect()
+        log.info("Wayland session detected and connected.")
+    except Exception as e:
+        log.error(f"Failed to connect to Wayland display: {e}")
+        sys.exit(1)
 
 udev = None
 threads = []
@@ -785,11 +802,9 @@ def wl_registry_handler(registry, id_, interface, version):
 
 
 def load_keymap_listener_wayland():
-    global stop_threads, display_wayland_var, display_wayland
+    global stop_threads, display_wayland
 
     try:
-        display_wayland = Display(display_wayland_var)
-        display_wayland.connect()
         registry = display_wayland.get_registry()
         registry.dispatcher["global"] = wl_registry_handler
         display_wayland.dispatch(block=True)
@@ -3107,13 +3122,13 @@ try:
     if GLIB_AVAILABLE:
         load_gnome_layout()
 
-    if xdg_session_type == "wayland" and PYWAYLAND_AVAILABLE:
+    if xdg_session_type == "wayland" and display_wayland and PYWAYLAND_AVAILABLE:
         t = threading.Thread(target=load_keymap_listener_wayland)
         t.daemon = True
         threads.append(t)
         t.start()
 
-    if xdg_session_type == "x11" and display:
+    if xdg_session_type == "x11" and display and X11_LIBS_AVAILABLE:
 
         # when is the driver starting event is not received
         load_evdev_keys_for_x11()
