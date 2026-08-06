@@ -97,12 +97,12 @@ echo "  uinput: KERNEL=$UINPUT_KERNEL  SUBSYSTEM=$UINPUT_SUBSYSTEM"
 echo "  i2c:    SUBSYSTEM=$I2C_SUBSYSTEM"
 
 # create uinput udev rule
-echo 'SUBSYSTEM=="'"$UINPUT_SUBSYSTEM"'", KERNEL=="'"$UINPUT_KERNEL"'", GROUP="uinput", MODE="0660"' \
+echo 'SUBSYSTEM=="'"$UINPUT_SUBSYSTEM"'", KERNEL=="'"$UINPUT_KERNEL"'", OPTIONS+="static_node=uinput", GROUP="uinput", MODE="0660"' \
   | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-numberpad-driver-uinput.rules >/dev/null
 echo 'uinput' | sudo tee /etc/modules-load.d/uinput-asus-numberpad-driver.conf >/dev/null
 
 # create i2c udev rule
-echo 'KERNEL=="i2c-[0-9]*", SUBSYSTEM=="'"$I2C_SUBSYSTEM"'", GROUP="i2c", MODE="0660"' \
+echo 'ACTION!="remove", KERNEL=="i2c-[0-9]*", SUBSYSTEM=="'"$I2C_SUBSYSTEM"'", TAG+="uaccess", GROUP="i2c", MODE="0660"' \
   | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/99-asus-numberpad-driver-i2c-dev.rules >/dev/null
 echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-numberpad-driver.conf >/dev/null
 
