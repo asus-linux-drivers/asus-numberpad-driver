@@ -5,6 +5,11 @@ let
   cfg = config.services.asus-numberpad-driver;
   defaultPackage = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
+  package = package.override {
+    waylandSupport = cfg.wayland;
+    x11Support = !cfg.wayland;
+  };
+
   # Function to convert configuration options to string
   toConfigFile = cfg:
     builtins.concatStringsSep "\n" ([ "[main]" ]
@@ -69,7 +74,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ defaultPackage ];
+    environment.systemPackages = [ package ];
 
     # Ensure the writable directories exists
     systemd.tmpfiles.rules = [
@@ -113,13 +118,13 @@ in {
       serviceConfig = {
         Type = "simple";
         ExecStart =
-          "${defaultPackage}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
+          "${package}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
         StandardOutput = "null";
         StandardError = "null";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutSec = 5;
-        WorkingDirectory = "${defaultPackage}";
+        WorkingDirectory = "${package}";
         Environment = [
           "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"
           "XDG_RUNTIME_DIR=${cfg.runtimeDir}"
