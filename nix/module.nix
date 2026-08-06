@@ -5,7 +5,7 @@ let
   cfg = config.services.asus-numberpad-driver;
   defaultPackage = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-  package = package.override {
+  package = defaultPackage.override {
     waylandSupport = cfg.wayland;
     x11Support = !cfg.wayland;
   };
