@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.2.0 (8.8.2026)
+
+### Fixed
+
+- Using of co-activation modifier Alt on `X11`
+- Co-activator keys detection according to the [DialPad](https://github.com/asus-linux-drivers/asus-dialpad-driver) repository implementation
+- Duplication of logs (output/error) of `systemd` service for `NixOS` (credits @Robin-Everaars)
+- Usage of `i2ctransfer`, was not a part of path inside `systemd` service on `NixOS` (credits @Robin-Everaars)
+- File `flake.lock` (credits @veseckytomas)
+
+### Feature
+
+- Added udev option `static_node` for `uinput` which is applied immediately and not after reboot (and action remove and tag uaccess for i2c)(credits @Robin-Everaars)
+- Install and load `x11` dependencies only when are used (credits @Robin-Everaars) 
+
 ## 7.1.0 (28.7.2026)
 
 ### Fixed
