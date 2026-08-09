@@ -208,7 +208,7 @@ def mod_name_to_specific_keysym_name(mod_name):
                         return key[3:]
             else:
                 return mod_to_specific_keysym_name[mod_name]
-    elif display_wayland:
+    elif display_wayland and keyboard_state:
 
         keymap = keyboard_state.get_keymap()
         num_mods = keymap.num_mods()
