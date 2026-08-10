@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.2.1 (10.8.2026)
+
+### Fixed
+
+- Fix Wayland startup crash before keyboard state initialization (credits @valruin)
+
 ## 7.2.0 (8.8.2026)
 
 ### Fixed
