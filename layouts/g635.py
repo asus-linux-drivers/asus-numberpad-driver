@@ -1,5 +1,8 @@
 from libevdev import EV_KEY
 
+top_left_icon_width = 250
+top_left_icon_height = 250
+
 top_right_icon_width = 600
 top_right_icon_height = 300
 
