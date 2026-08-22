@@ -1286,6 +1286,7 @@ while try_times > 0:
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/198
             # https://github.com/asus-linux-drivers/asus-stylus-driver/issues/17
             # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/308
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/pull/309
             if (touchpad_detected == 0 and ("Name=\"ASUE" in line or "Name=\"ELAN" in line or "Name=\"ASUP" in line or "Name=\"ASUF" in line or "Name=\"ASCP" in line or "Name=\"ASCF" in line) and "Touchpad" in line and not "9009" in line and not "9008" in line):
                 touchpad_detected = 1
                 log.info('Detecting touchpad from string: \"%s\"', line.strip())
