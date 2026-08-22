@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.2.2 (22.8.2026)
+
+### Fixed
+
+- Support for touchpad device `ASCP` (`ASCP1400`) (credits @Colear)
+- Support for touchpad device `ASCF` (`ASCF1400`) (credits @smranta)
+- Missing top left icon spot for g635 layout (credits @smranta)
+
 ## 7.2.1 (10.8.2026)
 
 ### Fixed
