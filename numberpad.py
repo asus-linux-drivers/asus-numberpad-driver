@@ -58,7 +58,7 @@ except ImportError:
 GLIB_AVAILABLE = False
 DBUS_AND_GLIB_AVAILABLE = False
 
-QDBUS = shutil.which("qdbus") or shutil.which("qdbus6")
+QDBUS = shutil.which("qdbus") or shutil.which("qdbus6") or shutil.which("qdbus-qt6")
 
 try:
     import gi
