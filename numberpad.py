@@ -897,6 +897,7 @@ if not len(keys) > 0 or not len(keys[0]) > 0:
     log.error('keys is required to set, dimension has to be atleast array of len 1 inside array')
     sys.exit(1)
 
+keys_to_enable_from_model_layout = []
 for row in keys:
     for field in row:
 
@@ -905,7 +906,7 @@ for row in keys:
         if not isEvent(actual_field) and not isEventList(actual_field):
             set_evdev_key_for_char(actual_field, '')
         if isEvent(actual_field):
-            enable_key(actual_field)
+            keys_to_enable_from_model_layout.append(actual_field)
 
 keys_ignore_offset = getattr(model_layout, "keys_ignore_offset", [])
 # loaded in load_all_config_values
@@ -1414,6 +1415,8 @@ enable_key(EV_MSC.MSC_SCAN)
 enable_key(EV_KEY.BTN_LEFT)
 enable_key(EV_KEY.BTN_RIGHT)
 enable_key(EV_KEY.BTN_MIDDLE)
+for key_to_enable in keys_to_enable_from_model_layout:
+  enable_key(key_to_enable)
 
 
 for key_to_enable in top_left_icon_slide_func_keys:
