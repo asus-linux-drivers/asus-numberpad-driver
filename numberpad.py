@@ -208,6 +208,7 @@ def mod_name_to_specific_keysym_name(mod_name):
                     keysym_of_key = Xlib.XK.__dict__[key]
                     if key.startswith("XK") and keysym_of_key == keysym:
                         return key[3:]
+                return mod_to_specific_keysym_name[mod_name]
             else:
                 return mod_to_specific_keysym_name[mod_name]
     elif display_wayland and keyboard_state:
@@ -250,8 +251,8 @@ def mod_name_to_specific_keysym_name(mod_name):
                                     return keysym_name
 
         return mod_to_specific_keysym_name[mod_name]
-
-    return mod_to_specific_keysym_name[mod_name]
+    else:
+        return mod_to_specific_keysym_name[mod_name]
 
 
 def listen_keyboard_events():
