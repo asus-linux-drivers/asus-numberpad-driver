@@ -3217,7 +3217,7 @@ try:
     listening_touchpad_events_started = True
     listen_touchpad_events()
 except:
-    logging.exception("Listening touchpad events unexpectedly failed")
+    log.exception("Listening touchpad events unexpectedly failed")
 finally:
     cleanup()
     log.info("Exiting")
