@@ -193,7 +193,8 @@ def mod_name_to_specific_keysym_name(mod_name):
             "Mod2": Xlib.X.Mod2MapIndex,
             "Mod3": Xlib.X.Mod3MapIndex,
             "Mod4": Xlib.X.Mod4MapIndex,
-            "Mod5": Xlib.X.Mod5MapIndex
+            "Mod5": Xlib.X.Mod5MapIndex,
+            "AltGr": Xlib.X.Mod5MapIndex,
         }
 
         if mod_name in mods_to_indexes_x11:
@@ -204,7 +205,8 @@ def mod_name_to_specific_keysym_name(mod_name):
                 key = EV_KEY.codes[int(first_keycode) - 8]
                 keysym = display.keycode_to_keysym(first_keycode, 0)
                 for key in Xlib.XK.__dict__:
-                    if key.startswith("XK") and Xlib.XK.__dict__[key] == keysym:
+                    keysym_of_key = Xlib.XK.__dict__[key]
+                    if key.startswith("XK") and keysym_of_key == keysym:
                         return key[3:]
             else:
                 return mod_to_specific_keysym_name[mod_name]
@@ -248,8 +250,8 @@ def mod_name_to_specific_keysym_name(mod_name):
                                     return keysym_name
 
         return mod_to_specific_keysym_name[mod_name]
-    else:
-      return mod_to_specific_keysym_name[mod_name]
+
+    return mod_to_specific_keysym_name[mod_name]
 
 
 def listen_keyboard_events():
@@ -485,7 +487,8 @@ def load_evdev_key_for_x11(char):
     elif level == 1:  # Shift
         key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')), key]
     elif level == 2:  # AltGr
-        key = [load_evdev_key_for_x11(mod_name_to_specific_keysym_name('AltGr')), key]
+        test = mod_name_to_specific_keysym_name('AltGr')
+        key = [load_evdev_key_for_x11(test), key]
     elif level == 3:  # Shift + AltGr
         key = [
             load_evdev_key_for_x11(mod_name_to_specific_keysym_name('Shift')),
