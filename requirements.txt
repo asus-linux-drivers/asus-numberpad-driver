@@ -4,3 +4,4 @@ pyinotify
 python-periphery
 pyasyncore
 xkbcommon
+pygobject

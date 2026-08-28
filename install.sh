@@ -303,8 +303,21 @@ LOGS_INSTALL_LOG_FILE_PATH="$LOGS_DIR_PATH/$LOGS_INSTALL_LOG_FILE_NAME"
 
     # https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/43
     # https://github.com/sde1000/python-xkbcommon/issues/26
+    constraints=()
+
+    # https://github.com/asus-linux-drivers/asus-dialpad-driver/issues/43
+    # https://github.com/sde1000/python-xkbcommon/issues/26
     if pkg-config --exists xkbcommon && ! pkg-config --atleast-version=1.5 xkbcommon; then
-        pip3 install -r requirements.txt -c <(echo "xkbcommon<1.1")
+        constraints+=("xkbcommon<1.1")
+    fi
+
+    # Ubuntu 22.04 and other systems with only gobject-introspection-1.0
+    if ! pkg-config --exists girepository-2.0; then
+        constraints+=("PyGObject<3.52")
+    fi
+
+    if [ ${#constraints[@]} -gt 0 ]; then
+        pip3 install -r requirements.txt -c <(printf '%s\n' "${constraints[@]}")
     else
         pip3 install -r requirements.txt
     fi
