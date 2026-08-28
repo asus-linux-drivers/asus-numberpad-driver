@@ -222,18 +222,28 @@ def mod_name_to_specific_keysym_name(mod_name):
             keyboard_state_clean = keymap.state_new()
             key_state = keyboard_state_clean.update_key(keycode, xkb.KeyDirection.XKB_KEY_DOWN)
 
-            num_layouts = keymap.num_layouts_for_key(keycode)
-            for layout in range(0, num_layouts):
+            key_layouts_count = keymap.num_layouts_for_key(keycode)
+            for layout in range(key_layouts_count):
 
-                if kde_current_layout_index is not None and kde_current_layout_index == layout:
-                    layout_is_active = True
-                elif gnome_current_layout_index is not None and gnome_current_layout_index == layout:
-                    layout_is_active = True
+                # layout active check
+                # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/312
+                current_layout_index = kde_current_layout_index
+                if current_layout_index is None:
+                    current_layout_index = gnome_current_layout_index
+
+                if current_layout_index is not None:
+                    if key_layouts_count:
+                        layout_is_active = (current_layout_index % key_layouts_count == layout)
+                    else:
+                        layout_is_active = (current_layout_index == layout)
                 else:
-                    layout_is_active = keyboard_state_clean.layout_index_is_active(layout, xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE)
+                    layout_is_active = keyboard_state.layout_index_is_active(
+                        layout,
+                        xkb.StateComponent.XKB_STATE_LAYOUT_EFFECTIVE
+                    )
 
                 if layout_is_active:
-                    for mod_index in range(0, num_mods):
+                    for mod_index in range(num_mods):
                         is_key_mod = key_state & xkb.StateComponent.XKB_STATE_MODS_DEPRESSED
                         if is_key_mod:
 
@@ -632,14 +642,22 @@ def rebuild_keysym_index(keyboard_state, load_only_active_layout=True):
     keysym_index = {}
 
     for keycode in keymap:
-        num_layouts = keymap.num_layouts_for_key(keycode)
+        key_layouts_count = keymap.num_layouts_for_key(keycode)
 
-        for layout in range(num_layouts):
+        for layout in range(key_layouts_count):
 
-            if kde_current_layout_index is not None and kde_current_layout_index == layout:
-                layout_is_active = True
-            elif gnome_current_layout_index is not None and gnome_current_layout_index == layout:
-                layout_is_active = True
+            # layout active check
+            # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/312
+            current_layout_index = kde_current_layout_index
+            if current_layout_index is None:
+                current_layout_index = gnome_current_layout_index
+
+            if current_layout_index is not None:
+
+                if key_layouts_count:
+                    layout_is_active = (current_layout_index % key_layouts_count == layout)
+                else:
+                    layout_is_active = (current_layout_index == layout)
             else:
                 layout_is_active = keyboard_state.layout_index_is_active(
                     layout,
@@ -692,10 +710,17 @@ def load_evdev_key_for_wayland(char, keyboard_state):
     for keycode, layout, level, sorted_mod_masks_for_level in candidates:
 
         # layout active check
-        if kde_current_layout_index is not None:
-            layout_is_active = (kde_current_layout_index == layout)
-        elif gnome_current_layout_index is not None:
-            layout_is_active = (gnome_current_layout_index == layout)
+        # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/312
+        current_layout_index = kde_current_layout_index
+        if current_layout_index is None:
+            current_layout_index = gnome_current_layout_index
+
+        if current_layout_index is not None:
+            key_layouts_count = keymap.num_layouts_for_key(keycode)
+            if key_layouts_count:
+                layout_is_active = (current_layout_index % key_layouts_count == layout)
+            else:
+                layout_is_active = (current_layout_index == layout)
         else:
             layout_is_active = keyboard_state.layout_index_is_active(
                 layout,
