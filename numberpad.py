@@ -152,6 +152,8 @@ gnome_current_layout = None
 gnome_current_layout_index = None
 kde_current_layout_index = None
 
+keysym_index = None
+
 watch_manager = None
 event_notifier = None
 
@@ -623,8 +625,8 @@ def are_modifier_keys_pressed(modifier_names):
     return True
 
 
-def build_keysym_index(keyboard_state, load_only_active_layout=True):
-    global gnome_current_layout_index, kde_current_layout_index
+def rebuild_keysym_index(keyboard_state, load_only_active_layout=True):
+    global gnome_current_layout_index, kde_current_layout_index, keysym_index
 
     keymap = keyboard_state.get_keymap()
     keysym_index = {}
@@ -667,11 +669,9 @@ def build_keysym_index(keyboard_state, load_only_active_layout=True):
                     (keycode, layout, level, sorted_masks)
                 )
 
-    return keysym_index
 
-
-def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
-    global gnome_current_layout_index, kde_current_layout_index
+def load_evdev_key_for_wayland(char, keyboard_state):
+    global gnome_current_layout_index, kde_current_layout_index, keysym_index
 
     keysym = xkb.keysym_from_name(char)
 
@@ -681,6 +681,9 @@ def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
     best_key = None
     best_level = None
     best_mod_bits = None
+
+    if not keysym_index:
+        return None
 
     candidates = keysym_index.get(keysym)
     if not candidates:
@@ -718,8 +721,7 @@ def load_evdev_key_for_wayland(char, keyboard_state, keysym_index):
 
                     mod_key = load_evdev_key_for_wayland(
                         mod_char,
-                        keyboard_state,
-                        keysym_index
+                        keyboard_state
                     )
 
                     if mod_key:
@@ -757,13 +759,13 @@ def wl_load_keymap_state():
 
     enabled_keys = len(enabled_evdev_keys)
 
-    keysym_index = build_keysym_index(
+    rebuild_keysym_index(
         keyboard_state,
         keymap_loaded
     )
 
     for char in get_keysym_name_associated_to_evdev_key_reflecting_current_layout().copy():
-        load_evdev_key_for_wayland(char, keyboard_state, keysym_index)
+        load_evdev_key_for_wayland(char, keyboard_state)
 
     # one or more changed to something not enabled yet to send using udev device? -> udev device has to be re-created
     #
