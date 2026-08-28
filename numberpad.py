@@ -858,6 +858,9 @@ gsettings_max_failure_count = 1
 qdbus_freedesktop_failure_count = 0
 qdbus_freedesktop_max_failure_count = 1
 
+if QDBUS is None:
+    qdbus_freedesktop_failure_count = qdbus_freedesktop_max_failure_count
+
 getting_device_via_xinput_status_failure_count = 0
 getting_device_via_xinput_status_max_failure_count = 1
 
