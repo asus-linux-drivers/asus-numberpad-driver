@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.2.3 (30.8.2026)
+
+### Fixed
+
+- Fedora Qt6 `qdbus` detection (credits @pesoiq)
+- `INSTALL_DIR_PATH` inside `install_service.sh` which is used when is the script called separately (credits @LeVieux-Sage)
+- Logging exception for main loop (credits @bub4z0r)
+- `AltGr` on X11 (e.g. czech keyboard layout use for asterisk `AltGr + KEY_8`)
+- Enabling raw `EV_KEY` keys found in model layout (credits @bub4z0r)
+- Usage of keysym index for coactivator keys detection
+- Active layout (credits @bub4z0r)
+- When is `QDBUS` not available then do not even try to send it
+- Freeze of `PyGObject<3.52` only when exists `girepository-2.0`
+- Do not specify during importing `ImportError` (e.g. `AttributeError` can occurs)
+
 ## 7.2.2 (22.8.2026)
 
 ### Fixed
