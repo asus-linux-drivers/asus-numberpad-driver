@@ -815,7 +815,13 @@ Thank you who-t for great post about multitouch [Understanding evdev](http://who
 
 **Stargazer evolution for the project**
 
-[![Stargazers over time](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver.svg)](https://starchart.cc/asus-linux-drivers/asus-numberpad-driver)
+<a href="https://star-history.dera.page/#asus-linux-drivers/asus-numberpad-driver">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=asus-linux-drivers/asus-numberpad-driver&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=asus-linux-drivers/asus-numberpad-driver" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=asus-linux-drivers/asus-numberpad-driver" />
+ </picture>
+</a>
 
 **Buy me a coffee**
 
