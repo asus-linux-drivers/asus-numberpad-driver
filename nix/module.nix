@@ -1,26 +1,30 @@
-inputs:
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.services.asus-numberpad-driver;
-  defaultPackage = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  cfg = config.hardware.asus-numberpad-driver;
 
-  package = defaultPackage.override {
+  defaultConfigFile =
+    pkgs.writeText "asus-numberpad-driver-default-config" ''
+      [main]
+      ${lib.concatStringsSep "\n"
+        (lib.mapAttrsToList (key: value: "${key} = ${value}") cfg.config)}
+    '';
+
+  package = cfg.package.override {
     waylandSupport = cfg.wayland;
     x11Support = !cfg.wayland;
   };
-
-  # Function to convert configuration options to string
-  toConfigFile = cfg:
-    builtins.concatStringsSep "\n" ([ "[main]" ]
-      ++ lib.attrsets.mapAttrsToList (key: value: "${key} = ${value}")
-      cfg.config);
-
-  # Writable directory for the config file
-  configDir = "/etc/asus-numberpad-driver/";
 in {
-  options.services.asus-numberpad-driver = {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "services" "asus-numberpad-driver" ]
+      [ "hardware" "asus-numberpad-driver" ])
+  ];
+
+  options.hardware.asus-numberpad-driver = {
     enable = lib.mkEnableOption "Enable the Asus Numberpad Driver service.";
+
+    package = lib.mkPackageOption pkgs "asus-numberpad-driver" { };
 
     layout = lib.mkOption {
       type = lib.types.str;
@@ -89,42 +93,32 @@ in {
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ package ];
 
-    # Ensure the writable directories exists
-    systemd.tmpfiles.rules = [
-      "d ${configDir} 0755 root root -"
-      "d /var/log/asus-numberpad-driver 0755 root root -"
-    ];
-
-    # Write the configuration file to the writable directory
-    environment.etc."asus-numberpad-driver/numberpad_dev".text =
-      toConfigFile cfg;
-
     # Enable i2c
     hardware.i2c.enable = true;
 
     # Enable uinput
     hardware.uinput.enable = true;
 
-    # Add rest of the groups for dialpad
+    # Add rest of the groups for numberpad
     users.groups = {
       input = { };
     };
 
     systemd.user.services.asus-numberpad-driver = {
       description = "Asus NumberPad Driver";
-      wantedBy = [ "default.target" ];
-      startLimitBurst = 20;
-      startLimitIntervalSec = 300;
+      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart =
-          "${package}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} ${configDir}";
+        ConfigurationDirectory = "asus-numberpad-driver";
+        ExecStartPre = "${pkgs.bash}/bin/bash -c 'test -e %E/asus-numberpad-driver/numberpad_dev || cp ${defaultConfigFile} %E/asus-numberpad-driver/numberpad_dev'";
+        ExecStart = "${package}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} %E/asus-numberpad-driver/";
         StandardOutput = "null";
         StandardError = "null";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutSec = 5;
-        WorkingDirectory = "${package}";
+        WorkingDirectory = "${package}/share/asus-numberpad-driver";
         Environment = [
           "LOG=${cfg.logLevel}"
           "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"

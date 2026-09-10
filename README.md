@@ -183,10 +183,15 @@ This repo contains a Flake that exposes a NixOS Module that manages and offers o
 
     outputs = {nixpkgs, asus-numberpad-driver, ...} @ inputs: {
         nixosConfigurations.HOSTNAME = nixpkgs.lib.nixosSystem {
-            specialArgs = { inherit inputs; };
+
             modules = [
-                ./configuration.nix
+                ({ ... }: {
+                  nixpkgs.overlays = [
+                    asus-numberpad-driver.overlays.default
+                  ];
+                })
                 asus-numberpad-driver.nixosModules.default
+                ./configuration.nix
             ];
         };
     }
@@ -200,8 +205,14 @@ Then you can enable the program in your `configuration.nix` file:
 
 {inputs, pkgs, ...}: {
   # ---Snip---
+
+  # Users *must* be enrolled in these groups
+  users.users."ldrahnik" = {
+    extraGroups = [ "i2c" "input" "uinput" ];
+  };
+
   # Enable Asus Numpad Service
-  services.asus-numberpad-driver = {
+  hardware.asus-numberpad-driver = {
     enable = true;
     layout = "up5401ea";
     wayland = true;

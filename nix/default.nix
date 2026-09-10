@@ -61,7 +61,7 @@ python313Packages.buildPythonPackage {
     mkdir -p $out/share/asus-numberpad-driver
 
     # Copy the driver script
-    cp numberpad.py $out/share/asus-numberpad-driver/
+    install -Dm755 numberpad.py $out/share/asus-numberpad-driver/numberpad.py
 
     # Copy layouts directory if it exists, and remove __pycache__ if present
     if [ -d layouts ]; then
