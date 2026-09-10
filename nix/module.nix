@@ -71,6 +71,13 @@ in {
       description =
         "The XDG_RUNTIME_DIR environment variable, specifying the runtime directory.";
     };
+
+    dbusSessionBusAddress = lib.mkOption {
+      type = lib.types.str;
+      default = "unix:path=/run/user/1000/bus";
+      description =
+        "The DBUS_SESSION_BUS_ADDRESS environment variable, specifying the dbus session bus address.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -118,11 +125,12 @@ in {
         Environment = [
           "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"
           "XDG_RUNTIME_DIR=${cfg.runtimeDir}"
+          "DBUS_SESSION_BUS_ADDRESS=${cfg.dbusSessionBusAddress}"
           "DISPLAY=${cfg.display}"
         ] ++ lib.optional (!cfg.ignoreWaylandDisplayEnv)
           "WAYLAND_DISPLAY=${cfg.waylandDisplay}";
       };
-      path = [ pkgs.i2c-tools ];
+      path = [ pkgs.i2c-tools pkgs.qt6.qttools ];
     };
   };
 }
