@@ -78,6 +78,12 @@ in {
       description =
         "The DBUS_SESSION_BUS_ADDRESS environment variable, specifying the dbus session bus address.";
     };
+
+    logLevel = lib.mkOption {
+      type = lib.types.str;
+      default = "INFO";
+      description = "Logging level.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -120,6 +126,7 @@ in {
         TimeoutSec = 5;
         WorkingDirectory = "${package}";
         Environment = [
+          "LOG=${cfg.logLevel}"
           "XDG_SESSION_TYPE=${if cfg.wayland then "wayland" else "x11"}"
           "XDG_RUNTIME_DIR=${cfg.runtimeDir}"
           "DBUS_SESSION_BUS_ADDRESS=${cfg.dbusSessionBusAddress}"
