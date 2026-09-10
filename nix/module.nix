@@ -107,7 +107,7 @@ in {
     # Add root to the necessary groups
     users.users.root.extraGroups = [ "i2c" "input" "uinput" ];
 
-    systemd.services.asus-numberpad-driver = {
+    systemd.user.services.asus-numberpad-driver = {
       description = "Asus NumberPad Driver";
       wantedBy = [ "default.target" ];
       startLimitBurst = 20;
