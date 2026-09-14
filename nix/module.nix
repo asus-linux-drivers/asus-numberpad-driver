@@ -131,7 +131,7 @@ in {
       serviceConfig = {
         Type = "simple";
         ConfigurationDirectory = "asus-numberpad-driver";
-        ExecStartPre = "${pkgs.bash}/bin/bash -c 'test -e %E/asus-numberpad-driver/numberpad_dev || cp ${defaultConfigFile} %E/asus-numberpad-driver/numberpad_dev'";
+        ExecStartPre = "${lib.getExe pkgs.bash} -c 'if [ ! -s %E/asus-numberpad-driver/numberpad_dev ]; then ${lib.getBin pkgs.coreutils}/bin/install -m 644 ${defaultConfigFile} %E/asus-numberpad-driver/numberpad_dev; fi'";
         ExecStart = "${package}/share/asus-numberpad-driver/numberpad.py ${cfg.layout} %E/asus-numberpad-driver/";
         StandardOutput = "null";
         StandardError = "null";
