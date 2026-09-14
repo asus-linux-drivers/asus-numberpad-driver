@@ -220,7 +220,7 @@ Then you can enable the program in your `configuration.nix` file:
     dbusSessionBusAddress = "unix:path=/run/user/1000/bus";
     waylandDisplay = "wayland-0";
     ignoreWaylandDisplayEnv = false;
-    config = {
+    defaultConfig = {
       # e.g. "activation_time" = "0.5";
       # More Configuration Options
     };

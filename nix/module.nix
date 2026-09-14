@@ -3,11 +3,11 @@
 let
   cfg = config.hardware.asus-numberpad-driver;
 
-  defaultConfigFile =
-    pkgs.writeText "asus-numberpad-driver-default-config" ''
-      [main]
-      ${lib.concatStringsSep "\n"
-        (lib.mapAttrsToList (key: value: "${key} = ${value}") cfg.config)}
+  defaultConfigFile = 
+    pkgs.writeText "numberpad_dev" ''
+      ; vim: filetype=dosini
+      ; Asus NumberPad configuration
+      ${lib.generators.toINI { } cfg.defaultConfig}
     '';
 
   package = cfg.package.override {
@@ -33,11 +33,11 @@ in {
         "The layout identifier for the numberpad driver (e.g. up5401ea). This value is required.";
     };
 
-    config = lib.mkOption {
+    defaultConfig = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
       description = ''
-        Configuration options for the numberpad driver.
+        Default configuration options for the Asus NumberPad Driver on first run.
         These options will be written to a configuration file for the driver.
       '';
     };
