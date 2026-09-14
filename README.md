@@ -221,8 +221,10 @@ Then you can enable the program in your `configuration.nix` file:
     waylandDisplay = "wayland-0";
     ignoreWaylandDisplayEnv = false;
     defaultConfig = {
-      # e.g. "activation_time" = "0.5";
-      # More Configuration Options
+      main = {
+        # e.g. "activation_time" = "0.5";
+        # More Configuration Options
+      }
     };
   };
   # ---Snip---

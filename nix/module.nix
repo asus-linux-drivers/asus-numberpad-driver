@@ -34,11 +34,31 @@ in {
     };
 
     defaultConfig = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
+      type = with lib.types;
+        let
+          valueType = nullOr (oneOf [
+            bool
+            int
+            float
+            str
+            path
+            (attrsOf valueType)
+            (listOf valueType)
+          ]) // {
+            description = "Asus NumberPad Driver configuration value";
+          };
+        in valueType;
+      example = {
+        main = {
+          enabled = true;
+          numpad_disables_sys_numlock = 1;
+          top_right_icon_coactivator_key = "Shift";
+        };
+      };
       default = { };
       description = ''
         Default configuration options for the Asus NumberPad Driver on first run.
-        These options will be written to a configuration file for the driver.
+        It’s recommended to use a user-level configuration manager for this file or manually define with `lib.generators.toINI { } { /* your config */ }`.
       '';
     };
 
