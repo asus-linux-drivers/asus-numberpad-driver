@@ -123,10 +123,8 @@ else
 fi
 
 if [[ $? != 0 ]]; then
-    echo "Something went wrong when adding uinput module to auto loaded modules"
+    echo "Something went wrong during adding uinput, i2c-dev modules to auto loaded modules or during adding associated udev rules"
     exit 1
-else
-    echo "uinput module added to auto loaded modules"
 fi
 
 sudo udevadm control --reload-rules && sudo udevadm trigger --sysname-match=uinput && sudo udevadm trigger --attr-match=subsystem=i2c-dev && sudo udevadm trigger --subsystem-match=hidraw
