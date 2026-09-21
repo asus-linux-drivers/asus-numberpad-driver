@@ -35,6 +35,7 @@ except:
 
 from xkbcommon import xkb
 import mmap
+import fcntl
 from periphery import I2C
 import signal
 import glob
@@ -1015,6 +1016,42 @@ def config_get(key, key_default):
         return key_default
 
 
+def send_value_to_touchpad_via_hidraw(value):
+    global hidraw_path
+
+    if not hidraw_path:
+        return False
+
+    # The same command as is sent via I2C below, only without the hand-made
+    # I2C-HID SET_REPORT header (0x05 0x00 0x3d 0x03 0x06 0x00 0x07 0x00) which
+    # is added by the kernel: feature report with id 0x0d
+    data = bytearray([0x0d, 0x14, 0x03, int(value, 16), 0xad])
+
+    # HIDIOCSFEATURE(len) = _IOC(_IOC_READ | _IOC_WRITE, 'H', 0x06, len)
+    HIDIOCSFEATURE = 0xC0000000 | (len(data) << 16) | (ord('H') << 8) | 0x06
+
+    try:
+        with open(hidraw_path, "rb+", buffering=0) as f:
+            fcntl.ioctl(f, HIDIOCSFEATURE, data)
+        log.debug("Feature report sent via %s", hidraw_path)
+        return True
+    except Exception as e:
+        log.debug("hidraw (%s) failed: %s; falling back to I2C", hidraw_path, e)
+        # do not try again, e.g. missing permissions will not fix themselves
+        hidraw_path = None
+
+    return False
+
+
+def send_value_to_touchpad(value):
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/224
+    # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/315
+    if send_value_to_touchpad_via_hidraw(value):
+        return True
+
+    return send_value_to_touchpad_via_i2c(value)
+
+
 def send_value_to_touchpad_via_i2c(value):
     global device_id, device_addr
 
@@ -1302,6 +1339,7 @@ numlock_lock = threading.Lock()
 idle_lock = threading.Lock()
 device_id: Optional[str] = None
 device_addr: Optional[int] = None
+hidraw_path: Optional[str] = None
 
 # Look into the devices file #
 while try_times > 0:
@@ -1340,6 +1378,16 @@ while try_times > 0:
                                        r'\1', line).replace("\n", "")
                     log.info('Set touchpad device id %s from %s',
                               device_id, line.strip())
+
+                    # search hidraw node of the touchpad, e.g.:
+                    # S: Sysfs=/devices/.../i2c-ASUP1415:00/0018:093A:300C.0002/input/input30
+                    # -> /sys/devices/.../i2c-ASUP1415:00/0018:093A:300C.0002/hidraw/hidraw1
+                    sysfs_path = line.strip().split("Sysfs=")[-1]
+                    hid_device_path = os.path.dirname(os.path.dirname("/sys" + sysfs_path))
+                    hidraw_nodes = glob.glob(hid_device_path + "/hidraw/hidraw*")
+                    if hidraw_nodes:
+                        hidraw_path = "/dev/" + os.path.basename(hidraw_nodes[0])
+                        log.info('Set touchpad hidraw node %s', hidraw_path)
 
                 if "H: " in line:
                     touchpad = line.split("event")[1]
@@ -1399,6 +1447,16 @@ while try_times > 0:
 
     sleep(try_sleep)
 
+# Is the hidraw node of the touchpad usable? (preferred way, I2C is a fallback)
+if hidraw_path:
+    try:
+        with open(hidraw_path, "rb+", buffering=0) as f:
+            pass
+        log.debug(f"Successfully opened {hidraw_path}")
+    except Exception as e:
+        log.debug("Can not open %s: %s, I2C will be used", hidraw_path, e)
+        hidraw_path = None
+
 # Open a handle to "/dev/i2c-x", representing the I2C bus
 try:
     path = f"/dev/i2c-{device_id}"
@@ -1411,8 +1469,11 @@ except Exception as e:
             pass
         log.debug(f"Successfully opened {path}")
     except Exception as e2:
-        log.error("Can not open the I2C bus connection (id: %s): %s", device_id, e2)
-        sys.exit(1)
+        if hidraw_path:
+            log.debug("Can not open the I2C bus connection (id: %s): %s, only hidraw will be used", device_id, e2)
+        else:
+            log.error("Can not open the I2C bus connection (id: %s): %s", device_id, e2)
+            sys.exit(1)
 
 # Start monitoring the touchpad
 fd_t = open('/dev/input/event' + str(touchpad), 'rb')
@@ -1677,7 +1738,7 @@ def increase_brightness():
 
     config_set(CONFIG_LAST_BRIGHTNESS, backlight_levels[brightness])
 
-    send_value_to_touchpad_via_i2c(backlight_levels[brightness])
+    send_value_to_touchpad(backlight_levels[brightness])
 
 
 def send_numlock_key(value):
@@ -1764,13 +1825,13 @@ def cancel_idle_numpad():
     # set up previous brightness
     try:
       brightness_value = backlight_levels[brightness]
-      send_value_to_touchpad_via_i2c(brightness_value)
+      send_value_to_touchpad(brightness_value)
     # may be not found! That means the driver was clearly installed and
     # config file does not contains `brightness` key - because was not used increment
     # or decrement function yet or even model does not support this functionality
     # or config log was deleted
     except:
-      send_value_to_touchpad_via_i2c("0x01")
+      send_value_to_touchpad("0x01")
       pass
 
     config_set(CONFIG_IDLED, False)
@@ -1787,12 +1848,12 @@ def idle_numpad():
 
       # because index of array starts with zero
       if idle_brightness_level_index > 0:
-        send_value_to_touchpad_via_i2c(backlight_levels[idle_brightness_level_index - 1])
+        send_value_to_touchpad(backlight_levels[idle_brightness_level_index - 1])
       else:
-        send_value_to_touchpad_via_i2c("0x00")
+        send_value_to_touchpad("0x00")
     else:
       # brightness function is not supported then temporary disable entire brightness by `0x00`
-      send_value_to_touchpad_via_i2c("0x00")
+      send_value_to_touchpad("0x00")
 
     config_set(CONFIG_IDLED, True)
 
@@ -1809,18 +1870,18 @@ def activate_numpad():
     # both values are required to send for succesfull activation (brightness up)
     #
     # unlock NumberPad (toggle settings lock/unlock NumberPad inside MyAsus app on Windows)
-    send_value_to_touchpad_via_i2c("0x60")
+    send_value_to_touchpad("0x60")
     # activate NumberPad
-    send_value_to_touchpad_via_i2c("0x01")
+    send_value_to_touchpad("0x01")
 
     if not top_left_icon_brightness_func_disabled:
         if default_backlight_level != "0x01":
-            send_value_to_touchpad_via_i2c(default_backlight_level)
+            send_value_to_touchpad(default_backlight_level)
         else:
             try:
                 # brightness may be not defined yet
                 if len(backlight_levels) > brightness:
-                    send_value_to_touchpad_via_i2c(backlight_levels[brightness])
+                    send_value_to_touchpad(backlight_levels[brightness])
             except:
                 pass
 
@@ -1839,7 +1900,7 @@ def deactivate_numpad():
 
     # inactivation can be doubled with another value 0x61 - that means lock NumberPad (toggle settings lock/unlock NumberPad inside MyAsus app on Windows)
     # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/132
-    send_value_to_touchpad_via_i2c("0x00")
+    send_value_to_touchpad("0x00")
 
     config_set(CONFIG_ENABLED, False)
 
