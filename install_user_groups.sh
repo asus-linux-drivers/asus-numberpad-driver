@@ -113,8 +113,14 @@ echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev-asus-numberpad-driver.conf
 # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/315
 #
 # the rule has to be processed before 73-seat-late.rules so that the tag uaccess has an effect
-echo 'ACTION!="remove", SUBSYSTEM=="hidraw", KERNELS=="i2c-ASUE*|i2c-ELAN*|i2c-ASUP*|i2c-ASUF*|i2c-ASCP*|i2c-ASCF*", TAG+="uaccess", GROUP="i2c", MODE="0660"' \
-  | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/70-asus-numberpad-driver-hidraw.rules >/dev/null
+TOUCHPAD_PHYS=$(grep -A5 -i touchpad /proc/bus/input/devices | grep -o 'Phys=i2c-[^[:space:]]*' | cut -d= -f2 | sort -u)
+
+if [ -n "$TOUCHPAD_PHYS" ]; then
+    echo 'ACTION!="remove", SUBSYSTEM=="hidraw", KERNELS=="'"$TOUCHPAD_PHYS"'", TAG+="uaccess", GROUP="i2c", MODE="0660"' \
+      | sudo tee "$INSTALL_UDEV_DIR_PATH"/rules.d/70-asus-numberpad-driver-hidraw.rules >/dev/null
+else
+    echo "Touchpad Phys not detected, skipping adding hidraw udev rule"
+fi
 
 if [[ $? != 0 ]]; then
     echo "Something went wrong when adding uinput module to auto loaded modules"
