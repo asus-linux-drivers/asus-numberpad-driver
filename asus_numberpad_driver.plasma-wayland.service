@@ -1,5 +1,7 @@
 [Unit]
 Description=Asus NumberPad Driver
+PartOf=graphical-session.target
+After=plasma-workspace.target
 StartLimitBurst=20
 StartLimitIntervalSec=300
 
@@ -9,15 +11,12 @@ ExecStart=$INSTALL_DIR_PATH/.env/bin/python3 $INSTALL_DIR_PATH/numberpad.py $LAY
 TimeoutSec=5
 Restart=on-failure
 RestartSec=1
-# logs to the journal directly, suppress double logging
+# The script logs to the journal directly
 StandardOutput=null
 StandardError=null
-Environment="DISPLAY=$DISPLAY"
-Environment="DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
-Environment="XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
-Environment="XDG_SESSION_TYPE=$XDG_SESSION_TYPE"
+# Plasma imports the current display and session variables into the user manager.
 Environment="PATH=/usr/sbin:/usr/bin:/bin"
 $LOG_ENV_LINE
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
