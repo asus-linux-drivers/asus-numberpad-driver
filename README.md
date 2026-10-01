@@ -307,6 +307,17 @@ $ bash uninstall_service.sh
 $ bash uninstall_user_groups.sh
 ```
 
+## Reinstallation
+
+To reinstall run
+
+```bash
+$ bash uninstall.sh
+
+# in some cases a repeated call without uninstalling first may be sufficient
+$ bash install.sh
+```
+
 ## Layouts
 
 The project should currently support every layout of NumberPad. Layouts below are named by laptop models, but the name is not important. What is important is their visual appearance because they are repeated on multiple laptop models across series. The install script should recognize the correct one automatically for your laptop. If yours was not recognized, please create issue.
