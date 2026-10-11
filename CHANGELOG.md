@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.3.0 (11.10.2026)
+
+### Feature
+
+- Added controling the backlight via `hidraw` (I2C stays as a fallback) (credits @lordyoyi, @ldrahnik)
+
+### Fixed
+
+- `KDE` Wayland login crashes + added `sbin/bin` dirs to the path (credits @siddolo)
+- Using config on `NixOS`
+- Missing `DBUS_SESSION_BUS_ADDRESS` and `qttools` in the path on `NixOS`
+
 ## 7.2.3 (30.8.2026)
 
 ### Fixed
