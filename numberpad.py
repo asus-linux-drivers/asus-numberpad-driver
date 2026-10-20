@@ -158,6 +158,21 @@ keysym_index = None
 watch_manager = None
 event_notifier = None
 
+
+def iter_input_events(input_device):
+    """Recover the physical source after SYN_DROPPED without recursion."""
+    while not stop_threads:
+        try:
+            for event in input_device.events():
+                if not event.matches(EV_SYN.SYN_DROPPED):
+                    yield event
+        except device.EventsDroppedException:
+            # Do not turn synthetic state-recovery events into user shortcuts.
+            for _ in input_device.sync():
+                pass
+            yield InputEvent(EV_SYN.SYN_DROPPED, 0)
+
+
 def mod_name_to_specific_keysym_name(mod_name):
     global display_wayland, kde_current_layout_index, gnome_current_layout_index, keyboard_state
 
@@ -284,7 +299,11 @@ def listen_keyboard_events():
         fd_k = open('/dev/input/event' + str(keyboard), 'rb')
         d_k = Device(fd_k)
 
-        for event in d_k.events():
+        for event in iter_input_events(d_k):
+            if event.matches(EV_SYN.SYN_DROPPED):
+                active_modifiers.clear()
+                active_modifiers.update(key for key in coactivator_modifiers if d_k.value[key])
+                continue
 
             if event.type == EV_KEY and event.code in coactivator_modifiers:
 
@@ -2697,6 +2716,20 @@ def current_position_is_more_distant_than_distance_to_move_only_pointer():
         return False
 
 
+def iter_input_events(input_device):
+    """Recover the physical source after SYN_DROPPED without recursion."""
+    while not stop_threads:
+        try:
+            for event in input_device.events():
+                if not event.matches(EV_SYN.SYN_DROPPED):
+                    yield event
+        except device.EventsDroppedException:
+            # Do not turn synthetic state-recovery events into user shortcuts.
+            for _ in input_device.sync():
+                pass
+            yield InputEvent(EV_SYN.SYN_DROPPED, 0)
+
+
 def listen_touchpad_events():
     global brightness, d_t, abs_mt_slot_value, abs_mt_slot, abs_mt_slot_numpad_key,\
         abs_mt_slot_x_values, abs_mt_slot_y_values, support_for_maximum_abs_mt_slots,\
@@ -2709,7 +2742,16 @@ def listen_touchpad_events():
 
     try:
 
-        for e in d_t.events():
+        resync_wait_for_release = False
+        for event in iter_input_events(d_t):
+            if event.matches(EV_SYN.SYN_DROPPED):
+                resync_wait_for_release = bool(d_t.value[EV_KEY.BTN_TOUCH] or d_t.value[EV_KEY.BTN_TOOL_FINGER])
+                continue
+            if resync_wait_for_release:
+                if event.value == 0 and (event.matches(EV_KEY.BTN_TOUCH) or
+                        (event.matches(EV_KEY.BTN_TOOL_FINGER) and d_t.value[EV_KEY.BTN_TOUCH] is None)):
+                    resync_wait_for_release = False
+                continue
 
             last_event_time = time()
 
@@ -2976,12 +3018,8 @@ def listen_touchpad_events():
                 elif e.value == 0 and press_key_when_is_done_untouch == 0:
                     unpressed_numpad_key()
 
-    except device.EventsDroppedException:
-        for e in dev.sync(True):
-            pass
-
-        listen_touchpad_events()
-
+    except Exception:
+        log.exception("Error in listen_keyboard_events")
 
 def check_touchpad_status():
     global touchpad_name, numlock, touchpad_disables_numpad
