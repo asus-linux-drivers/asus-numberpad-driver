@@ -2713,18 +2713,64 @@ def current_position_is_more_distant_than_distance_to_move_only_pointer():
         return False
 
 
-def iter_input_events(input_device):
-    """Recover the physical source after SYN_DROPPED without recursion."""
-    while not stop_threads:
+def touchpad_has_contacts():
+    """Read the physical state after sync, including multi-finger contacts."""
+    touch = d_t.value[EV_KEY.BTN_TOUCH]
+    if touch is not None:
+        return bool(touch)
+    if any(d_t.value[key] for key in (
+            EV_KEY.BTN_TOOL_FINGER, EV_KEY.BTN_TOOL_DOUBLETAP,
+            EV_KEY.BTN_TOOL_TRIPLETAP, EV_KEY.BTN_TOOL_QUADTAP,
+            EV_KEY.BTN_TOOL_QUINTTAP)):
+        return True
+    return d_t.num_slots is not None and any(
+        slot[EV_ABS.ABS_MT_TRACKING_ID] is not None and
+        slot[EV_ABS.ABS_MT_TRACKING_ID] >= 0 for slot in d_t.slots)
+
+
+def reset_touchpad_state():
+    """Cancel interrupted gestures and release keys without executing them."""
+    global abs_mt_slot_value, unsupported_abs_mt_slot, numlock_touch_start_time, \
+        top_left_icon_touch_start_time, top_right_icon_touch_start_time, \
+        key_pointer_button_is_touched
+
+    events = []
+    for key in abs_mt_slot_numpad_key:
+        # In press-on-release mode a number/chord is only pending. Pointer
+        # buttons forwarded by pointer mode 2 may already be held, though.
+        if press_key_when_is_done_untouch == 1 and not is_key_pointer_button(key):
+            continue
+        if isEventList(key):
+            keys_to_release = reversed(key)
+        elif isEvent(key):
+            keys_to_release = [key]
+        else:
+            continue
+        for code in keys_to_release:
+            events.extend([InputEvent(code, 0), InputEvent(EV_SYN.SYN_REPORT, 0)])
+    if events:
         try:
-            for event in input_device.events():
-                if not event.matches(EV_SYN.SYN_DROPPED):
-                    yield event
-        except device.EventsDroppedException:
-            # Do not turn synthetic state-recovery events into user shortcuts.
-            for _ in input_device.sync():
-                pass
-            yield InputEvent(EV_SYN.SYN_DROPPED, 0)
+            udev.send_events(events)
+        except OSError as e:
+            log.warning("Cannot release keys after dropped events, %s", e)
+
+    # Modes 0/2 keep the device grabbed for as long as NumberPad is active.
+    # Only a temporary grab for an interrupted key should be undone here.
+    if enabled_touchpad_pointer == 1 and any(abs_mt_slot_grab_status == 1):
+        ungrab()
+    set_none_to_all_mt_slots()
+    abs_mt_slot[:] = -1
+    abs_mt_slot_grab_status[:] = 0
+    numlock_touch_start_time = 0
+    top_left_icon_touch_start_time = 0
+    top_right_icon_touch_start_time = 0
+    key_pointer_button_is_touched = False
+
+    # A slot selector need not be sent again after sync (or after the last
+    # quarantined release frame). Keep the selected physical slot.
+    slot = d_t.current_slot or 0
+    unsupported_abs_mt_slot = slot >= support_for_maximum_abs_mt_slots
+    abs_mt_slot_value = 0 if unsupported_abs_mt_slot else slot
 
 
 def listen_touchpad_events():
@@ -2742,11 +2788,14 @@ def listen_touchpad_events():
         resync_wait_for_release = False
         for e in iter_input_events(d_t):
             if e.matches(EV_SYN.SYN_DROPPED):
-                resync_wait_for_release = bool(d_t.value[EV_KEY.BTN_TOUCH] or d_t.value[EV_KEY.BTN_TOOL_FINGER])
+                reset_touchpad_state()
+                resync_wait_for_release = touchpad_has_contacts()
                 continue
             if resync_wait_for_release:
-                if e.value == 0 and (e.matches(EV_KEY.BTN_TOUCH) or
-                        (e.matches(EV_KEY.BTN_TOOL_FINGER) and d_t.value[EV_KEY.BTN_TOUCH] is None)):
+                # Discard the whole release frame, including synthetic-looking
+                # tool-count transitions that could otherwise trigger a key.
+                if e.matches(EV_SYN.SYN_REPORT) and not touchpad_has_contacts():
+                    reset_touchpad_state()
                     resync_wait_for_release = False
                 continue
 
