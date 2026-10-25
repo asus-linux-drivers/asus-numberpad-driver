@@ -2776,14 +2776,14 @@ def listen_touchpad_events():
             # supply touchpad driver role and divides by position between LEFT, MIDDLE, RIGHT
             #
             # enabled_touchpad_pointer value 0 is filtered out here
-            if is_key_pointer_button(e.code) and enabled_touchpad_pointer == 0:
+            if is_key_pointer_button(event.code) and enabled_touchpad_pointer == 0:
                 continue
 
             # protection against situations when is clicked pointer button (LEFT, RIGHT, MIDDLE) and in config is set up send key when is released finger
             # then this code cancel sending all key events unless is finger released
-            if is_key_pointer_button(e.code) and press_key_when_is_done_untouch == 1:
+            if is_key_pointer_button(event.code) and press_key_when_is_done_untouch == 1:
 
-                if e.value == 0:
+                if event.value == 0:
                     log.debug("Released touchpad pointer button")
                     key_pointer_button_is_touched = False
                     set_none_to_all_mt_slots()
@@ -2798,13 +2798,13 @@ def listen_touchpad_events():
 
             # enabled_touchpad_pointer value 2 only! is processed
             if numlock and enabled_touchpad_pointer == 2:
-                if e.matches(EV_KEY.BTN_LEFT):
+                if event.matches(EV_KEY.BTN_LEFT):
                     if(current_slot_x <= (maxx / 100) * 35):
-                        pressed_pointer_button(EV_KEY.BTN_LEFT, 272, e.value)
+                        pressed_pointer_button(EV_KEY.BTN_LEFT, 272, event.value)
                     elif(current_slot_x > (maxx / 100) * 35 and current_slot_x < (maxx / 100) * 65):
-                        pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, e.value)
+                        pressed_pointer_button(EV_KEY.BTN_MIDDLE, 274, event.value)
                     else:
-                        pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, e.value)
+                        pressed_pointer_button(EV_KEY.BTN_RIGHT, 273, event.value)
 
                 if is_key_pointer_button(current_slot_key):
                 #    #log.info("skipping because current slot is pointer button")
@@ -2816,9 +2816,9 @@ def listen_touchpad_events():
             if key_pointer_button_is_touched:
                 continue
 
-            if e.matches(EV_ABS.ABS_MT_SLOT):
-                if(e.value < support_for_maximum_abs_mt_slots):
-                    abs_mt_slot_value = e.value
+            if event.matches(EV_ABS.ABS_MT_SLOT):
+                if(event.value < support_for_maximum_abs_mt_slots):
+                    abs_mt_slot_value = event.value
                     unsupported_abs_mt_slot = False
                 else:
                     unsupported_abs_mt_slot = True
@@ -2836,7 +2836,7 @@ def listen_touchpad_events():
 
                 continue
 
-            if e.matches(EV_MSC.MSC_TIMESTAMP):
+            if event.matches(EV_MSC.MSC_TIMESTAMP):
 
                 # top right icon (numlock) activation
                 touched_key, touched_key_entry = get_touched_key()
@@ -2863,15 +2863,15 @@ def listen_touchpad_events():
                     increase_brightness()
                     continue
 
-            if e.matches(EV_ABS.ABS_MT_POSITION_X):
+            if event.matches(EV_ABS.ABS_MT_POSITION_X):
 
                 if abs_mt_slot_x_init_values[abs_mt_slot_value] == -1:
-                    abs_mt_slot_x_init_values[abs_mt_slot_value] = e.value
+                    abs_mt_slot_x_init_values[abs_mt_slot_value] = event.value
                     abs_mt_slot_x_previous_values[abs_mt_slot_value] = -1
                 else:
                     abs_mt_slot_x_previous_values[abs_mt_slot_value] = abs_mt_slot_x_values[abs_mt_slot_value]
 
-                abs_mt_slot_x_values[abs_mt_slot_value] = e.value
+                abs_mt_slot_x_values[abs_mt_slot_value] = event.value
 
                 if distance_to_move_only_pointer and \
                     top_right_icon_touch_start_time == 0 and \
@@ -2903,15 +2903,15 @@ def listen_touchpad_events():
                     local_numlock_pressed()
                     continue
 
-            if e.matches(EV_ABS.ABS_MT_POSITION_Y):
+            if event.matches(EV_ABS.ABS_MT_POSITION_Y):
 
                 if abs_mt_slot_y_init_values[abs_mt_slot_value] == -1:
-                    abs_mt_slot_y_init_values[abs_mt_slot_value] = e.value
+                    abs_mt_slot_y_init_values[abs_mt_slot_value] = event.value
                     abs_mt_slot_y_previous_values[abs_mt_slot_value] = -1
                 else:
                     abs_mt_slot_y_previous_values[abs_mt_slot_value] = abs_mt_slot_y_values[abs_mt_slot_value]
 
-                abs_mt_slot_y_values[abs_mt_slot_value] = e.value
+                abs_mt_slot_y_values[abs_mt_slot_value] = event.value
 
                 if distance_to_move_only_pointer and \
                     top_right_icon_touch_start_time == 0 and \
@@ -2931,27 +2931,27 @@ def listen_touchpad_events():
                     local_numlock_pressed()
                     continue
 
-            if e.matches(EV_ABS.ABS_MT_TRACKING_ID):
-                set_tracking_id(e.value)
+            if event.matches(EV_ABS.ABS_MT_TRACKING_ID):
+                set_tracking_id(event.value)
 
-            if e.matches(EV_KEY.BTN_TOOL_FINGER) or \
-               e.matches(EV_KEY.BTN_TOOL_DOUBLETAP) or \
-               e.matches(EV_KEY.BTN_TOOL_TRIPLETAP) or \
-               e.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
-               e.matches(EV_KEY.BTN_TOOL_QUINTTAP):
+            if event.matches(EV_KEY.BTN_TOOL_FINGER) or \
+               event.matches(EV_KEY.BTN_TOOL_DOUBLETAP) or \
+               event.matches(EV_KEY.BTN_TOOL_TRIPLETAP) or \
+               event.matches(EV_KEY.BTN_TOOL_QUADTAP) or \
+               event.matches(EV_KEY.BTN_TOOL_QUINTTAP):
 
                 log.debug('finger down at x %d y %d value %d', abs_mt_slot_x_values[abs_mt_slot_value], (
-                    abs_mt_slot_y_values[abs_mt_slot_value]), e.value)
+                    abs_mt_slot_y_values[abs_mt_slot_value]), event.value)
 
                 # https://github.com/asus-linux-drivers/asus-numberpad-driver/issues/169
-                if e.value == 2:
+                if event.value == 2:
                     continue
 
                 if is_pressed_touchpad_top_right_icon():
-                    pressed_touchpad_top_right_icon(e)
+                    pressed_touchpad_top_right_icon(event)
                     continue
                 elif is_pressed_touchpad_top_left_icon():
-                    pressed_touchpad_top_left_icon(e)
+                    pressed_touchpad_top_left_icon(event)
                     continue
 
                 col = math.floor(
@@ -2974,7 +2974,7 @@ def listen_touchpad_events():
                     # offset area
                     continue
 
-                if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and e.value == 0:
+                if abs_mt_slot_numpad_key[abs_mt_slot_value] == None and event.value == 0:
                     log.debug('key unpress was already handled because slot is empty')
                     continue
 
@@ -2991,7 +2991,7 @@ def listen_touchpad_events():
                         continue
 
                     if key == get_evdev_key_for_char('Num_Lock'):
-                        pressed_numlock_key(e.value)
+                        pressed_numlock_key(event.value)
                         continue
                     else:
                         abs_mt_slot_numpad_key[abs_mt_slot_value] = key
@@ -3005,17 +3005,17 @@ def listen_touchpad_events():
                               )
                     continue
 
-                if e.value == 1 and press_key_when_is_done_untouch == 0:
+                if event.value == 1 and press_key_when_is_done_untouch == 0:
                     if key_repetitions:
                         pressed_numpad_key()
                     else:
                         pressed_numpad_key()
                         unpressed_numpad_key()
-                elif e.value == 0 and press_key_when_is_done_untouch == 1:
+                elif event.value == 0 and press_key_when_is_done_untouch == 1:
                     # key repetitions is not possible do in this case (press_key_when_is_done_untouch = 1)
                     pressed_numpad_key()
                     unpressed_numpad_key()
-                elif e.value == 0 and press_key_when_is_done_untouch == 0:
+                elif event.value == 0 and press_key_when_is_done_untouch == 0:
                     unpressed_numpad_key()
 
     except Exception:
