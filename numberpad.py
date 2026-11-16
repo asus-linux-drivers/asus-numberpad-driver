@@ -887,6 +887,8 @@ def load_keymap_listener_x11():
 EV_KEY_TOP_LEFT_ICON = "EV_KEY_TOP_LEFT_ICON"
 
 numlock: bool = False
+# Last physical NumLock LED state observed by the poller or a local toggle.
+last_system_numlock = None
 
 is_idled: bool = False
 
@@ -1936,7 +1938,7 @@ def get_system_numlock():
 
 
 def local_numlock_pressed(do_not_deactivate = False, do_not_require_coactivator_keys = False):
-    global brightness, numlock, coactivator_keys
+    global brightness, numlock, coactivator_keys, last_system_numlock
 
     #log.debug("local_numlock_pressed: numlock_lock.acquire will be called")
     numlock_lock.acquire()
@@ -1959,6 +1961,10 @@ def local_numlock_pressed(do_not_deactivate = False, do_not_require_coactivator_
     # Activating
     if not numlock:
 
+        # The LED on the physical keyboard may not follow a NumLock key sent
+        # through the virtual NumberPad keyboard (notably on some Wayland
+        # compositors). Do not interpret its unchanged state as a new request.
+        last_system_numlock = sys_numlock
         numlock = True
         if not sys_numlock:
             send_numlock_key(1)
@@ -1971,6 +1977,7 @@ def local_numlock_pressed(do_not_deactivate = False, do_not_require_coactivator_
     # Inactivating
     elif not do_not_deactivate:
 
+        last_system_numlock = sys_numlock
         numlock = False
         if sys_numlock and numpad_disables_sys_numlock:
             send_numlock_key(1)
@@ -2446,7 +2453,7 @@ def is_not_finger_moved_to_another_key():
 
 
 def check_system_numlock_vs_local():
-    global brightness, numlock, sys_numlock_enables_numpad
+    global brightness, numlock, sys_numlock_enables_numpad, last_system_numlock
 
     #log.debug("check_system_numlock_vs_local: numlock_lock.acquire will be called")
     numlock_lock.acquire()
@@ -2454,7 +2461,12 @@ def check_system_numlock_vs_local():
 
     sys_numlock = get_system_numlock()
 
-    if not sys_numlock and numlock:
+    # React to changes of the physical keyboard LED, not its persistent
+    # level: a synthetic NumLock press may leave that LED unchanged.
+    changed = last_system_numlock is None or sys_numlock != last_system_numlock
+    last_system_numlock = sys_numlock
+
+    if changed and not sys_numlock and numlock:
         numlock = False
         deactivate_numpad()
         log.info("Numpad deactivated")
@@ -2472,7 +2484,7 @@ def check_system_numlock_vs_local():
         sys_numlock_enables_numpad = 1
         config_set(CONFIG_NUMLOCK_ENABLES_NUMPAD, 1)
 
-    elif sys_numlock and sys_numlock_enables_numpad == 1 and not numlock:
+    elif changed and sys_numlock and sys_numlock_enables_numpad == 1 and not numlock:
         numlock = True
         activate_numpad()
         log.info("Numpad activated")
@@ -3068,7 +3080,7 @@ def listen_touchpad_events():
         log.exception("Error in listen_touchpad_events")
 
 def check_touchpad_status():
-    global touchpad_name, numlock, touchpad_disables_numpad
+    global touchpad_name, numlock, touchpad_disables_numpad, last_system_numlock
 
     #log.debug("check_touchpad_status: numlock_lock.acquire will be called")
     numlock_lock.acquire()
@@ -3077,9 +3089,9 @@ def check_touchpad_status():
     is_touchpad_enabled = is_device_enabled(touchpad_name)
 
     if not is_touchpad_enabled:
-        numlock = False
-
         sys_numlock = get_system_numlock()
+        last_system_numlock = sys_numlock
+        numlock = False
         if sys_numlock and numpad_disables_sys_numlock:
             send_numlock_key(1)
             send_numlock_key(0)
@@ -3111,7 +3123,7 @@ def check_touchpad_status_endless_cycle():
 
 
 def check_numpad_automatical_disable_or_idle_due_inactivity():
-    global is_idled, disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads, idled, idle_time, idle_enabled
+    global is_idled, disable_due_inactivity_time, numpad_disables_sys_numlock, last_event_time, numlock, stop_threads, idled, idle_time, idle_enabled, last_system_numlock
 
     while not stop_threads:
 
@@ -3142,6 +3154,7 @@ def check_numpad_automatical_disable_or_idle_due_inactivity():
             time() > disable_due_inactivity_time + last_event_time:
 
             sys_numlock = get_system_numlock()
+            last_system_numlock = sys_numlock
             if sys_numlock and numpad_disables_sys_numlock:
                 send_numlock_key(1)
                 send_numlock_key(0)
